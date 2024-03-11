@@ -1,4 +1,4 @@
-A collection of mods made by me for Balatro, although up to now there is only 1 mod.
+A collection of mods made by me for Balatro.
 # 5 legendary challenges: Adds 5 challenges, each featuring a legendary joker.
 - Destroyer: With eternal caino, pareidolia and sixth sense, you need to acquire and destroy 6s to get multi.
 - Gotta Go Fast: Begin with triboulet, but the required score scales extremely fast.
