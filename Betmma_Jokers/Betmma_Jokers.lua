@@ -114,7 +114,7 @@ function SMODS.INIT.BetmmaJokers()
             custom = {
             },
             modifiers = {
-                {id = 'dollars', value = 999},
+                {id = 'dollars', value = 10},
             }
         },
         jokers = {
@@ -122,8 +122,6 @@ function SMODS.INIT.BetmmaJokers()
             {id = 'j_ascension'},
             {id = 'j_hasty'},
             {id = 'j_errorr'},
-            {id = 'j_piggy_bank'},
-            {id = 'j_piggy_bank'},
             {id = 'j_piggy_bank'},
         },
         consumeables = {
