@@ -12,5 +12,6 @@ A collection of mods made by me for Balatro.
 - Hasty Joker: Earn $8 if round ends after first hand.
 - ERRORR: Discarded cards have 1 in 3 chance to become random rank.
 - Piggy Bank: Put half of earned dollars into it and gain 2 Mult for each dollar.
+Also adds a challenge beginning with these 5 jokers to test them.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
