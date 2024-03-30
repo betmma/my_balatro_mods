@@ -10,8 +10,8 @@
 
 function SMODS.INIT.legendaryChallenges () 
 	
-    -- # means getting its length (the number of challenges), the challenge table is in challenges.lua
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    -- the challenge table is in challenges.lua
+    table.insert(G.CHALLENGES,1,{
         name = "Destroyer",
         id = 'c_mod_destroyer',
         rules = {
@@ -52,7 +52,7 @@ function SMODS.INIT.legendaryChallenges ()
     G.localization.misc.challenge_names.c_mod_destroyer = "Destroyer"
 
 
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    table.insert(G.CHALLENGES,2,{
         name = "Gotta Go Fast",
         id = 'c_mod_gottagofast',
         rules = {
@@ -87,7 +87,7 @@ function SMODS.INIT.legendaryChallenges ()
     }
     G.localization.misc.challenge_names.c_mod_gottagofast = "Gotta Go Fast"
 
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    table.insert(G.CHALLENGES,3,{
         name = "Bankrupt",
         id = 'c_mod_bankrupt',
         rules = {
@@ -120,7 +120,7 @@ function SMODS.INIT.legendaryChallenges ()
     G.localization.misc.challenge_names.c_mod_bankrupt = "Bankrupt"
 
 
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    table.insert(G.CHALLENGES,4,{
         name = "Anti-Medusa",
         id = "c_mod_antiMedusa",
 		
@@ -159,7 +159,7 @@ function SMODS.INIT.legendaryChallenges ()
     G.localization.misc.challenge_names.c_mod_antiMedusa = "Anti-Medusa"
 
     
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    table.insert(G.CHALLENGES,5,{
         name = "Overpowered Boss",
         id = 'c_mod_overpoweredboss',
         rules = {
