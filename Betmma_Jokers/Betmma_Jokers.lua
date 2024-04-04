@@ -7,143 +7,147 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
-local localization = {
-    jjookkeerr = {
-        name = "JJookkeerr",
-        text = {
-            "Jokers with \"Joker\"",
-            "in their names",
-            "each gives {X:mult,C:white} X#1# {} Mult",
-            -- if I count right there are 24 common, 6 uncommon and 3 rare jokers that satisfy this condition
-        }
-    },
-    ascension = {
-        name = "Ascension",
-        text = {
-            "Increase the tier of",
-            "played poker hand by 1 ",
-            "(e.g. High Card counts as One Pair)",
-            -- How the poker hand "contained" is calculated should be clarified:
-            -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
-        }
-    },
-    hasty = {
-        name = "Hasty Joker",
-        text = {
-            "Earn {C:money}$#1#{} if round",
-        "ends after first hand",
-        }
-    },
-    errorr = {
-        name = "ERRORR",
-        text = {
-            "Discarded cards have",
-        "{C:green}#1# in #2#{} chance to",
-        "become random rank"
-        }
-    },
-    piggy_bank = {
-        name = "Piggy Bank",
-        text = {
-            "Put half of earned dollar",
-            "into it and gain {C:red}+#2#{} Mult",
-            "for each dollar",
-            "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
-            -- dollar in it adds to its sold price
-        }
-    }
-}
-
---[[SMODS.Joker:new(
-    name, slug,
-    config,
-    spritePos, loc_txt,
-    rarity, cost, unlocked, discovered, blueprint_compat, eternal_compat
-)
-]]
-
-local jokers = {
-    jjookkeerr = SMODS.Joker:new(
-        "JJookkeerr", "",
-        {extra=1.5},
-        {}, "",
-        2, 6, true, true, true, true
-    ),
-    ascension = SMODS.Joker:new(
-        "Ascension", "",
-        {},
-        {}, "",
-        2, 6, true, true, true, true
-    ),
-    hasty = SMODS.Joker:new(
-        "Hasty Joker", "",
-        {extra=8},
-        {}, "",
-        1, 5, true, true, true, true
-    ),
-    errorr = SMODS.Joker:new(
-        "ERRORR", "",
-        {
-            extra={odds = 3}
-        },
-        {}, "",
-        3, 8, true, true, false, true
-    ),
-    piggy_bank = SMODS.Joker:new(
-        "Piggy Bank", "",
-        {
-            extra={mults = 0, mult_mod = 2}
-        },
-        {}, "",
-        1, 5, true, true, true, true
-    ),
-}
-
--- Blacklist individual Jokers here
-local jokerBlacklists = {
-    jjookkeerr = false,
-    ascension = false
-}
 
 
 function SMODS.INIT.BetmmaJokers()
-    table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
-        name = "TestJoker",
-        id = 'c_mod_testjoker',
-        rules = {
-            custom = {
-            },
-            modifiers = {
-                {id = 'dollars', value = 10},
+    
+    local localization = {
+        jjookkeerr = {
+            name = "JJookkeerr",
+            text = {
+                "Jokers with \"Joker\"",
+                "in their names",
+                "each gives {X:mult,C:white} X#1# {} Mult",
+                -- if I count right there are 24 common, 6 uncommon and 3 rare jokers that satisfy this condition
             }
         },
-        jokers = {
-            {id = 'j_jjookkeerr'},
-            {id = 'j_ascension'},
-            {id = 'j_hasty'},
-            {id = 'j_errorr'},
-            {id = 'j_piggy_bank'},
+        ascension = {
+            name = "Ascension",
+            text = {
+                "Increase the tier of",
+                "played poker hand by 1 ",
+                "(e.g. High Card counts as One Pair)",
+                -- How the poker hand "contained" is calculated should be clarified:
+                -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
+            }
         },
-        consumeables = {
-            {id = 'c_temperance'},
+        hasty = {
+            name = "Hasty Joker",
+            text = {
+                "Earn {C:money}$#1#{} if round",
+            "ends after first hand",
+            }
         },
-        vouchers = {
-            {id = 'v_directors_cut'},
+        errorr = {
+            name = "ERRORR",
+            text = {
+                "Discarded cards have",
+            "{C:green}#1# in #2#{} chance to",
+            "become random rank"
+            }
         },
-        deck = {
-            type = 'Challenge Deck',
-            --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
-        },
-        restrictions = {
-            banned_cards = {
-            },
-            banned_tags = {
-            },
-            banned_other = {
+        piggy_bank = {
+            name = "Piggy Bank",
+            text = {
+                "Put half of earned dollars",
+                "into it and gain {C:red}+#2#{} Mult",
+                "for each dollar",
+                "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
+                -- dollar in it adds to its sold price
             }
         }
-    })
-    G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
+    }
+
+    --[[SMODS.Joker:new(
+        name, slug,
+        config,
+        spritePos, loc_txt,
+        rarity, cost, unlocked, discovered, blueprint_compat, eternal_compat
+    )
+    ]]
+
+    local jokers = {
+        jjookkeerr = SMODS.Joker:new(
+            "JJookkeerr", "",
+            {extra=1.5},
+            {x=0,y=0}, "",
+            2, 6, true, true, true, true
+        ),
+        ascension = SMODS.Joker:new(
+            "Ascension", "",
+            {},
+            {x=0,y=0}, "",
+            2, 6, true, true, true, true
+        ),
+        hasty = SMODS.Joker:new(
+            "Hasty Joker", "",
+            {extra=8},
+            {x=0,y=0}, "",
+            1, 5, true, true, true, true
+        ),
+        errorr = SMODS.Joker:new(
+            "ERRORR", "",
+            {
+                extra={odds = 3}
+            },
+            {x=0,y=0}, "",
+            3, 8, true, true, false, true
+        ),
+        piggy_bank = SMODS.Joker:new(
+            "Piggy Bank", "",
+            {
+                extra={mults = 0, mult_mod = 2}
+            },
+            {x=0,y=0}, "",
+            1, 5, true, true, true, true
+        ),
+    }
+
+    -- Blacklist individual Jokers here
+    local jokerBlacklists = {
+        jjookkeerr = false,
+        ascension = false
+    }
+    -- this challenge is only for test
+    -- table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    --     name = "TestJoker",
+    --     id = 'c_mod_testjoker',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 10},
+    --         }
+    --     },
+    --     jokers = {
+    --         {id = 'j_jjookkeerr'},
+    --         {id = 'j_ascension'},
+    --         {id = 'j_hasty'},
+    --         {id = 'j_errorr'},
+    --         {id = 'j_piggy_bank'},
+    --         {id = 'j_piggy_bank'},
+    --         {id = 'j_piggy_bank'},
+    --     },
+    --     consumeables = {
+    --         {id = 'c_temperance'},
+    --     },
+    --     vouchers = {
+    --         {id = 'v_directors_cut'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
+    --     },
+    --     restrictions = {
+    --         banned_cards = {
+    --         },
+    --         banned_tags = {
+    --         },
+    --         banned_other = {
+    --         }
+    --     }
+    -- })
+    -- G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
     -- Localization
     init_localization()
 
