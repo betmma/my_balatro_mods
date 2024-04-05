@@ -14,4 +14,16 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 2 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
+# Betmma Vouchers: Adds 10 vouchers.
+- Oversupply: Gain 1 Voucher Tag after beating boss blind.
+- Oversupply plus: Gain 1 Voucher Tag after beating every blind.
+- Gold Coin: Gain $25 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
+- Gold Bar: Gain $30 immediately. Big Blind gives no reward money.
+- Abstract Art: +1 Ante to win, +1 hand and discard per round.
+- Mondrian: +1 Ante to win, +1 joker slot.
+- Round Up: Chips always round up to nearest tens when calculating hands.
+- Round Up Plus: Mult always round up to nearest tens when calculating hands.
+- Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create a Black Hole now.
+- Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
+
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
