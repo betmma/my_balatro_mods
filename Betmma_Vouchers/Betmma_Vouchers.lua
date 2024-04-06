@@ -178,7 +178,6 @@ function SMODS.INIT.BetmmaVouchers()
             ease_discard(center_table.extra)
         end
         if center_table.name == 'Mondrian' then
-            G.GAME.win_ante=G.GAME.win_ante+center_table.extra
             ease_ante_to_win(center_table.extra)
             G.E_MANAGER:add_event(Event({func = function()
                 if G.jokers then 
