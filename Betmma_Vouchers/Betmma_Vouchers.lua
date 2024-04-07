@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 10 More Vouchers!
+--- MOD_DESCRIPTION: 12 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -293,7 +293,8 @@ function SMODS.INIT.BetmmaVouchers()
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
             "when buying a planet pack,",
-            "create a {C:spectral}Black Hole{} now"
+            "create a {C:spectral}Black Hole{} now",
+            "{C:inactive}(Must have room)"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -317,7 +318,8 @@ function SMODS.INIT.BetmmaVouchers()
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
             "when using a planet card,",
-            "create a {C:spectral}Black Hole{} now"
+            "create a {C:spectral}Black Hole{} now",
+            "{C:inactive}(Must have room)"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -380,6 +382,103 @@ function SMODS.INIT.BetmmaVouchers()
                     end)}))
     end
 
+
+    
+    local name="Target"
+    local id="target"
+    local loc_txt = {
+        name = name,
+        text = {
+            "If chips scored are under",
+            "{C:attention}#1#%{} of required chips",
+            "at end of round,",
+            "create a random {C:attention}Joker{} card",
+            "{C:inactive}(Must have room)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=120},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    
+    local name="Bull's Eye"
+    local id="bulls_eye"
+    local loc_txt = {
+        name = name,
+        text = {
+            "If chips scored are under",
+            "{C:attention}#1#%{} of required chips",
+            "at end of round,",
+            "create a {C:spectral}Spectral{} card",
+            "{C:inactive}(Must have room)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=105},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_target'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local end_round_ref=end_round
+    function end_round()
+
+        if G.GAME.used_vouchers.v_target and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_target.config.extra <= 0 then
+            if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+                local jokers_to_create = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
+                G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
+                G.E_MANAGER:add_event(Event({
+                    func = function() 
+                        for i = 1, jokers_to_create do
+                            local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'target')
+                            card:add_to_deck()
+                            G.jokers:emplace(card)
+                            card:start_materialize()
+                            G.GAME.joker_buffer = 0
+                            card_eval_status_text(card,'jokers',nil,nil,nil,{message=localize("k_target_generate")})
+                        end
+                        return true
+                    end}))   
+            end
+        end
+        if G.GAME.used_vouchers.v_bulls_eye and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_bulls_eye.config.extra <= 0 then
+            if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
+                G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'before',
+                    delay = 0.0,
+                    func = (function()
+                            local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'bulls_eye')
+                            card:add_to_deck()
+                            G.consumeables:emplace(card)
+                            G.GAME.consumeable_buffer = 0
+                            card_eval_status_text(card,'extra',nil,nil,nil,{message=localize("k_bulls_eye_generate")})
+                        return true
+                    end)}))
+            end
+        end
+
+        end_round_ref()
+    end
+
+    G.localization.misc.dictionary.k_target_generate = "Target!"
+    G.localization.misc.dictionary.k_bulls_eye_generate = "Bull's Eye!"
+
+
+    
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -388,7 +487,7 @@ function SMODS.INIT.BetmmaVouchers()
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 999},
+    --             {id = 'dollars', value = 4},
     --         }
     --     },
     --     jokers = {
@@ -404,8 +503,8 @@ function SMODS.INIT.BetmmaVouchers()
     --         {id = 'c_temperance'},
     --     },
     --     vouchers = {
-    --         {id = 'v_event_horizon'},
-    --         {id = 'v_engulfer'},
+    --         {id = 'v_target'},
+    --         {id = 'v_bulls_eye'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
