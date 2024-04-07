@@ -96,7 +96,7 @@ function SMODS.INIT.BetmmaJokers()
         piggy_bank = SMODS.Joker:new(
             "Piggy Bank", "",
             {
-                extra={mults = 0, mult_mod = 2}
+                extra={mults = 0, mult_mod = 1}
             },
             {x=0,y=0}, "",
             1, 5, true, true, true, true
