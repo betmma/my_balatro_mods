@@ -584,7 +584,7 @@ function SMODS.INIT.BetmmaVouchers()
         name, id,
         {extra=4},
         {x=0,y=0}, loc_txt,
-        15, true, true, true
+        10, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
@@ -605,7 +605,7 @@ function SMODS.INIT.BetmmaVouchers()
         name, id,
         {},
         {x=0,y=0}, loc_txt,
-        25, true, true, true, {'v_skip'}
+        10, true, true, true, {'v_skip'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
