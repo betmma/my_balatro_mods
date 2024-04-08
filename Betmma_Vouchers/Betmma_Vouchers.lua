@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 12 More Vouchers!
+--- MOD_DESCRIPTION: 16 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -64,7 +64,7 @@ function SMODS.INIT.BetmmaVouchers()
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_coin = SMODS.Voucher:new(
         name, id,
-        {extra=25},
+        {extra=20},
         {x=0,y=0}, gold_coin_loc_txt,
         10, true, true, true
     )
@@ -88,7 +88,7 @@ function SMODS.INIT.BetmmaVouchers()
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_bar = SMODS.Voucher:new(
         name, id,
-        {extra=30},
+        {extra=25},
         {x=0,y=0}, gold_bar_loc_txt,
         10, true, true, true, {'v_gold_coin'}
     )
@@ -436,7 +436,7 @@ function SMODS.INIT.BetmmaVouchers()
     local end_round_ref=end_round
     function end_round()
 
-        if G.GAME.used_vouchers.v_target and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_target.config.extra <= 0 then
+        if G.GAME.used_vouchers.v_target and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_target.config.extra <= 0 then
             if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
                 local jokers_to_create = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                 G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
@@ -454,7 +454,7 @@ function SMODS.INIT.BetmmaVouchers()
                     end}))   
             end
         end
-        if G.GAME.used_vouchers.v_bulls_eye and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_bulls_eye.config.extra <= 0 then
+        if G.GAME.used_vouchers.v_bulls_eye and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_bulls_eye.config.extra <= 0 then
             if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
                 G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
                 G.E_MANAGER:add_event(Event({
@@ -479,6 +479,151 @@ function SMODS.INIT.BetmmaVouchers()
 
 
     
+    local name="Voucher Pack"
+    local id="voucher_pack"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Gives {C:Attention}#1#{} random vouchers"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=2},
+        {x=0,y=0}, loc_txt,
+        15, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    
+    local name="Voucher Bulk"
+    local id="voucher_bulk"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Gives {C:Attention}#1#{} random vouchers"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=4},
+        {x=0,y=0}, loc_txt,
+        25, true, true, true, {'v_voucher_pack'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+        
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Voucher Pack' then
+            for i=1, G.P_CENTERS.v_voucher_pack.config.extra do
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'before',
+                    delay =  0,
+                    func = function() 
+                        randomly_redeem_voucher()
+                        return true
+                    end}))   
+            end
+        end
+        if center_table.name == 'Voucher Bulk' then
+            for i=1, G.P_CENTERS.v_voucher_bulk.config.extra do
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'before',
+                    delay =  0,
+                    func = function() 
+                        randomly_redeem_voucher()
+                        return true
+                    end}))   
+            end
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    function randomly_redeem_voucher()
+        local voucher_key = get_next_voucher_key(true)
+        local card = Card(0.5,0.5, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+        --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
+        card:start_materialize()
+        G.play:emplace(card)
+        card.cost=0
+        card.shop_voucher=false
+        card:redeem()
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            --blockable = false,
+            --blocking = false,
+            delay =  0,
+            func = function() 
+                card:start_dissolve()
+                return true
+            end}))   
+    end
+
+        
+    local name="Skip"
+    local id="skip"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Earn {C:money}$#1#{} when skipping blind"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=4},
+        {x=0,y=0}, loc_txt,
+        15, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    
+    local name="Skipper"
+    local id="skipper"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Get a {C:attention}Double Tag{} when skipping blind"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        25, true, true, true, {'v_skip'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+
+    local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
+    G.FUNCS.skip_blind=function(e)
+        if G.GAME.used_vouchers.v_skip then
+            ease_dollars(G.P_CENTERS.v_skip.config.extra)
+        end
+        if G.GAME.used_vouchers.v_skipper then
+            add_tag(Tag('tag_double'))
+        end
+        return G_FUNCS_skip_blind_ref(e)
+    end
+
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -503,8 +648,10 @@ function SMODS.INIT.BetmmaVouchers()
     --         {id = 'c_temperance'},
     --     },
     --     vouchers = {
-    --         {id = 'v_target'},
-    --         {id = 'v_bulls_eye'},
+    --         {id = 'v_skip'},
+    --         {id = 'v_skipper'},
+    --         -- {id = 'v_voucher_bulk'},
+    --         -- {id = 'v_voucher_pack'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',

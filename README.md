@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 12 vouchers.
+# Betmma Vouchers: Adds 16 vouchers.
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
 - Gold Coin: Gain $25 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
@@ -27,6 +27,10 @@ A collection of mods made by me for Balatro.
 - Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
 - Target: If chips scored are under 120% of required chips at end of round, create a random Joker card.
 - Bull's Eye: If chips scored are under 105% of required chips at end of round, create a Spectral card.
+- Voucher Pack: Gives 2 random vouchers. ($15)
+- Voucher Bulk: Gives 4 random vouchers. ($25)
+- Skip: Earn $4 when skipping blind.
+- Skipper: Get a Double Tag when skipping blind.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 0.9.7.
