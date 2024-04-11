@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 16 More Vouchers!
+--- MOD_DESCRIPTION: 20 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -439,35 +439,12 @@ function SMODS.INIT.BetmmaVouchers()
         if G.GAME.used_vouchers.v_target and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_target.config.extra <= 0 then
             if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
                 local jokers_to_create = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
-                G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
-                G.E_MANAGER:add_event(Event({
-                    func = function() 
-                        for i = 1, jokers_to_create do
-                            local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'target')
-                            card:add_to_deck()
-                            G.jokers:emplace(card)
-                            card:start_materialize()
-                            G.GAME.joker_buffer = 0
-                            card_eval_status_text(card,'jokers',nil,nil,nil,{message=localize("k_target_generate")})
-                        end
-                        return true
-                    end}))   
+                randomly_create_joker(jokers_to_create,'target',localize("k_target_generate"))
             end
         end
         if G.GAME.used_vouchers.v_bulls_eye and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_bulls_eye.config.extra <= 0 then
             if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
-                G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
-                G.E_MANAGER:add_event(Event({
-                    trigger = 'before',
-                    delay = 0.0,
-                    func = (function()
-                            local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'bulls_eye')
-                            card:add_to_deck()
-                            G.consumeables:emplace(card)
-                            G.GAME.consumeable_buffer = 0
-                            card_eval_status_text(card,'extra',nil,nil,nil,{message=localize("k_bulls_eye_generate")})
-                        return true
-                    end)}))
+                randomly_create_spectral('bulls_eye',localize("k_bulls_eye_generate"))
             end
         end
 
@@ -477,8 +454,52 @@ function SMODS.INIT.BetmmaVouchers()
     G.localization.misc.dictionary.k_target_generate = "Target!"
     G.localization.misc.dictionary.k_bulls_eye_generate = "Bull's Eye!"
 
+    function randomly_create_joker(jokers_to_create,tag,message,extra)
+        extra=extra or {}
+        G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
+        G.E_MANAGER:add_event(Event({
+            func = function() 
+                for i = 1, jokers_to_create do
+                    local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, tag)
+                    card:add_to_deck()
+                    if extra.edition~=nil then
+                        card:set_edition(extra.edition,true,false)
+                    end
+                    G.jokers:emplace(card)
+                    card:start_materialize()
+                    G.GAME.joker_buffer = 0
+                
+                    if message~=nil then
+                        card_eval_status_text(card,'jokers',nil,nil,nil,{message=message})
+                    end
+                end
+                return true
+            end}))   
+    end
+    function randomly_create_spectral(tag,message,extra)
+        extra=extra or {}
+        
+        if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
+            G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+            G.E_MANAGER:add_event(Event({
+                trigger = 'before',
+                delay = 0.0,
+                func = (function()
+                        local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, tag)
+                        card:add_to_deck()
+                        if extra.edition~=nil then
+                            card:set_edition(extra.edition,true,false)
+                        end
+                        G.consumeables:emplace(card)
+                        G.GAME.consumeable_buffer = 0
+                        if message~=nil then
+                            card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                        end
+                    return true
+                end)}))
+        end
+    end
 
-    
     local name="Voucher Pack"
     local id="voucher_pack"
     local loc_txt = {
@@ -624,6 +645,202 @@ function SMODS.INIT.BetmmaVouchers()
         return G_FUNCS_skip_blind_ref(e)
     end
 
+    
+        
+    local name="Scrawl"
+    local id="scrawl"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Randomly create {C:attention}Joker{} cards",
+            "until joker slots are full"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+
+    
+    local name="Scribble"
+    local id="scribble"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Randomly create {C:attention}#1#{}",
+            "{C:dark_edition}Negative{} {C:spectral}Spectral{} cards"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=3},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_scrawl'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+    
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Scrawl' then
+            randomly_create_joker(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer),nil,nil)
+        end
+        if center_table.name == 'Scribble' then
+            for i=1, G.P_CENTERS.v_scribble.config.extra do
+                randomly_create_spectral(nil,nil,{edition={negative=true}})
+            end
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    
+    local name="Reserve Area"
+    local id="reserve_area"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You can reserve {C:tarot}Tarot{}",
+            "cards instead of using them",
+            "when opening a {C:tarot}Tarot Pack{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+
+    
+    local name="Reserve Area Plus"
+    local id="reserve_area_plus"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You can reserve {C:spectral}Spectral{}",
+            "cards instead of using them",
+            "when opening a {C:spectral}Spectral Pack{}.",
+            "Also get an {C:attention}Ethereal Tag{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_reserve_area'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Reserve Area Plus' then
+            
+            add_tag(Tag('tag_ethereal'))
+            -- G.E_MANAGER:add_event(Event({
+            --     trigger = 'before',
+            --     delay =  0,
+            --     func = function() 
+                    -- local key = 'p_spectral_mega_1'
+                    -- local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+                    -- G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                    -- card.cost = 0
+                    -- G.FUNCS.use_card({config = {ref_table = card}})
+                    -- card:start_materialize()
+                    -- return true
+                -- end}))   
+            
+            -- Unfortunately I failed to directly open a spectral pack
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
+    function G.UIDEF.use_and_sell_buttons(card)
+        if (card.area == G.pack_cards and G.pack_cards) and card.ability.consumeable then --Add a use button
+            if G.STATE == G.STATES.TAROT_PACK and G.GAME.used_vouchers.v_reserve_area or G.STATE == G.STATES.SPECTRAL_PACK and G.GAME.used_vouchers.v_reserve_area_plus then
+                return {
+                    n=G.UIT.ROOT, config = {padding = -0.1,  colour = G.C.CLEAR}, nodes={
+                      {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.7*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+                        {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+                      }},
+                      {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.1*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'Do you know that this parameter does nothing?', func = 'can_reserve_card'}, nodes={
+                        {n=G.UIT.T, config={text = localize('b_reserve'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+                      }},
+                      {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}},
+                      {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}},
+                      {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}},
+                      {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}},
+                      -- I can't explain it
+                  }}
+            end
+        end
+        return G_UIDEF_use_and_sell_buttons_ref(card)
+    end
+    G.localization.misc.dictionary.b_reserve = "RESERVE"
+    G.FUNCS.can_reserve_card = function(e)
+        if #G.consumeables.cards < G.consumeables.config.card_limit then 
+            e.config.colour = G.C.GREEN
+            e.config.button = 'reserve_card' 
+        else
+          e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+          e.config.button = nil
+        end
+      end
+    G.FUNCS.reserve_card = function(e) -- only works for consumeables
+        local c1 = e.config.ref_table
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.1,
+            func = function()
+              c1.area:remove_card(c1)
+              c1:add_to_deck()
+              if c1.children.price then c1.children.price:remove() end
+              c1.children.price = nil
+              if c1.children.buy_button then c1.children.buy_button:remove() end
+              c1.children.buy_button = nil
+              remove_nils(c1.children)
+              G.consumeables:emplace(c1)
+              G.GAME.pack_choices = G.GAME.pack_choices - 1
+              if G.GAME.pack_choices <= 0 then
+                G.FUNCS.end_consumeable(nil, delay_fac)
+              end
+              return true
+            end
+        }))
+    end
+
+    -- local G_UIDEF_card_focus_ui_ref=G.UIDEF.card_focus_ui
+    -- function G.UIDEF.card_focus_ui(card)
+    -- I suspect that this function does nothing too
+    -- because replacing it with empty function seems do no harm
+
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -636,21 +853,22 @@ function SMODS.INIT.BetmmaVouchers()
     --         }
     --     },
     --     jokers = {
-    --         {id = 'j_jjookkeerr'},
-    --         {id = 'j_ascension'},
-    --         {id = 'j_hasty'},
-    --         {id = 'j_errorr'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_piggy_bank'},
+    --         -- {id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         -- {id = 'j_hasty'},
+    --         -- {id = 'j_errorr'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_piggy_bank'},
     --     },
     --     consumeables = {
     --         {id = 'c_temperance'},
     --     },
     --     vouchers = {
-    --         {id = 'v_skip'},
-    --         {id = 'v_skipper'},
-    --         -- {id = 'v_voucher_bulk'},
+    --         {id = 'v_scrawl'},
+    --         {id = 'v_scribble'},
+    --         {id = 'v_reserve_area'},
+    --         {id = 'v_reserve_area_plus'},
     --         -- {id = 'v_voucher_pack'},
     --     },
     --     deck = {
