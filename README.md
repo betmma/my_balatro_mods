@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 16 vouchers.
+# Betmma Vouchers: Adds 20 vouchers.
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
 - Gold Coin: Gain $25 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
@@ -31,6 +31,11 @@ A collection of mods made by me for Balatro.
 - Voucher Bulk: Gives 4 random vouchers. ($25)
 - Skip: Earn $4 when skipping blind.
 - Skipper: Get a Double Tag when skipping blind.
+- Scrawl: Randomly create Jokers until joker slots are full.
+- Scribble: Randomly create 3 Negative Spectral cards.
+- Reserve Area: You can reserve tarot cards instead of using them when opening a tarot pack.
+- Reserve Area Plus: You can reserve spectral cards instead of using them when opening a spectral pack. Also get an ethereal tag now.
+
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
-The mods are written and tested on Steamodded 0.9.7.
+The mods are written and tested on Steamodded 0.9.8.
