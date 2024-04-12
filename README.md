@@ -27,7 +27,7 @@ A collection of mods made by me for Balatro.
 - Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
 - Target: If chips scored are under 120% of required chips at end of round, create a random Joker card.
 - Bull's Eye: If chips scored are under 105% of required chips at end of round, create a Spectral card.
-- Voucher Pack: Gives 2 random vouchers. ($15)
+- Voucher Bundle: Gives 2 random vouchers. ($15)
 - Voucher Bulk: Gives 4 random vouchers. ($25)
 - Skip: Earn $4 when skipping blind.
 - Skipper: Get a Double Tag when skipping blind.
@@ -36,6 +36,8 @@ A collection of mods made by me for Balatro.
 - Reserve Area: You can reserve tarot cards instead of using them when opening a tarot pack.
 - Reserve Area Plus: You can reserve spectral cards instead of using them when opening a spectral pack. Also get an ethereal tag now.
 
+# Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
+This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/apis/center_hook.lua) which is for Balamod, and I ported it into steamodded.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 0.9.8.

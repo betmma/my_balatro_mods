@@ -292,7 +292,7 @@ function SMODS.INIT.BetmmaVouchers()
         text = {
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
-            "when buying a planet pack,",
+            "when opening a planet pack,",
             "create a {C:spectral}Black Hole{} now",
             "{C:inactive}(Must have room)"
         }
@@ -500,8 +500,8 @@ function SMODS.INIT.BetmmaVouchers()
         end
     end
 
-    local name="Voucher Pack"
-    local id="voucher_pack"
+    local name="Voucher Bundle"
+    local id="voucher_bundle"
     local loc_txt = {
         name = name,
         text = {
@@ -533,7 +533,7 @@ function SMODS.INIT.BetmmaVouchers()
         name, id,
         {extra=4},
         {x=0,y=0}, loc_txt,
-        25, true, true, true, {'v_voucher_pack'}
+        25, true, true, true, {'v_voucher_bundle'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
@@ -547,8 +547,8 @@ function SMODS.INIT.BetmmaVouchers()
             name = center and center.name or self and self.ability.name,
             extra = center and center.config.extra or self and self.ability.extra
         }
-        if center_table.name == 'Voucher Pack' then
-            for i=1, G.P_CENTERS.v_voucher_pack.config.extra do
+        if center_table.name == 'Voucher Bundle' then
+            for i=1, G.P_CENTERS.v_voucher_bundle.config.extra do
                 G.E_MANAGER:add_event(Event({
                     trigger = 'before',
                     delay =  0,
@@ -574,7 +574,8 @@ function SMODS.INIT.BetmmaVouchers()
 
     function randomly_redeem_voucher()
         local voucher_key = get_next_voucher_key(true)
-        local card = Card(0.5,0.5, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+        local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+        G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
         --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
         card:start_materialize()
         G.play:emplace(card)
@@ -869,7 +870,7 @@ function SMODS.INIT.BetmmaVouchers()
     --         {id = 'v_scribble'},
     --         {id = 'v_reserve_area'},
     --         {id = 'v_reserve_area_plus'},
-    --         -- {id = 'v_voucher_pack'},
+    --         -- {id = 'v_voucher_bundle'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
