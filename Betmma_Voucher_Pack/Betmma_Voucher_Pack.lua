@@ -8,7 +8,7 @@
 ------------MOD CODE -------------------------
 function SMODS.INIT.BetmmaVoucherPack()
 
-    -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/apis/center_hook.lua
+    -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua
 
     function addBooster(id, name, order, discovered, weight, kind, cost, pos, config, desc, alerted, sprite_path, sprite_name, sprite_size, selection_state)
         id = id or "p_placeholder" .. #G.P_CENTER_POOLS["Booster"] + 1
