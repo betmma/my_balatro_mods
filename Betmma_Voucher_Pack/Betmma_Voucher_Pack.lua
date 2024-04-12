@@ -2,14 +2,14 @@
 --- MOD_NAME: Betmma Voucher Pack
 --- MOD_ID: BetmmaVoucherPack
 --- MOD_AUTHOR: [Betmma, nicholassam6425]
---- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod.
+--- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod made by nicholassam6425.
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
 function SMODS.INIT.BetmmaVoucherPack()
 
     -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua
-
+    -- Beware that while opening voucher pack G.STATE == G.STATES.PLANET_PACK.
     function addBooster(id, name, order, discovered, weight, kind, cost, pos, config, desc, alerted, sprite_path, sprite_name, sprite_size, selection_state)
         id = id or "p_placeholder" .. #G.P_CENTER_POOLS["Booster"] + 1
         name = name or "Placeholder Pack"
@@ -109,6 +109,7 @@ function SMODS.INIT.BetmmaVoucherPack()
     local Card_open_ref= Card.open
     function Card:open()
         if self.ability.set == "Booster" and self.ability.name:find('Voucher')then
+            G.InBetmmaVoucherPack=true
             stop_use()
             G.STATE_COMPLETE = false 
             self.opening = true
@@ -184,6 +185,59 @@ function SMODS.INIT.BetmmaVoucherPack()
         end
     
         return Card_open_ref(self)
+    end
+
+    local create_UIBox_celestial_pack_ref=create_UIBox_celestial_pack
+    function create_UIBox_celestial_pack()
+        if G.InBetmmaVoucherPack then
+            local _size = G.GAME.pack_size
+            G.pack_cards = CardArea(
+              G.ROOM.T.x + 9 + G.hand.T.x, G.hand.T.y,
+              _size*G.CARD_W*1.1 + 0.5,
+              1.05*G.CARD_H, 
+              {card_limit = _size, type = 'consumeable', highlight_limit = 1})
+          
+              local t = {n=G.UIT.ROOT, config = {align = 'tm', r = 0.15, colour = G.C.CLEAR, padding = 0.15}, nodes={
+                {n=G.UIT.R, config={align = "cl", colour = G.C.CLEAR,r=0.15, padding = 0.1, minh = 2, shadow = true}, nodes={
+                  {n=G.UIT.R, config={align = "cm"}, nodes={
+                  {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={
+                    {n=G.UIT.C, config={align = "cm", r=0.2, colour = G.C.CLEAR, shadow = true}, nodes={
+                      {n=G.UIT.O, config={object = G.pack_cards}},
+                    }}
+                  }}
+                }},
+                {n=G.UIT.R, config={align = "cm"}, nodes={
+                }},
+                {n=G.UIT.R, config={align = "tm"}, nodes={
+                  {n=G.UIT.C,config={align = "tm", padding = 0.05, minw = 2.4}, nodes={}},
+                  {n=G.UIT.C,config={align = "tm", padding = 0.05}, nodes={
+                  UIBox_dyn_container({
+                    {n=G.UIT.C, config={align = "cm", padding = 0.05, minw = 4}, nodes={
+                      {n=G.UIT.R,config={align = "bm", padding = 0.05}, nodes={
+                        -- only this part is modified
+                        {n=G.UIT.O, config={object = DynaText({string = localize('k_voucher_pack'), colours = {G.C.WHITE},shadow = true, rotate = true, bump = true, spacing =2, scale = 0.7, maxw = 4, pop_in = 0.5})}}
+                        --
+                      }},
+                      {n=G.UIT.R,config={align = "bm", padding = 0.05}, nodes={
+                        {n=G.UIT.O, config={object = DynaText({string = {localize('k_choose')..' '}, colours = {G.C.WHITE},shadow = true, rotate = true, bump = true, spacing =2, scale = 0.5, pop_in = 0.7})}},
+                        {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME, ref_value = 'pack_choices'}}, colours = {G.C.WHITE},shadow = true, rotate = true, bump = true, spacing =2, scale = 0.5, pop_in = 0.7})}}
+                      }},
+                    }}
+                  }),
+                }},
+                  {n=G.UIT.C,config={align = "tm", padding = 0.05, minw = 2.4}, nodes={
+                    {n=G.UIT.R,config={minh =0.2}, nodes={}},
+                    {n=G.UIT.R,config={align = "tm",padding = 0.2, minh = 1.2, minw = 1.8, r=0.15,colour = G.C.GREY, one_press = true, button = 'skip_booster', hover = true,shadow = true, func = 'can_skip_booster'}, nodes = {
+                      {n=G.UIT.T, config={text = localize('b_skip'), scale = 0.5, colour = G.C.WHITE, shadow = true, focus_args = {button = 'y', orientation = 'bm'}, func = 'set_button_pip'}}
+                    }}
+                  }}
+                }}
+              }}
+            }}
+            return t
+        else
+        return create_UIBox_celestial_pack_ref()
+        end
     end
         
     local generate_card_ui_ref=generate_card_ui
@@ -281,13 +335,19 @@ function SMODS.INIT.BetmmaVoucherPack()
         return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
     end
 
-    
+    local G_FUNCS_end_consumeable_ref=G.FUNCS.end_consumeable
+    G.FUNCS.end_consumeable = function(e, delayfac)
+        G.InBetmmaVoucherPack=false
+        return G_FUNCS_end_consumeable_ref(e,delayfac)
+    end
+
     local ease_dollars_ref = ease_dollars
     function ease_dollars(mod, instant)
         if mod==0 and G.STATE == G.STATES.PLANET_PACK then return true end
         -- to disable the +$0 effect when redeeming vouchers in a pack
         ease_dollars_ref(mod, instant)
     end
+    G.localization.misc.dictionary.k_voucher_pack = "Voucher Pack"
     init_localization()
 end
 ----------------------------------------------
