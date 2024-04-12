@@ -37,7 +37,7 @@ A collection of mods made by me for Balatro.
 - Reserve Area Plus: You can reserve spectral cards instead of using them when opening a spectral pack. Also get an ethereal tag now.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
-This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua)which is for Balamod, and I ported it into steamodded.
+This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 0.9.8.
