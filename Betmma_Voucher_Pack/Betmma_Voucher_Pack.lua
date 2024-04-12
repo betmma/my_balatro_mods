@@ -1,7 +1,7 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Betmma Voucher Pack
 --- MOD_ID: BetmmaVoucherPack
---- MOD_AUTHOR: [Betmma]
+--- MOD_AUTHOR: [Betmma, nicholassam6425]
 --- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod.
 
 ----------------------------------------------
