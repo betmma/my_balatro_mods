@@ -83,7 +83,7 @@ function SMODS.INIT.BetmmaJokers()
             "Hasty Joker", "",
             {extra=8},
             {x=0,y=0}, "",
-            1, 5, true, true, true, true
+            1, 5, true, true, false, true
         ),
         errorr = SMODS.Joker:new(
             "ERRORR", "",
