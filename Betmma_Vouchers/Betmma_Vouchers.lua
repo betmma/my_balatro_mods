@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 20 More Vouchers!
+--- MOD_DESCRIPTION: 22 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -842,6 +842,110 @@ function SMODS.INIT.BetmmaVouchers()
     -- I suspect that this function does nothing too
     -- because replacing it with empty function seems do no harm
 
+    local name="Overkill"
+    local id="overkill"
+    local loc_txt = {
+        name = name,
+        text = {
+            "If chips scored are above",
+            "{C:attention}#1#%{} of required chips",
+            "at end of round, add",
+            "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+            "{C:dark_edition}Polychrome{} edition",
+            "to a random {C:attention}Joker"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=300},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    
+    local name="Big Blast"
+    local id="big_blast"
+    local loc_txt = {
+        name = name,
+        text = {
+            "If chips scored are above",
+            "{X:mult,C:white}X#1#{} of required chips",
+            "at end of round, add",
+            "{C:dark_edition}Negative{} edition to a",
+            "random {C:attention}Joker{}, and",
+            "increase the target amount"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra={multiplier=5,increase=2}},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_overkill'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        local count=G and G.GAME and G.GAME.v_big_blast_count or 0
+        return {self.config.extra.multiplier*self.config.extra.increase^(count*(count+1))}
+    end
+    local v_big_blast=this_v
+    local end_round_ref=end_round
+    function end_round()
+
+        if G.GAME.used_vouchers.v_overkill and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_overkill.config.extra >= 0 then
+            local temp_pool={}
+            for k, v in pairs(G.jokers.cards) do
+                if v.ability.set == 'Joker' and (not v.edition) then
+                    table.insert(temp_pool, v)
+                end
+            end
+            if #temp_pool>0 then
+                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+                    local eligible_card = pseudorandom_element(temp_pool, pseudoseed('v_overkill'))
+                    local edition = nil
+                    edition = poll_edition('wheel_of_fortune', nil, true, true)
+                    -- I think using 'wheel_of_fortune' here is ok
+                    eligible_card:set_edition(edition, true)
+                    check_for_unlock({type = 'have_edition'})
+                    
+                    card_eval_status_text(eligible_card,'jokers',nil,nil,nil,{message=localize("k_overkill_edition")})
+                return true end }))
+            end
+        end
+        if G.GAME.used_vouchers.v_big_blast and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips - G.GAME.blind.chips*v_big_blast:loc_def()[1] >= 0 then
+
+            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+                    
+                local temp_pool={}
+                for k, v in pairs(G.jokers.cards) do
+                    if v.ability.set == 'Joker' and (not v.edition) then
+                        table.insert(temp_pool, v)
+                    end
+                end
+                -- put calculation of temp_pool inside this event because otherwise if v_overkill set an edition it happens 0.4s later, but this temp_pool is calculated at now, potentially causing selecting the same joker
+                if #temp_pool>0 then
+                    local eligible_card = pseudorandom_element(temp_pool, pseudoseed('v_big_blast'))
+                    local edition = nil
+                    edition = {negative = true}
+                    eligible_card:set_edition(edition, true)
+                    check_for_unlock({type = 'have_edition'})
+                    card_eval_status_text(eligible_card,'jokers',nil,nil,nil,{message=localize("k_big_blast_edition")})
+                end
+            return true end }))
+            G.GAME.v_big_blast_count=(G.GAME.v_big_blast_count or 0)+1
+            
+        end
+
+        end_round_ref()
+    end
+
+    G.localization.misc.dictionary.k_overkill_edition = "Overkill!"
+    G.localization.misc.dictionary.k_big_blast_edition = "Big Blast!"
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
