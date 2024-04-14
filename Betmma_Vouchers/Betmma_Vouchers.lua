@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 22 More Vouchers!
+--- MOD_DESCRIPTION: 24 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -946,6 +946,105 @@ function SMODS.INIT.BetmmaVouchers()
 
     G.localization.misc.dictionary.k_overkill_edition = "Overkill!"
     G.localization.misc.dictionary.k_big_blast_edition = "Big Blast!"
+
+
+    local name="3D Boosters"
+    local id="3d_boosters"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}+1{} Booster Pack",
+            "available in shop"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+
+    
+    local name="4D Boosters"
+    local id="4d_boosters"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Rerolls apply to",
+            "{C:attention}Booster Packs{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_3d_boosters'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}--{self.config.extra}
+    end
+    function get_booster_pack_max()
+        local value=2
+        if G.GAME.used_vouchers.v_3d_boosters then value=value+1 end
+        return value
+    end
+    local Game_update_shop_ref= Game.update_shop
+    function Game:update_shop(dt)
+        Game_update_shop_ref(self,dt)
+        local i=get_booster_pack_max() -- if max number added is 2 or more this may be bugged?
+        G.GAME.current_round.used_packs = G.GAME.current_round.used_packs or {}
+        if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.current_round.used_packs[i] then
+                    G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
+                    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+                    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                    create_shop_card_ui(card, 'Booster', G.shop_booster)
+                    card.ability.booster_pos = i
+                    card:start_materialize()
+                    G.shop_booster:emplace(card)
+                
+        end
+    end
+
+    local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
+    function G.FUNCS.reroll_shop(e)
+        G_FUNCS_reroll_shop_ref()
+        if G.GAME.used_vouchers.v_4d_boosters then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'immediate',
+                func = function()
+                for i = #G.shop_booster.cards,1, -1 do
+                    local c = G.shop_booster:remove_card(G.shop_booster.cards[i])
+                    c:remove()
+                    c = nil
+                end
+        
+                --save_run()
+        
+                play_sound('coin2')
+                play_sound('other1')
+                
+                for i = 1, get_booster_pack_max() - #G.shop_booster.cards do
+                    G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
+                    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+                    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                    create_shop_card_ui(card, 'Booster', G.shop_booster)
+                    card.ability.booster_pos = i
+                    card:start_materialize()
+                    G.shop_booster:emplace(card)
+                end
+                return true
+                end
+            }))
+            G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
+        end
+    end
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
