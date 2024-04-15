@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 24 vouchers.
+# Betmma Vouchers: Adds 26 vouchers.
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
 - Gold Coin: Gain $25 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
@@ -38,7 +38,9 @@ A collection of mods made by me for Balatro.
 - Overkill: If chips scored are above 300% of required chips at end of round, add Foil, Holographic, or Polychrome edition to a random Joker.
 - Big Blast: If chips scored are above X5 of required chips at end of round, add Negative edition to a random Joker, and increase the target amount.
 - 3D Boosters: +1 Booster Pack available in shop.
-- 4D Boosters: Rerolls apply to Booster Packs.
+- 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
+- B1G50%: When you redeem a tier 1 Voucher, have {C:green}#1#%{} chance to redeem the tier 2 one and lose $5.
+- B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $5.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.

@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 24 More Vouchers!
+--- MOD_DESCRIPTION: 26 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -976,19 +976,21 @@ function SMODS.INIT.BetmmaVouchers()
         name = name,
         text = {
             "Rerolls apply to",
-            "{C:attention}Booster Packs{}"
+            "{C:attention}Booster Packs{}, but",
+            "rerolled packs cost",
+            "{C:attention}$#1#{} more"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {},
+        {extra=3},
         {x=0,y=0}, loc_txt,
         10, true, true, true, {'v_3d_boosters'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {}--{self.config.extra}
+        return {self.config.extra}
     end
     function get_booster_pack_max()
         local value=2
@@ -997,25 +999,49 @@ function SMODS.INIT.BetmmaVouchers()
     end
     local Game_update_shop_ref= Game.update_shop
     function Game:update_shop(dt)
-        Game_update_shop_ref(self,dt)
-        local i=get_booster_pack_max() -- if max number added is 2 or more this may be bugged?
-        G.GAME.current_round.used_packs = G.GAME.current_round.used_packs or {}
-        if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.current_round.used_packs[i] then
-                    G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
-                    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
-                    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
-                    create_shop_card_ui(card, 'Booster', G.shop_booster)
-                    card.ability.booster_pos = i
-                    card:start_materialize()
-                    G.shop_booster:emplace(card)
+        Game_update_shop_ref(self,dt) -- Though the original function is called before, the modification of used_packs happens 0.2s later, so enumerate i from #used_packs+1 to max will add 3 packs
+        -- local i=get_booster_pack_max() -- if max number added is 2 or more this may be bugged?
+        -- G.GAME.current_round.used_packs = G.GAME.current_round.used_packs or {}
+        -- if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.current_round.used_packs[i] then
+        --             G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
+        --             local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+        --             G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+        --             create_shop_card_ui(card, 'Booster', G.shop_booster)
+        --             card.ability.booster_pos = i
+        --             card:start_materialize()
+        --             G.shop_booster:emplace(card)
                 
+        -- end
+    end
+    local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
+    G.FUNCS.cash_out=function (e)
+        G_FUNCS_cash_out_ref(e)
+        if G.GAME.used_vouchers.v_3d_boosters then
+            my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
 
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == '3D Boosters'then
+            if G.shop_booster then
+                my_reroll_shop(get_booster_pack_max(),0)
+            end
+        end
+        Card_apply_to_run_ref(self, center)
+    end
     local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
     function G.FUNCS.reroll_shop(e)
         G_FUNCS_reroll_shop_ref()
         if G.GAME.used_vouchers.v_4d_boosters then
+            my_reroll_shop(get_booster_pack_max(),G.P_CENTERS.v_4d_boosters.config.extra)
+        end
+    end
+    function my_reroll_shop(num,price_mod)
             G.E_MANAGER:add_event(Event({
                 trigger = 'immediate',
                 func = function()
@@ -1030,11 +1056,12 @@ function SMODS.INIT.BetmmaVouchers()
                 play_sound('coin2')
                 play_sound('other1')
                 
-                for i = 1, get_booster_pack_max() - #G.shop_booster.cards do
+                for i = 1, num - #G.shop_booster.cards do
                     G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
                     local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
                     G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
                     create_shop_card_ui(card, 'Booster', G.shop_booster)
+                    card.cost=card.cost+price_mod
                     card.ability.booster_pos = i
                     card:start_materialize()
                     G.shop_booster:emplace(card)
@@ -1043,9 +1070,110 @@ function SMODS.INIT.BetmmaVouchers()
                 end
             }))
             G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
-        end
+        
     end
-    -- this challenge is only for test
+
+
+    
+    local name="B1G50%"
+    local id="b1g50"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When you redeem a",
+            "tier 1 Voucher,",
+            "have {C:green}#1#%{} chance to",
+            "redeem the tier 2 one",
+            "and lose {C:money}$#2#{}",
+            "{C:inactive}This chance can't be doubled{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra={chance=50,lose=5}},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra.chance,self.config.extra.lose}
+    end
+
+    
+    local name="B1G1"
+    local id="b1g1"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When you redeem a",
+            "tier 1 Voucher, always",
+            "redeem the tier 2",
+            "one and lose {C:money}$#1#{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=5},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_b1g50'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+        
+    local Card_redeem_ref = Card.redeem
+    function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
+        if G.GAME.used_vouchers.v_b1g1 or G.GAME.used_vouchers.v_b1g50 and  pseudorandom('b1g1')*100 < G.P_CENTERS.v_b1g50.config.extra.chance then
+            local lose=G.P_CENTERS.v_b1g50.config.extra.lose
+            if G.GAME.used_vouchers.v_b1g1 then 
+                lose=G.P_CENTERS.v_b1g1.config.extra
+            end
+            local center_table = {
+                name = self.ability.name,
+                extra = self.ability.extra
+            }
+            for i,v in pairs(G.P_CENTER_POOLS.Voucher) do
+                local unredeemed_vouchers={}
+                if v.requires then
+                    for i,vv in ipairs(v.requires)do
+                        if not G.GAME.used_vouchers[vv] then 
+                            table.insert(unredeemed_vouchers,vv)
+                        end
+                    end
+                end
+                local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
+                -- if v.name=='Tarot Tycoon' then
+                --     unredeemed_vouchers.a.a.a.a()
+                -- end
+                if #unredeemed_vouchers==1 and only_need.name==center_table.name then
+                    local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+                    G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, v,{bypass_discovery_center = true, bypass_discovery_ui = true})
+                    --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
+                    card:start_materialize()
+                    G.play:emplace(card)
+                    card.cost=lose
+                    card.shop_voucher=false
+                    card:redeem()
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        --blockable = false,
+                        --blocking = false,
+                        delay =  0,
+                        func = function() 
+                            card:start_dissolve()
+                            return true
+                        end}))   
+                end
+            end
+        end
+        Card_redeem_ref(self)
+    end
+
+    -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
     --     id = 'c_mod_testvoucher',
@@ -1053,26 +1181,26 @@ function SMODS.INIT.BetmmaVouchers()
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 4},
+    --             {id = 'dollars', value = 40},
     --         }
     --     },
     --     jokers = {
-    --         -- {id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_hasty'},
-    --         -- {id = 'j_errorr'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_piggy_bank'},
+    --         {id = 'j_jjookkeerr'},
+    --         {id = 'j_ascension'},
+    --         {id = 'j_hasty'},
+    --         {id = 'j_errorr'},
+    --         {id = 'j_piggy_bank'},
+    --         {id = 'j_blueprint'},
+    --         {id = 'j_triboulet'},
     --     },
     --     consumeables = {
     --         {id = 'c_temperance'},
     --     },
     --     vouchers = {
-    --         {id = 'v_scrawl'},
-    --         {id = 'v_scribble'},
-    --         {id = 'v_reserve_area'},
-    --         {id = 'v_reserve_area_plus'},
+    --         -- {id = 'v_overkill'},
+    --         {id = 'v_oversupply_plus'},
+    --         {id = 'v_b1g50'},
+    --         {id = 'v_4d_boosters'},
     --         -- {id = 'v_voucher_bundle'},
     --     },
     --     deck = {
