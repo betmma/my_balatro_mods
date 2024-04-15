@@ -39,7 +39,7 @@ A collection of mods made by me for Balatro.
 - Big Blast: If chips scored are above X5 of required chips at end of round, add Negative edition to a random Joker, and increase the target amount.
 - 3D Boosters: +1 Booster Pack available in shop.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
-- B1G50%: When you redeem a tier 1 Voucher, have {C:green}#1#%{} chance to redeem the tier 2 one and lose $5.
+- B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
 - B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $5.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
