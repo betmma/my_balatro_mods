@@ -6,6 +6,9 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+--ideas: when the round ends, level up the least/most played hand
+-- copy the first consumable twice / the first joker once
+--
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
@@ -550,7 +553,7 @@ function SMODS.INIT.BetmmaVouchers()
         if center_table.name == 'Voucher Bundle' then
             for i=1, G.P_CENTERS.v_voucher_bundle.config.extra do
                 G.E_MANAGER:add_event(Event({
-                    trigger = 'before',
+                    trigger = 'immediate',
                     delay =  0,
                     func = function() 
                         randomly_redeem_voucher()
@@ -561,7 +564,7 @@ function SMODS.INIT.BetmmaVouchers()
         if center_table.name == 'Voucher Bulk' then
             for i=1, G.P_CENTERS.v_voucher_bulk.config.extra do
                 G.E_MANAGER:add_event(Event({
-                    trigger = 'before',
+                    trigger = 'immediate',
                     delay =  0,
                     func = function() 
                         randomly_redeem_voucher()
@@ -571,12 +574,46 @@ function SMODS.INIT.BetmmaVouchers()
         end
         Card_apply_to_run_ref(self, center)
     end
+    -- local Card_redeem_ref = Card.redeem
+    -- function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
+        
+    --     local center_table = {
+    --         name = self.ability.name,
+    --         extra = self.ability.extra
+    --     }
+    --     if center_table.name == 'Voucher Bundle' then
+    --         for i=1, G.P_CENTERS.v_voucher_bundle.config.extra do
+    --             G.E_MANAGER:add_event(Event({
+    --                 trigger = 'before',
+    --                 delay =  0,
+    --                 func = function() 
+    --                     randomly_redeem_voucher()
+    --                     return true
+    --                 end}))   
+    --         end
+    --     end
+    --     if center_table.name == 'Voucher Bulk' then
+    --         for i=1, G.P_CENTERS.v_voucher_bulk.config.extra do
+    --             G.E_MANAGER:add_event(Event({
+    --                 trigger = 'before',
+    --                 delay =  0,
+    --                 func = function() 
+    --                     randomly_redeem_voucher()
+    --                     return true
+    --                 end}))   
+    --         end
+    --     end
 
-    function randomly_redeem_voucher()
-        local voucher_key = get_next_voucher_key(true)
+    
+    --     Card_redeem_ref(self)
+    -- end
+    -- local time=0
+    function randomly_redeem_voucher(no_random_please) -- xD
+        -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
+        -- time=1
+        local voucher_key = no_random_please or get_next_voucher_key(true)
         local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
         G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
-        --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
         card:start_materialize()
         G.play:emplace(card)
         card.cost=0
@@ -878,7 +915,8 @@ function SMODS.INIT.BetmmaVouchers()
             "at end of round, add",
             "{C:dark_edition}Negative{} edition to a",
             "random {C:attention}Joker{}, and",
-            "increase the target amount"
+            "increase the target amount",
+            "{C:inactive}(This Negative can override){}"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -923,7 +961,7 @@ function SMODS.INIT.BetmmaVouchers()
                     
                 local temp_pool={}
                 for k, v in pairs(G.jokers.cards) do
-                    if v.ability.set == 'Joker' and (not v.edition) then
+                    if v.ability.set == 'Joker' and not (v.edition and v.edition.negative)then 
                         table.insert(temp_pool, v)
                     end
                 end
@@ -1020,7 +1058,7 @@ function SMODS.INIT.BetmmaVouchers()
             my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
-
+    
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
         local center_table = {
@@ -1081,11 +1119,11 @@ function SMODS.INIT.BetmmaVouchers()
         name = name,
         text = {
             "When you redeem a",
-            "tier 1 Voucher,",
+            "{C:attention}tier 1{} Voucher,",
             "have {C:green}#1#%{} chance to",
-            "redeem the tier 2 one",
+            "redeem the {C:attention}tier 2{} one",
             "and lose {C:money}$#2#{}",
-            "{C:inactive}This chance can't be doubled{}"
+            "{C:inactive}(This chance can't be doubled){}"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -1107,8 +1145,8 @@ function SMODS.INIT.BetmmaVouchers()
         name = name,
         text = {
             "When you redeem a",
-            "tier 1 Voucher, always",
-            "redeem the tier 2",
+            "{C:attention}tier 1{} Voucher, always",
+            "redeem the {C:attention}tier 2{}",
             "one and lose {C:money}$#1#{}"
         }
     }
@@ -1172,8 +1210,94 @@ function SMODS.INIT.BetmmaVouchers()
         end
         Card_redeem_ref(self)
     end
+    
+    local name="Collector"
+    local id="collector"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Each {C:attention}Voucher{} redeemed multiplies",
+            "Blinds amount by {X:mult,C:white}X#1#{} Mult"
+            -- just because modifying get_blind_amount(ante) is easier than
+            -- adding mult to score
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=0.95},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+    
+    local name="Connoisseur"
+    local id="connoisseur"
+    local loc_txt = {
+        name = name,
+        text = {
+            "If all {C:attention}Vouchers{} have been redeemed",
+            "and you have more than {C:money}$#1#{},",
+            "redeeming {C:attention}Blank{} triggers {C:dark_edition}that Voucher{}",
+            "and doubles the money requirement"
+            
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra={base=20,multiplier=2}},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_collector'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        local count=G and G.GAME and G.GAME.v_blank_count or 0
+        return {self.config.extra.base*self.config.extra.multiplier^(count)}
+    end
+    local v_connoisseur=this_v
 
-    -- -- this challenge is only for test
+
+    get_blind_amount_ref=get_blind_amount
+    function get_blind_amount(ante)
+        amount=get_blind_amount_ref(ante)
+        if G.GAME.used_vouchers.v_collector then
+            amount=amount*G.P_CENTERS.v_collector.config.extra^(G.GAME.vouchers_bought or 0)
+        end
+        return amount
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        G.GAME.vouchers_bought=(G.GAME.vouchers_bought or 0)+1
+        if center_table.name == 'Blank'then
+            if G.GAME.used_vouchers.v_connoisseur and G.GAME.vouchers_bought>=#G.P_CENTER_POOLS.Voucher and G.GAME.dollars>=v_connoisseur:loc_def()[1] then
+                
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'before',
+                    --blockable = false,
+                    --blocking = false,
+                    delay =  0,
+                    func = function() 
+                        --ease_dollars(-v_connoisseur:loc_def()[1])
+                        -- the description doesn't say you will pay that amount, so don't ease_dollars feels right lol
+                        randomly_redeem_voucher("v_antimatter")
+                        G.GAME.v_blank_count= (G.GAME.v_blank_count or 0)+1
+                        return true
+                    end}))   
+            end
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
     --     id = 'c_mod_testvoucher',
@@ -1181,7 +1305,7 @@ function SMODS.INIT.BetmmaVouchers()
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 40},
+    --             {id = 'dollars', value = 4000},
     --         }
     --     },
     --     jokers = {
@@ -1197,11 +1321,13 @@ function SMODS.INIT.BetmmaVouchers()
     --         {id = 'c_temperance'},
     --     },
     --     vouchers = {
-    --         -- {id = 'v_overkill'},
+    --         {id = 'v_overkill'},
+    --         {id = 'v_big_blast'},
     --         {id = 'v_oversupply_plus'},
-    --         {id = 'v_b1g50'},
+    --         --{id = 'v_b1g50'},
     --         {id = 'v_4d_boosters'},
-    --         -- {id = 'v_voucher_bundle'},
+    --         {id = 'v_collector'},
+    --         {id = 'v_connoisseur'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
