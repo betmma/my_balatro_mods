@@ -2,13 +2,10 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 26 More Vouchers!
+--- MOD_DESCRIPTION: 28 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
---ideas: when the round ends, level up the least/most played hand
--- copy the first consumable twice / the first joker once
---
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
