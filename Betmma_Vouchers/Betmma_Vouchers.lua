@@ -1214,7 +1214,7 @@ function SMODS.INIT.BetmmaVouchers()
         name = name,
         text = {
             "Each {C:attention}Voucher{} redeemed multiplies",
-            "Blinds amount by {X:mult,C:white}X#1#{} Mult"
+            "Blind requirement by {X:mult,C:white}X#1#{} Mult"
             -- just because modifying get_blind_amount(ante) is easier than
             -- adding mult to score
         }
