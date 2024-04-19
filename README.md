@@ -41,7 +41,7 @@ A collection of mods made by me for Balatro.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
 - B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
 - B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $5.
-- Collector: Each Voucher redeemed multiplies Blind requirement by a factor of X0.95.
+- Collector: Each Voucher redeemed reduces Blind requirement by 5%. (multiplicative)
 - Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers

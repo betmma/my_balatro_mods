@@ -6,6 +6,9 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+--ideas: when the round ends, level up the least/most played hand
+-- copy the first consumable twice / the first joker once
+--
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
@@ -1173,7 +1176,7 @@ function SMODS.INIT.BetmmaVouchers()
             }
             for i,v in pairs(G.P_CENTER_POOLS.Voucher) do
                 local unredeemed_vouchers={}
-                if v.requires then
+                if v.requires and not G.GAME.used_vouchers[v.key]then
                     for i,vv in ipairs(v.requires)do
                         if not G.GAME.used_vouchers[vv] then 
                             table.insert(unredeemed_vouchers,vv)
@@ -1181,10 +1184,8 @@ function SMODS.INIT.BetmmaVouchers()
                     end
                 end
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
-                -- if v.name=='Tarot Tycoon' then
-                --     unredeemed_vouchers.a.a.a.a()
-                -- end
                 if #unredeemed_vouchers==1 and only_need.name==center_table.name then
+                    Card_redeem_ref(self)
                     local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
                     G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, v,{bypass_discovery_center = true, bypass_discovery_ui = true})
                     --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
@@ -1202,6 +1203,7 @@ function SMODS.INIT.BetmmaVouchers()
                             card:start_dissolve()
                             return true
                         end}))   
+                    return -- exit the whole function as Card_redeem_ref has been called
                 end
             end
         end
@@ -1213,15 +1215,16 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "Each {C:attention}Voucher{} redeemed multiplies",
-            "Blind requirement by a factor of {X:mult,C:white}X#1#{}"
+            "Each {C:attention}Voucher{} redeemed reduces",
+            "Blind requirement by {C:attention}#1#%{}",
+            "{C:inactive}(multiplicative){}"
             -- just because modifying get_blind_amount(ante) is easier than
             -- adding mult to score
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra=0.95},
+        {extra=5},
         {x=0,y=0}, loc_txt,
         10, true, true, true
     )
@@ -1262,7 +1265,7 @@ function SMODS.INIT.BetmmaVouchers()
     function get_blind_amount(ante)
         amount=get_blind_amount_ref(ante)
         if G.GAME.used_vouchers.v_collector then
-            amount=amount*G.P_CENTERS.v_collector.config.extra^(G.GAME.vouchers_bought or 0)
+            amount=amount*(1-G.P_CENTERS.v_collector.config.extra/100)^(G.GAME.vouchers_bought or 0)
         end
         return amount
     end
@@ -1295,51 +1298,51 @@ function SMODS.INIT.BetmmaVouchers()
     end
 
     -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 4000},
-    --         }
-    --     },
-    --     jokers = {
-    --         {id = 'j_jjookkeerr'},
-    --         {id = 'j_ascension'},
-    --         {id = 'j_hasty'},
-    --         {id = 'j_errorr'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_blueprint'},
-    --         {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         {id = 'c_temperance'},
-    --     },
-    --     vouchers = {
-    --         {id = 'v_overkill'},
-    --         {id = 'v_big_blast'},
-    --         {id = 'v_oversupply_plus'},
-    --         --{id = 'v_b1g50'},
-    --         {id = 'v_4d_boosters'},
-    --         {id = 'v_collector'},
-    --         {id = 'v_connoisseur'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
-    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    table.insert(G.CHALLENGES,1,{
+        name = "TestVoucher",
+        id = 'c_mod_testvoucher',
+        rules = {
+            custom = {
+            },
+            modifiers = {
+                {id = 'dollars', value = 4000},
+            }
+        },
+        jokers = {
+            {id = 'j_jjookkeerr'},
+            {id = 'j_ascension'},
+            {id = 'j_hasty'},
+            {id = 'j_errorr'},
+            {id = 'j_piggy_bank'},
+            {id = 'j_blueprint'},
+            {id = 'j_triboulet'},
+        },
+        consumeables = {
+            {id = 'c_temperance'},
+        },
+        vouchers = {
+            {id = 'v_overkill'},
+            {id = 'v_big_blast'},
+            {id = 'v_oversupply_plus'},
+            {id = 'v_b1g1'},
+            {id = 'v_3d_boosters'},
+            {id = 'v_collector'},
+            {id = 'v_connoisseur'},
+        },
+        deck = {
+            type = 'Challenge Deck',
+            --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
+        },
+        restrictions = {
+            banned_cards = {
+            },
+            banned_tags = {
+            },
+            banned_other = {
+            }
+        }
+    })
+    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------
