@@ -2,7 +2,7 @@
 --- MOD_NAME: Better Vouchers This Run UI
 --- MOD_ID: BetterVouchersThisRunUI
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers. The implementation of pages and tabs is far from perfect so I hope someone can help.
+--- MOD_DESCRIPTION: Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers. 
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -76,8 +76,10 @@ function SMODS.INIT.BetterVouchersThisRunUI()
     --     }}
     --     return t
     -- end
-
+    local PAIRS_PER_ROW=4
+    local ROWS_PER_PAGE=2
     function G.UIDEF.used_vouchers()
+        -- warning: the meanings of variables below are different from the original functions
         local silent = false
         local keys_used = {}
         local vouchers_used = {}
@@ -105,9 +107,9 @@ function SMODS.INIT.BetterVouchersThisRunUI()
         keys_used=keys_used2
 
         for k, v in ipairs(keys_used) do 
-            if k>4 then break end
+            if k>PAIRS_PER_ROW*ROWS_PER_PAGE then break end
             if next(v) then
-                if #voucher_areas and #voucher_areas % 4==0 then 
+                if #voucher_areas and #voucher_areas % PAIRS_PER_ROW==0 then 
                 table.insert(voucher_rows, 
                 {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes=voucher_pairs}
                 )
@@ -142,8 +144,8 @@ function SMODS.INIT.BetterVouchersThisRunUI()
 
         
         local voucher_options = {}
-        for i = 1, math.ceil(area_count/(4)) do
-        table.insert(voucher_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(area_count/(4))))
+        for i = 1, math.ceil(area_count/(PAIRS_PER_ROW*ROWS_PER_PAGE)) do
+        table.insert(voucher_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(area_count/(PAIRS_PER_ROW*ROWS_PER_PAGE))))
         end
     
         if not silent then
@@ -153,19 +155,20 @@ function SMODS.INIT.BetterVouchersThisRunUI()
             return t
         end
         INIT_COLLECTION_CARD_ALERTS()
-        
-        local t = create_UIBox_generic_options({ back_func = 'run_info', contents = {
-                {n=G.UIT.R, config={align = "cm"}, nodes={
-                    {n=G.UIT.O, config={object = DynaText({string = {localize('ph_vouchers_redeemed')}, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
-                }},
-                -- {n=G.UIT.R, config={align = "cm", minh = 0.5}, nodes={
-                -- }},
-                {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.1, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=voucher_rows},
-                {n=G.UIT.R, config={align = "cm"}, nodes={
-                    create_option_cycle({options = voucher_options, w = 4.5, cycle_shoulders = true, opt_callback = 'used_voucher_page', focus_args = {snap_to = true, nav = 'wide'}, current_option = 1, colour = G.C.RED, no_pips = true})
-                }}
-                }})
-        t={n=G.UIT.ROOT, config={align = "tm", colour = G.C.CLEAR}, nodes={t}}
+        -- create_UIBox_generic_options IS USELESS
+        t={n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
+            {n=G.UIT.R, config={align = "cm"}, nodes={
+              {n=G.UIT.O, config={object = DynaText({string = {localize('ph_vouchers_redeemed')}, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
+            }},
+            {n=G.UIT.R, config={align = "cm", minh = 0.5}, nodes={
+            }},
+            {n=G.UIT.R, config={align = "cm", colour = G.C.BLACK, r = 1, padding = 0.15, emboss = 0.05}, nodes={
+              {n=G.UIT.R, config={align = "cm"}, nodes=voucher_rows},
+            }},
+            {n=G.UIT.R, config={align = "cm"}, nodes={
+                create_option_cycle({options = voucher_options, w = 4.5, cycle_shoulders = true, opt_callback = 'used_voucher_page', focus_args = {snap_to = true, nav = 'wide'}, current_option = 1, colour = G.C.RED, no_pips = true})
+            }}
+          }}
         return t
     end
 
@@ -206,7 +209,7 @@ function SMODS.INIT.BetterVouchersThisRunUI()
             end
         end
         for i = 1, #G.your_collection do
-            v=keys_used[4*(args.cycle_config.current_option - 1)+i]
+            v=keys_used[PAIRS_PER_ROW*ROWS_PER_PAGE*(args.cycle_config.current_option - 1)+i]
             if not v then break end
             for j = 1, #v do
                 local center = v[j]
