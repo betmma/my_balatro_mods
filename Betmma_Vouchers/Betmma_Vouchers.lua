@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 28 More Vouchers!
+--- MOD_DESCRIPTION: 30 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -1149,7 +1149,7 @@ function SMODS.INIT.BetmmaVouchers()
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra=5},
+        {extra=10},
         {x=0,y=0}, loc_txt,
         10, true, true, true, {'v_b1g50'}
     )
@@ -1292,6 +1292,103 @@ function SMODS.INIT.BetmmaVouchers()
             end
         end
         Card_apply_to_run_ref(self, center)
+    end
+
+    local name="Flipped Card"
+    local id="flipped_card"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:green}#1# in #2#{} cards are drawn",
+            "face down. Each card staying",
+            "in hand and faces down",
+            "gives {X:mult,C:white}X#3#{} Mult"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra={flipped=10,multiplier=1.5}},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {''..(G.GAME and G.GAME.probabilities.normal or 1),self.config.extra.flipped,self.config.extra.multiplier}
+    end
+    
+    local name="Double Flipped Card"
+    local id="double_flipped_card"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:green}#1# in #2#{} cards are drawn",
+            "face down. Flip all cards in hand",
+            "before drawing cards",
+            --  Each card ",
+            -- "staying in hand and is once face down",
+            -- "gives {X:mult,C:white}X#3#{} Mult"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra={flipped=5,multiplier=1.5}},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_flipped_card'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {''..(G.GAME and G.GAME.probabilities.normal or 1),self.config.extra.flipped,self.config.extra.multiplier}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Flipped Card'then
+            G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_flipped_card.config.extra.flipped
+        end
+        if center_table.name == 'Double Flipped Card'then
+            G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_double_flipped_card.config.extra.flipped
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    -- local Card_flip_ref=Card.flip
+    -- function Card:flip()
+    --     if self.facing=='front'then
+    --         self.has_been_back=true
+    --     end
+    --     Card_flip_ref(self)
+    -- end
+
+    local eval_card_ref=eval_card
+    function eval_card(card, context)
+        local ret = eval_card_ref(card,context)
+        if context.cardarea == G.hand and not context.repetition_only and card.ability.set ~= 'Joker' and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
+            local x_mult=1
+            if G.GAME.used_vouchers.v_double_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_double_flipped_card.config.extra.multiplier 
+            elseif G.GAME.used_vouchers.v_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_flipped_card.config.extra.multiplier end
+            local test=card.has_been_back
+
+            if x_mult>1 then ret.x_mult=(ret.x_mult or 1)*x_mult end
+            --ret.chips=999
+        end
+        return ret
+    end
+
+
+    local G_FUNCS_draw_from_deck_to_hand_ref = G.FUNCS.draw_from_deck_to_hand 
+    G.FUNCS.draw_from_deck_to_hand = function(e)
+        if G.GAME.used_vouchers.v_double_flipped_card then
+            for i = 1, #G.hand.cards do
+                G.hand.cards[i]:flip()
+            end
+        end
+        return G_FUNCS_draw_from_deck_to_hand_ref(e)
     end
 
     -- this challenge is only for test
