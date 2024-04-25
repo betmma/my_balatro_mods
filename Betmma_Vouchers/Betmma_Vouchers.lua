@@ -1406,6 +1406,7 @@ function SMODS.INIT.BetmmaVouchers()
             for k, v in ipairs(G.play.cards) do
                 if v.facing_ref=='back' and (not v.shattered) and (not v.destroyed) and (not v.debuff)then
                     draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
+                    v.facing_ref=v.facing
                     it = it + 1
                     flag=true
                 end
@@ -1427,6 +1428,7 @@ function SMODS.INIT.BetmmaVouchers()
         if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_double_flipped_card and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
                 draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
+                card.facing_ref=card.facing
             end
         end
         return ret
