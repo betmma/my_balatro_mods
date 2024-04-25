@@ -1299,22 +1299,22 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "{C:green}#1# in #2#{} cards are drawn",
-            "face down. Each card staying",
-            "in hand and faces down",
-            "gives {X:mult,C:white}X#3#{} Mult"
+            "You can flip up to #1# cards",
+            "once before playing each hand.",
+            "Flipped cards will return",
+            "to your hand after they are played"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra={flipped=10,multiplier=1.5}},
+        {extra=3},
         {x=0,y=0}, loc_txt,
         10, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {''..(G.GAME and G.GAME.probabilities.normal or 1),self.config.extra.flipped,self.config.extra.multiplier}
+        return {self.config.extra}
     end
     
     local name="Double Flipped Card"
@@ -1322,74 +1322,214 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "{C:green}#1# in #2#{} cards are drawn",
-            "face down. Flip all cards in hand",
-            "before drawing cards",
-            --  Each card ",
-            -- "staying in hand and is once face down",
-            -- "gives {X:mult,C:white}X#3#{} Mult"
+            "Flipped cards will return",
+            "to your hand before calculating",
+            "hold-in-hand effect. In other",
+            "words they are considered both",
+            "played and held in hand"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra={flipped=5,multiplier=1.5}},
+        {},
         {x=0,y=0}, loc_txt,
-        10, true, true, true, {'v_flipped_card'}
+        10, true, true, true, {}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {''..(G.GAME and G.GAME.probabilities.normal or 1),self.config.extra.flipped,self.config.extra.multiplier}
+        return {}
+    end
+    
+    local create_UIBox_buttons_ref=create_UIBox_buttons
+    function create_UIBox_buttons()
+        local ret=create_UIBox_buttons_ref()
+        local text_scale=0.45
+        local button_height=1.3
+        if (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
+            local flip_button={n=G.UIT.C, config={id = 'flip_button', align = "tm", minw = 2.5, padding = 0.3, r = 0.1, hover = true, colour = G.C.PURPLE, button = "this is another useless parameter", one_press = true, shadow = true, func = 'can_flip'}, nodes={
+                {n=G.UIT.R, config={align = "bcm", padding = 0}, nodes={
+                {n=G.UIT.T, config={text = localize('b_flip_hand'), scale = text_scale, colour = G.C.UI.TEXT_LIGHT, focus_args = {button = 'x', orientation = 'bm'}, func = 'set_button_pip'}}
+                }},
+            }}
+            table.insert(ret.nodes,flip_button)
+        end
+        return ret
     end
 
-    local Card_apply_to_run_ref = Card.apply_to_run
-    function Card:apply_to_run(center)
-        local center_table = {
-            name = center and center.name or self and self.ability.name,
-            extra = center and center.config.extra or self and self.ability.extra
-        }
-        if center_table.name == 'Flipped Card'then
-            G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_flipped_card.config.extra.flipped
+    local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
+    G.FUNCS.play_cards_from_highlighted=function(e)
+        local facing_down_cards={}
+        for i=1, #G.hand.highlighted do
+            G.hand.highlighted[i].facing_ref=G.hand.highlighted[i].facing
+            if G.hand.highlighted[i].facing=='back' then
+                table.insert(facing_down_cards,G.hand.highlighted[i])
+            end
         end
-        if center_table.name == 'Double Flipped Card'then
-            G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_double_flipped_card.config.extra.flipped
-        end
-        Card_apply_to_run_ref(self, center)
+        -- when played all cards will be face up so its facing status before playing should be saved elsewhere
+        G.GAME.current_round.flips_left=1
+        local ret= G_FUNCS_play_cards_from_highlighted_ref(e)
+        -- G.E_MANAGER:add_event(Event({
+        --     trigger = 'after',
+        --     delay = 0.1,
+        --     func = function()
+        --         local play_count = #facing_down_cards
+        --         local it = 1
+        --         for k, v in ipairs(facing_down_cards) do
+        --             if (not v.shattered) and (not v.destroyed) then 
+        --                 draw_card(G.discard,G.hand, it*100/play_count,'down', false, v)
+        --                 it = it + 1
+        --             end
+        --         end
+        --         return true
+        --     end
+        -- }))
+        return ret
     end
 
-    -- local Card_flip_ref=Card.flip
-    -- function Card:flip()
-    --     if self.facing=='front'then
-    --         self.has_been_back=true
+    local new_round_ref=new_round
+    function new_round()
+        G.GAME.current_round.flips_left=1
+        new_round_ref()
+    end
+
+    G.FUNCS.can_flip=function(e)
+        if #G.hand.highlighted <= 0 or #G.hand.highlighted > G.P_CENTERS.v_flipped_card.config.extra or G.GAME.current_round.flips_left <= 0 then 
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        else
+            e.config.colour = G.C.PURPLE
+            e.config.button = 'flip_cards_from_highlighted'
+        end
+    end
+    
+    G.FUNCS.flip_cards_from_highlighted=function(e)
+        stop_use()
+        G.CONTROLLER.interrupt.focus = true
+        G.CONTROLLER:save_cardarea_focus('hand')
+        for i=1, #G.hand.highlighted do
+            G.hand.highlighted[i]:flip()
+        end
+        G.GAME.current_round.flips_left=(G.GAME.current_round.flips_left or 1)-1
+    end
+
+    G.localization.misc.dictionary.b_flip_hand = "Flip"
+
+    local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
+    G.FUNCS.draw_from_play_to_discard = function(e)
+        if (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
+            local play_count = #G.play.cards
+            local it = 1
+            local flag=false
+            for k, v in ipairs(G.play.cards) do
+                if v.facing_ref=='back' and (not v.shattered) and (not v.destroyed)then
+                    draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
+                    it = it + 1
+                    flag=true
+                end
+            end
+        end
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()     
+                G_FUNCS_draw_from_play_to_discard_ref(e)
+            return true end)
+          }))
+       
+    end
+
+    -- local test=CardArea.can_highlight
+    -- function CardArea:can_highlight(card)
+    --     local ret=test(self,card)
+    --     if ret==false then
+    --         local self2=self.config.type
+    --         local facing=card.facing_ref
+    --         facing.p()
     --     end
-    --     Card_flip_ref(self)
+    --     return ret
     -- end
 
     local eval_card_ref=eval_card
     function eval_card(card, context)
         local ret = eval_card_ref(card,context)
-        if context.cardarea == G.hand and not context.repetition_only and card.ability.set ~= 'Joker' and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
-            local x_mult=1
-            if G.GAME.used_vouchers.v_double_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_double_flipped_card.config.extra.multiplier 
-            elseif G.GAME.used_vouchers.v_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_flipped_card.config.extra.multiplier end
-            local test=card.has_been_back
-
-            if x_mult>1 then ret.x_mult=(ret.x_mult or 1)*x_mult end
-            --ret.chips=999
+        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) and card.facing_ref=='back' then
+            if (not card.shattered) and (not card.destroyed) then 
+                -- draw_card(G.play,G.hand, 0.1,'down', false, card)
+            end
         end
         return ret
     end
+    -- local test=CardArea.can_highlight
+    -- function CardArea:can_highlight(card)
+    --     local ret=test(self,card)
+    --     if ret==false then
+    --         local self2=self.config.type
+    --         local facing=card.facing_ref
+    --         facing.p()
+    --     end
+    --     return ret
+    -- end
 
-
-    local G_FUNCS_draw_from_deck_to_hand_ref = G.FUNCS.draw_from_deck_to_hand 
-    G.FUNCS.draw_from_deck_to_hand = function(e)
-        if G.GAME.used_vouchers.v_double_flipped_card then
-            for i = 1, #G.hand.cards do
-                G.hand.cards[i]:flip()
+    local eval_card_ref=eval_card
+    function eval_card(card, context)
+        local ret = eval_card_ref(card,context)
+        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) and card.facing_ref=='back' then
+            if (not card.shattered) and (not card.destroyed) then 
+                -- draw_card(G.play,G.hand, 0.1,'down', false, card)
             end
         end
-        return G_FUNCS_draw_from_deck_to_hand_ref(e)
+        return ret
     end
+    -- local Card_apply_to_run_ref = Card.apply_to_run
+    -- function Card:apply_to_run(center)
+    --     local center_table = {
+    --         name = center and center.name or self and self.ability.name,
+    --         extra = center and center.config.extra or self and self.ability.extra
+    --     }
+    --     if center_table.name == 'Flipped Card'then
+    --         G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_flipped_card.config.extra.flipped
+    --     end
+    --     if center_table.name == 'Double Flipped Card'then
+    --         G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_double_flipped_card.config.extra.flipped
+    --     end
+    --     Card_apply_to_run_ref(self, center)
+    -- end
+
+
+    -- local eval_card_ref=eval_card
+    -- function eval_card(card, context)
+    --     local ret = eval_card_ref(card,context)
+    --     if context.cardarea == G.hand and not context.repetition_only and card.ability.set ~= 'Joker' and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
+    --         local x_mult=1
+    --         if G.GAME.used_vouchers.v_double_flipped_card and card.ability.has_been_flipped then 
+    --             x_mult=G.P_CENTERS.v_double_flipped_card.config.extra.multiplier
+    --         elseif G.GAME.used_vouchers.v_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_flipped_card.config.extra.multiplier end
+
+    --         if x_mult>1 then ret.x_mult=(ret.x_mult or 1)*x_mult end
+    --         --ret.chips=999
+    --     end
+    --     return ret
+    -- end
+
+    -- -- todo: when read save add juice effect and add "double flipped" to its hover discription
+    -- local G_FUNCS_draw_from_deck_to_hand_ref = G.FUNCS.draw_from_deck_to_hand 
+    -- G.FUNCS.draw_from_deck_to_hand = function(e)
+    --     if G.GAME.used_vouchers.v_double_flipped_card then
+    --         for i = 1, #G.hand.cards do
+    --             if G.hand.cards[i].facing=='back' then
+    --                 G.hand.cards[i]:flip()
+    --                 G.hand.cards[i].ability.has_been_flipped=true
+    --                 local eval = function(card)
+    --                     if (card.area~=G.hand)and (card.area ~=G.play)then
+    --                         card.ability.has_been_flipped=false
+    --                     end
+    --                     return card.area==G.hand end
+    --                 juice_card_until(G.hand.cards[i], eval, true)
+    --             end
+    --         end
+    --     end
+    --     return G_FUNCS_draw_from_deck_to_hand_ref(e)
+    -- end
 
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
