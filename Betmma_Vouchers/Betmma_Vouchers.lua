@@ -6,6 +6,9 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+-- todo list:
+-- peek the first card in packs / skipped packs get 50% refund
+-- on the first hand open an arcana pack / on the last hand open a spectral pack. both cannot be skipped
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
@@ -1299,9 +1302,9 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "You can flip up to #1# cards",
+            "You can {C:attention}flip{} up to #1# cards",
             "once before playing each hand.",
-            "Flipped cards will return",
+            "{C:attention}Flipped{} cards will return",
             "to your hand after they are played"
         }
     }
@@ -1322,18 +1325,16 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "Flipped cards will return",
-            "to your hand before calculating",
-            "hold-in-hand effect. In other",
-            "words they are considered both",
-            "played and held in hand"
+            "{C:attention}Flipped{} cards are",
+            "held in hand when scoring",
+            "and can trigger hold-in-hand effects"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
         {},
         {x=0,y=0}, loc_txt,
-        10, true, true, true, {}
+        10, true, true, true, {'v_flipped_card'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
@@ -1359,31 +1360,12 @@ function SMODS.INIT.BetmmaVouchers()
 
     local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
     G.FUNCS.play_cards_from_highlighted=function(e)
-        local facing_down_cards={}
         for i=1, #G.hand.highlighted do
             G.hand.highlighted[i].facing_ref=G.hand.highlighted[i].facing
-            if G.hand.highlighted[i].facing=='back' then
-                table.insert(facing_down_cards,G.hand.highlighted[i])
-            end
         end
         -- when played all cards will be face up so its facing status before playing should be saved elsewhere
         G.GAME.current_round.flips_left=1
         local ret= G_FUNCS_play_cards_from_highlighted_ref(e)
-        -- G.E_MANAGER:add_event(Event({
-        --     trigger = 'after',
-        --     delay = 0.1,
-        --     func = function()
-        --         local play_count = #facing_down_cards
-        --         local it = 1
-        --         for k, v in ipairs(facing_down_cards) do
-        --             if (not v.shattered) and (not v.destroyed) then 
-        --                 draw_card(G.discard,G.hand, it*100/play_count,'down', false, v)
-        --                 it = it + 1
-        --             end
-        --         end
-        --         return true
-        --     end
-        -- }))
         return ret
     end
 
@@ -1417,12 +1399,12 @@ function SMODS.INIT.BetmmaVouchers()
 
     local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
     G.FUNCS.draw_from_play_to_discard = function(e)
-        if (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
-            local play_count = #G.play.cards
+        if (G.GAME.used_vouchers.v_flipped_card and not G.GAME.used_vouchers.v_double_flipped_card) then
+            local play_count = #G.GAME.scoring_hand --G.GAME.scoring_hand is stored in eval_hand by me
             local it = 1
             local flag=false
-            for k, v in ipairs(G.play.cards) do
-                if v.facing_ref=='back' and (not v.shattered) and (not v.destroyed)then
+            for k, v in ipairs(G.GAME.scoring_hand) do
+                if v.facing_ref=='back' and (not v.shattered) and (not v.destroyed) and (not v.debuff)then
                     draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
                     it = it + 1
                     flag=true
@@ -1438,98 +1420,50 @@ function SMODS.INIT.BetmmaVouchers()
        
     end
 
-    -- local test=CardArea.can_highlight
-    -- function CardArea:can_highlight(card)
-    --     local ret=test(self,card)
-    --     if ret==false then
-    --         local self2=self.config.type
-    --         local facing=card.facing_ref
-    --         facing.p()
-    --     end
-    --     return ret
-    -- end
-
     local eval_card_ref=eval_card
-    function eval_card(card, context)
+    function eval_card(card, context) -- debuffed card won't call this
         local ret = eval_card_ref(card,context)
-        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) and card.facing_ref=='back' then
+        G.GAME.scoring_hand=context.scoring_hand
+        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_double_flipped_card and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
-                -- draw_card(G.play,G.hand, 0.1,'down', false, card)
+                draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
             end
         end
         return ret
     end
-    -- local test=CardArea.can_highlight
-    -- function CardArea:can_highlight(card)
-    --     local ret=test(self,card)
-    --     if ret==false then
-    --         local self2=self.config.type
-    --         local facing=card.facing_ref
-    --         facing.p()
-    --     end
-    --     return ret
-    -- end
-
-    local eval_card_ref=eval_card
-    function eval_card(card, context)
-        local ret = eval_card_ref(card,context)
-        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) and card.facing_ref=='back' then
-            if (not card.shattered) and (not card.destroyed) then 
-                -- draw_card(G.play,G.hand, 0.1,'down', false, card)
-            end
+    
+    function draw_card_immediately(from, to, percent, dir, sort, card, delay, mute, stay_flipped, vol, discarded_only)
+        percent = percent or 50
+        delay = delay or 0.1 
+        if dir == 'down' then 
+            percent = 1-percent
         end
-        return ret
+        sort = sort or false
+        local drawn = nil
+        if card then 
+            if from then card = from:remove_card(card) end
+            if card then drawn = true end
+            local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card)
+            if G.GAME.modifiers.flipped_cards and to == G.hand then
+                if pseudorandom(pseudoseed('flipped_card')) < 1/G.GAME.modifiers.flipped_cards then
+                    stay_flipped = true
+                end
+            end
+            to:emplace(card, nil, stay_flipped)
+        else
+            if to:draw_card_from(from, stay_flipped, discarded_only) then drawn = true end
+        end
+        if not mute and drawn then
+            if from == G.deck or from == G.hand or from == G.play or from == G.jokers or from == G.consumeables or from == G.discard then
+                G.VIBRATION = G.VIBRATION + 0.6
+            end
+            play_sound('card1', 0.85 + percent*0.2/100, 0.6*(vol or 1))
+        end
+        if sort then
+            to:sort()
+        end
+        return true
     end
-    -- local Card_apply_to_run_ref = Card.apply_to_run
-    -- function Card:apply_to_run(center)
-    --     local center_table = {
-    --         name = center and center.name or self and self.ability.name,
-    --         extra = center and center.config.extra or self and self.ability.extra
-    --     }
-    --     if center_table.name == 'Flipped Card'then
-    --         G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_flipped_card.config.extra.flipped
-    --     end
-    --     if center_table.name == 'Double Flipped Card'then
-    --         G.GAME.modifiers.flipped_cards=G.P_CENTERS.v_double_flipped_card.config.extra.flipped
-    --     end
-    --     Card_apply_to_run_ref(self, center)
-    -- end
-
-
-    -- local eval_card_ref=eval_card
-    -- function eval_card(card, context)
-    --     local ret = eval_card_ref(card,context)
-    --     if context.cardarea == G.hand and not context.repetition_only and card.ability.set ~= 'Joker' and (G.GAME.used_vouchers.v_flipped_card or G.GAME.used_vouchers.v_double_flipped_card) then
-    --         local x_mult=1
-    --         if G.GAME.used_vouchers.v_double_flipped_card and card.ability.has_been_flipped then 
-    --             x_mult=G.P_CENTERS.v_double_flipped_card.config.extra.multiplier
-    --         elseif G.GAME.used_vouchers.v_flipped_card and card.facing=='back' then x_mult=G.P_CENTERS.v_flipped_card.config.extra.multiplier end
-
-    --         if x_mult>1 then ret.x_mult=(ret.x_mult or 1)*x_mult end
-    --         --ret.chips=999
-    --     end
-    --     return ret
-    -- end
-
-    -- -- todo: when read save add juice effect and add "double flipped" to its hover discription
-    -- local G_FUNCS_draw_from_deck_to_hand_ref = G.FUNCS.draw_from_deck_to_hand 
-    -- G.FUNCS.draw_from_deck_to_hand = function(e)
-    --     if G.GAME.used_vouchers.v_double_flipped_card then
-    --         for i = 1, #G.hand.cards do
-    --             if G.hand.cards[i].facing=='back' then
-    --                 G.hand.cards[i]:flip()
-    --                 G.hand.cards[i].ability.has_been_flipped=true
-    --                 local eval = function(card)
-    --                     if (card.area~=G.hand)and (card.area ~=G.play)then
-    --                         card.ability.has_been_flipped=false
-    --                     end
-    --                     return card.area==G.hand end
-    --                 juice_card_until(G.hand.cards[i], eval, true)
-    --             end
-    --         end
-    --     end
-    --     return G_FUNCS_draw_from_deck_to_hand_ref(e)
-    -- end
 
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{

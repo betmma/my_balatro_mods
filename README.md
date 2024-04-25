@@ -44,7 +44,7 @@ A collection of mods made by me for Balatro.
 - Collector: Each Voucher redeemed reduces Blind requirement by 5%. (multiplicative)
 - Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
-- Double Flipped Card: Flipped cards will return to your hand before calculating their hold-in-hand effect. In other words, they are considered both played and held in hand. (not implemented yet)
+- Double Flipped Card: Flipped cards are held in hand when scoring and can trigger hold-in-hand effects. 
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
