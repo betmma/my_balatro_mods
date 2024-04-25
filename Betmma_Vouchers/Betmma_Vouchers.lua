@@ -1400,10 +1400,10 @@ function SMODS.INIT.BetmmaVouchers()
     local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
     G.FUNCS.draw_from_play_to_discard = function(e)
         if (G.GAME.used_vouchers.v_flipped_card and not G.GAME.used_vouchers.v_double_flipped_card) then
-            local play_count = #G.GAME.scoring_hand --G.GAME.scoring_hand is stored in eval_hand by me
+            local play_count = #G.play.cards 
             local it = 1
             local flag=false
-            for k, v in ipairs(G.GAME.scoring_hand) do
+            for k, v in ipairs(G.play.cards) do
                 if v.facing_ref=='back' and (not v.shattered) and (not v.destroyed) and (not v.debuff)then
                     draw_card(G.play,G.hand, it*100/play_count,'down', false, v)
                     it = it + 1
@@ -1423,7 +1423,7 @@ function SMODS.INIT.BetmmaVouchers()
     local eval_card_ref=eval_card
     function eval_card(card, context) -- debuffed card won't call this
         local ret = eval_card_ref(card,context)
-        G.GAME.scoring_hand=context.scoring_hand
+        G.GAME.scoring_hand=context.scoring_hand -- this is not used 
         if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_double_flipped_card and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
                 draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
