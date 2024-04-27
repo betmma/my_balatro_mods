@@ -371,7 +371,7 @@ function SMODS.INIT.BetmmaVouchers()
     end
 
     function create_black_hole()
-        if #G.consumeables.cards + G.GAME.consumeable_buffer > G.consumeables.config.card_limit then return end
+        if #G.consumeables.cards + G.GAME.consumeable_buffer >= G.consumeables.config.card_limit then return end
         G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
         G.E_MANAGER:add_event(Event({
             trigger = 'before',
@@ -618,7 +618,9 @@ function SMODS.INIT.BetmmaVouchers()
         G.play:emplace(card)
         card.cost=0
         card.shop_voucher=false
+        local current_round_voucher=G.GAME.current_round.voucher
         card:redeem()
+        G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher bulk may be from voucher pack or other non-shop source
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
             --blockable = false,
@@ -1192,8 +1194,10 @@ function SMODS.INIT.BetmmaVouchers()
                     card:start_materialize()
                     G.play:emplace(card)
                     card.cost=lose
-                    card.shop_voucher=false
+                    card.shop_voucher=false -- this doesn't help keeping current_round_voucher i guess
+                    local current_round_voucher=G.GAME.current_round.voucher
                     card:redeem()
+                    G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher may be from voucher pack or other non-shop source
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
                         --blockable = false,
@@ -1400,7 +1404,7 @@ function SMODS.INIT.BetmmaVouchers()
     local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
     G.FUNCS.draw_from_play_to_discard = function(e)
         if (G.GAME.used_vouchers.v_flipped_card and not G.GAME.used_vouchers.v_double_flipped_card) then
-            local play_count = #G.play.cards 
+            local play_count = #G.play.cards --G.GAME.scoring_hand --G.GAME.scoring_hand is stored in eval_hand by me
             local it = 1
             local flag=false
             for k, v in ipairs(G.play.cards) do
@@ -1424,7 +1428,7 @@ function SMODS.INIT.BetmmaVouchers()
     local eval_card_ref=eval_card
     function eval_card(card, context) -- debuffed card won't call this
         local ret = eval_card_ref(card,context)
-        G.GAME.scoring_hand=context.scoring_hand -- this is not used 
+        G.GAME.scoring_hand=context.scoring_hand
         if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_double_flipped_card and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
                 draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
@@ -1435,6 +1439,7 @@ function SMODS.INIT.BetmmaVouchers()
     end
     
     function draw_card_immediately(from, to, percent, dir, sort, card, delay, mute, stay_flipped, vol, discarded_only)
+        -- the value of hand is calculated immediately, and the animation takes time. The vanilla draw_card includes add_event which isn't immediate, but in eval_card we need to immediately move the double_flipped_card to hand so that in following calculation G.hand will include these cards.
         percent = percent or 50
         delay = delay or 0.1 
         if dir == 'down' then 
@@ -1467,41 +1472,87 @@ function SMODS.INIT.BetmmaVouchers()
         return true
     end
 
+    
+    local name="Prologue"
+    local id="prologue"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When blind begins,",
+            "open an {C:attention}Arcana Pack{}",
+            "that can't be skipped"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
+    
+    local name="Epilogue"
+    local id="epilogue"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When blind ends,",
+            "open a {C:attention}Spectral Pack{}",
+            "that can't be skipped"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_prologue'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
+
+
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 4000},
-    --         }
+        --     name = "TestVoucher",
+        --     id = 'c_mod_testvoucher',
+        --     rules = {
+            --         custom = {
+            --         },
+            --         modifiers = {
+                --             {id = 'dollars', value = 4000},
+            --         }
     --     },
-    --     jokers = {
-    --         {id = 'j_jjookkeerr'},
-    --         {id = 'j_ascension'},
-    --         {id = 'j_hasty'},
-    --         {id = 'j_errorr'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_blueprint'},
-    --         {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         {id = 'c_temperance'},
-    --     },
-    --     vouchers = {
-    --         {id = 'v_overkill'},
-    --         {id = 'v_big_blast'},
-    --         {id = 'v_oversupply_plus'},
-    --         {id = 'v_b1g1'},
-    --         {id = 'v_3d_boosters'},
-    --         {id = 'v_collector'},
-    --         {id = 'v_connoisseur'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
+        --     jokers = {
+            --         {id = 'j_jjookkeerr'},
+            --         {id = 'j_ascension'},
+            --         {id = 'j_hasty'},
+            --         {id = 'j_errorr'},
+            --         {id = 'j_piggy_bank'},
+            --         {id = 'j_blueprint'},
+            --         {id = 'j_triboulet'},
+        --     },
+        --     consumeables = {
+            --         {id = 'c_temperance'},
+        --     },
+        --     vouchers = {
+            --         {id = 'v_overkill'},
+            --         {id = 'v_big_blast'},
+            --         {id = 'v_oversupply_plus'},
+            --         {id = 'v_b1g1'},
+            --         {id = 'v_3d_boosters'},
+            --         {id = 'v_collector'},
+            --         {id = 'v_connoisseur'},
+        --     },
+        --     deck = {
+            --         type = 'Challenge Deck',
+            --         --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
     --     },
     --     restrictions = {
     --         banned_cards = {

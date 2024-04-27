@@ -118,7 +118,7 @@ function SMODS.INIT.BetmmaVoucherPack()
                 discover_card(self.config.center)
             end
             self.states.hover.can = false
-            G.STATE = G.STATES.PLANET_PACK -- it seems extremely complex to add G.STATES.VOUCHER_PACK because PLANET_PACK, TAROT_PACK and values like those are individually considered when tackling states. In other words there don't exist a table containing all "PACK_STATES" so many functions should be changed if STATES.VOUCHER_PACK is added. The bad result is that when choosing vouchers, the bottom text will be Celestial Pack.
+            G.STATE = G.STATES.PLANET_PACK -- it seems extremely complex to add G.STATES.VOUCHER_PACK because PLANET_PACK, TAROT_PACK and values like those are individually considered when tackling states. In other words there don't exist a table containing all "PACK_STATES" so many functions should be changed if STATES.VOUCHER_PACK is added. The bad result is that when choosing vouchers, the bottom text will be Celestial Pack (can be changed by other ways).
             G.GAME.pack_size = self.ability.extra
             G.GAME.pack_choices = self.config.center.config.choose or 1
 
@@ -146,7 +146,7 @@ function SMODS.INIT.BetmmaVoucherPack()
                         local voucher_key = get_next_voucher_key(true)
                         local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
                     G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
-                    
+                        card.from_voucher_pack_flag=true
                         card.T.x = self.T.x
                         card.T.y = self.T.y
                         card.cost=0
@@ -349,6 +349,16 @@ function SMODS.INIT.BetmmaVoucherPack()
     end
     G.localization.misc.dictionary.k_voucher_pack = "Voucher Pack"
     init_localization()
+
+    local Card_redeem_ref=Card.redeem
+    function Card:redeem()
+        local current_round_voucher=G.GAME.current_round.voucher
+        local ret=Card_redeem_ref(self)
+        if self.from_voucher_pack_flag then -- look at line 149 of this file
+            G.GAME.current_round.voucher=current_round_voucher
+        end
+        return ret
+    end
 end
 ----------------------------------------------
 ------------MOD CODE END----------------------
