@@ -2,13 +2,13 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 30 More Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+-- thanks to Denverplays2 and RenSixx for their ideas
 -- todo list:
--- peek the first card in packs / skipped packs get 50% refund
--- on the first hand open an arcana pack / on the last hand open a spectral pack. both cannot be skipped
+-- peek the first card in packs (impractical?) / skipped packs get 50% refund
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
@@ -493,6 +493,48 @@ function SMODS.INIT.BetmmaVouchers()
                         if extra.edition~=nil then
                             card:set_edition(extra.edition,true,false)
                         end
+                        if extra.eternal~=nil then
+                            card.ability.eternal=extra.eternal
+                        end
+                        if extra.perishable~=nil then
+                            card.ability.perishable = extra.perishable
+                            if tag=='v_epilogue' then
+                                card.ability.perish_tally=G.P_CENTERS.v_epilogue.config.extra
+                            else card.ability.perish_tally = G.GAME.perishable_rounds
+                            end
+                        end
+                        card.ability.BetmmaVouchers=true
+                        G.consumeables:emplace(card)
+                        G.GAME.consumeable_buffer = 0
+                        if message~=nil then
+                            card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                        end
+                    return true
+                end)}))
+        end
+    end
+    function randomly_create_tarot(tag,message,extra)
+        extra=extra or {}
+        
+        if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
+            G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+            G.E_MANAGER:add_event(Event({
+                trigger = 'before',
+                delay = 0.0,
+                func = (function()
+                        local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, tag)
+                        card:add_to_deck()
+                        if extra.edition~=nil then
+                            card:set_edition(extra.edition,true,false)
+                        end
+                        if extra.eternal~=nil then
+                            card.ability.eternal=extra.eternal
+                        end
+                        if extra.perishable~=nil then
+                            card.ability.perishable = extra.perishable
+                            card.ability.perish_tally = G.GAME.perishable_rounds
+                        end
+                        card.ability.BetmmaVouchers=true
                         G.consumeables:emplace(card)
                         G.GAME.consumeable_buffer = 0
                         if message~=nil then
@@ -1478,9 +1520,9 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "When blind begins,",
-            "open an {C:attention}Arcana Pack{}",
-            "that can't be skipped"
+            "When blind begins, create",
+            "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
+            "{C:inactive}(Must have room)"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -1500,23 +1542,50 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "When blind ends,",
-            "open a {C:attention}Spectral Pack{}",
-            "that can't be skipped"
+            "When blind ends, create an",
+            "{C:attention}Eternal{} and {C:attention}Perishable{} {C:spectral}Spectral{} card.",
+            "This {C:attention}Perishable{} lasts #1# rounds,",
+            "after which the card loses",
+            "{C:attention}Eternal{} and {C:attention}Perishable{} {C:spectral}",
+            "{C:inactive}(Must have room)"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {},
+        {extra=2},
         {x=0,y=0}, loc_txt,
         10, true, true, true, {'v_prologue'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {}
+        return {self.config.extra}
     end
 
+
+    local new_round_ref=new_round
+    function new_round()
+        if G.GAME.used_vouchers.v_prologue then
+            randomly_create_tarot('v_prologue',nil,{eternal=true})
+        end
+        return new_round_ref()
+    end
+
+    local end_round_ref = end_round
+    function end_round()
+        for i=1,#G.consumeables.cards do
+            G.consumeables.cards[i]:calculate_perishable()
+            if G.consumeables.cards[i].ability.perishable and G.consumeables.cards[i].ability.perish_tally <= 0 and G.consumeables.cards[i].ability.BetmmaVouchers then
+                G.consumeables.cards[i]:set_debuff(false)
+                G.consumeables.cards[i]:set_eternal(false)
+                G.consumeables.cards[i]:set_perishable(false)
+            end
+        end
+        if G.GAME.used_vouchers.v_epilogue then
+            randomly_create_spectral('v_epilogue',nil,{eternal=true,perishable=true})
+        end
+        end_round_ref()
+    end
 
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{

@@ -164,7 +164,7 @@ function SMODS.INIT.BetmmaJokers()
 
     --- Joker abilities ---
     SMODS.Jokers.j_jjookkeerr.calculate = function(self, context)
-        if context.other_joker and context.other_joker ~= self then
+        if context.other_joker and context.other_joker ~= self and not context.other_joker.debuff then
             if string.match(context.other_joker.ability.name, "Joker") then
                 G.E_MANAGER:add_event(Event({
                     func = function()
