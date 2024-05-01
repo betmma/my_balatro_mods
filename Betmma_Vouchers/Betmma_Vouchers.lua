@@ -10,6 +10,9 @@
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round
+-- fusion vouchers:
+-- Gold Round Up (Gold Brick + Round Up Plus): your money is always rounded up to nearest evens
+-- Overshopping (Overstock Plus + Oversupply Plus): you can shop after skipping blinds
 function SMODS.INIT.BetmmaVouchers()
     local oversupply_loc_txt = {
         name = "Oversupply",
@@ -480,7 +483,7 @@ function SMODS.INIT.BetmmaVouchers()
                 return true
             end}))   
     end
-    function randomly_create_spectral(tag,message,extra)
+    function randomly_create_consumable(card_type,tag,message,extra)
         extra=extra or {}
         
         if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
@@ -489,7 +492,7 @@ function SMODS.INIT.BetmmaVouchers()
                 trigger = 'before',
                 delay = 0.0,
                 func = (function()
-                        local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, tag)
+                        local card = create_card(card_type,G.consumeables, nil, nil, nil, nil, nil, tag)
                         card:add_to_deck()
                         if extra.edition~=nil then
                             card:set_edition(extra.edition,true,false)
@@ -504,6 +507,9 @@ function SMODS.INIT.BetmmaVouchers()
                             else card.ability.perish_tally = G.GAME.perishable_rounds
                             end
                         end
+                        if extra.extra_ability~=nil then
+                            card.ability[extra.extra_ability]=true
+                        end
                         card.ability.BetmmaVouchers=true
                         G.consumeables:emplace(card)
                         G.GAME.consumeable_buffer = 0
@@ -514,36 +520,11 @@ function SMODS.INIT.BetmmaVouchers()
                 end)}))
         end
     end
+    function randomly_create_spectral(tag,message,extra)
+        return randomly_create_consumable('Spectral',tag,message,extra)
+    end
     function randomly_create_tarot(tag,message,extra)
-        extra=extra or {}
-        
-        if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
-            G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
-            G.E_MANAGER:add_event(Event({
-                trigger = 'before',
-                delay = 0.0,
-                func = (function()
-                        local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, tag)
-                        card:add_to_deck()
-                        if extra.edition~=nil then
-                            card:set_edition(extra.edition,true,false)
-                        end
-                        if extra.eternal~=nil then
-                            card.ability.eternal=extra.eternal
-                        end
-                        if extra.perishable~=nil then
-                            card.ability.perishable = extra.perishable
-                            card.ability.perish_tally = G.GAME.perishable_rounds
-                        end
-                        card.ability.BetmmaVouchers=true
-                        G.consumeables:emplace(card)
-                        G.GAME.consumeable_buffer = 0
-                        if message~=nil then
-                            card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
-                        end
-                    return true
-                end)}))
-        end
+        return randomly_create_consumable('Tarot',tag,message,extra)
     end
 
     local name="Voucher Bundle"
@@ -1515,141 +1496,92 @@ function SMODS.INIT.BetmmaVouchers()
         return true
     end
 
-    
-	if G.VERSION ~= '1.0.0n-FULL' then
-    
-        local name="Prologue"
-        local id="prologue"
-        local loc_txt = {
-            name = name,
-            text = {
-                "When blind begins, create",
-                "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
-                "{C:inactive}(Must have room)"
-            }
+
+    local name="Prologue"
+    local id="prologue"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When blind begins, create",
+            "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
+            "{C:inactive}(Must have room)"
         }
-        local this_v = SMODS.Voucher:new(
-            name, id,
-            {},
-            {x=0,y=0}, loc_txt,
-            10, true, true, true
-        )
-        SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
-        this_v:register()
-        this_v.loc_def = function(self)
-            return {}
-        end
-        
-        local name="Epilogue"
-        local id="epilogue"
-        local loc_txt = {
-            name = name,
-            text = {
-                "{C:attention}+1{} consumable slot.",
-                "When blind ends, create an",
-                "{C:attention}Eternal{} and {C:attention}Perishable{} {C:spectral}Spectral{} card.",
-                "This {C:attention}Perishable{} lasts {C:attention}#1#{} rounds,",
-                "after which the card loses",
-                "{C:attention}Eternal{} and {C:attention}Perishable{}.",
-                "{C:inactive}(Must have room)"
-            }
-        }
-        local this_v = SMODS.Voucher:new(
-            name, id,
-            {extra=2},
-            {x=0,y=0}, loc_txt,
-            10, true, true, true, {'v_prologue'}
-        )
-        SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
-        this_v:register()
-        this_v.loc_def = function(self)
-            return {self.config.extra}
-        end
-
-        function Card:apply_to_run(center)
-            local center_table = {
-                name = center and center.name or self and self.ability.name,
-                extra = center and center.config.extra or self and self.ability.extra
-            }
-            if center_table.name == 'Epilogue' then
-                G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
-            end
-            Card_apply_to_run_ref(self, center)
-        end
-
-        local new_round_ref=new_round
-        function new_round()
-            if G.GAME.used_vouchers.v_prologue then
-                randomly_create_tarot('v_prologue',nil,{eternal=true})
-            end
-            return new_round_ref()
-        end
-
-        local end_round_ref = end_round
-        function end_round()
-            for i=1,#G.consumeables.cards do
-                if G.consumeables.cards[i].ability.perishable and G.consumeables.cards[i].ability.BetmmaVouchers then
-                    G.consumeables.cards[i]:calculate_perishable()
-                    if G.consumeables.cards[i].ability.perishable and G.consumeables.cards[i].ability.perish_tally <= 0  then
-                        G.consumeables.cards[i]:set_debuff(false)
-                        G.consumeables.cards[i]:set_eternal(false)
-                        G.consumeables.cards[i]:set_perishable(false)
-                    end
-                end
-            end
-            if G.GAME.used_vouchers.v_epilogue then
-                randomly_create_spectral('v_epilogue',nil,{eternal=true,perishable=true})--,edition={negative=true}
-            end
-            end_round_ref()
-        end
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
     end
 
-    -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-        --     name = "TestVoucher",
-        --     id = 'c_mod_testvoucher',
-        --     rules = {
-            --         custom = {
-            --         },
-            --         modifiers = {
-                --             {id = 'dollars', value = 4000},
-            --         }
-    --     },
-        --     jokers = {
-            --         {id = 'j_jjookkeerr'},
-            --         {id = 'j_ascension'},
-            --         {id = 'j_hasty'},
-            --         {id = 'j_errorr'},
-            --         {id = 'j_piggy_bank'},
-            --         {id = 'j_blueprint'},
-            --         {id = 'j_triboulet'},
-        --     },
-        --     consumeables = {
-            --         {id = 'c_temperance'},
-        --     },
-        --     vouchers = {
-            --         {id = 'v_overkill'},
-            --         {id = 'v_big_blast'},
-            --         {id = 'v_oversupply_plus'},
-            --         {id = 'v_b1g1'},
-            --         {id = 'v_3d_boosters'},
-            --         {id = 'v_collector'},
-            --         {id = 'v_connoisseur'},
-        --     },
-        --     deck = {
-            --         type = 'Challenge Deck',
-            --         --cards = {{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},{s='D',r='A'},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
-    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    local name="Epilogue"
+    local id="epilogue"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}+1{} consumable slot.",
+            "When blind ends, create an",
+            "{C:attention}Eternal{} {C:spectral}Spectral{} card.",
+            "This card disappears when a",
+            "new Epilogue card is created.",
+            "{C:inactive}(Must have room)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=2},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_prologue'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Epilogue' then
+            G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+    local new_round_ref=new_round
+    function new_round()
+        if G.GAME.used_vouchers.v_prologue then
+            randomly_create_tarot('v_prologue',nil,{eternal=true})
+        end
+        return new_round_ref()
+    end
+
+    local end_round_ref = end_round
+    function end_round()
+        for i=1,#G.consumeables.cards do
+            if G.consumeables.cards[i].ability.v_epilogue then
+                G.consumeables.cards[i]:start_dissolve(nil,nil)
+            end
+        end
+        if G.GAME.used_vouchers.v_epilogue then
+            
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                func = (function() randomly_create_spectral('v_epilogue',nil,{eternal=true,extra_ability='v_epilogue'}) return true end)
+            }))
+            --,edition={negative=true}
+        end
+        end_round_ref()
+    end
+
     init_localization()
 end
 ----------------------------------------------
