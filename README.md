@@ -18,8 +18,8 @@ A collection of mods made by me for Balatro.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
-- Gold Coin: Gain $25 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
-- Gold Bar: Gain $30 immediately. Big Blind gives no reward money.
+- Gold Coin: Gain $20 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
+- Gold Bar: Gain $25 immediately. Big Blind gives no reward money.
 - Abstract Art: +1 Ante to win, +1 hand and discard per round.
 - Mondrian: +1 Ante to win, +1 joker slot.
 - Round Up: Chips always round up to nearest tens when calculating hands.
@@ -41,7 +41,7 @@ A collection of mods made by me for Balatro.
 - 3D Boosters: +1 Booster Pack available in shop.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
 - B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
-- B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $5.
+- B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $10.
 - Collector: Each Voucher redeemed reduces Blind requirement by 5%. (multiplicative)
 - Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
