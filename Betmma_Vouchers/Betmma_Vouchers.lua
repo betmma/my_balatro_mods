@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 2 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 3 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -10,34 +10,60 @@
 -- thanks to Denverplays2, RenSixx, KEKC and other discord users for their ideas
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund
--- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round
+-- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
+-- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
+-- stone cards don't take up hand space (so you can play 5 cards + any stones)
 -- fusion vouchers:
--- Gold Round Up (Gold Brick + Round Up Plus): your money is always rounded up to nearest evens
--- Overshopping (Overstock + Oversupply): you can shop after skipping blinds
+-- Reroll Cut (Director's Cut and Reroll Surplus): Rerolling boss blind also rerolls tag. Reduce the price to $5
+-- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
+-- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
+-- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
+-- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
+-- Glow Up and Antimatter: Negative jokers appear 4X more often.         Or: All jokers in the shop with editions are negative but appear 50% less often.
+-- Glow Up and Illusion: Playing cards in the shop always have an edition and may have an enhancement and/or a seal.          Or: Playing cards in the shop always have an enhancement, edition and a seal.
 
 -- Config: DISABLE UNWANTED MODS HERE
 local config = {
-    -- normal vouchers, note that 2 tiers can only be enabled/disabled together
-    oversupply=true,
-    gold_coin=true,
-    abstract_art=true,
-    round_up=true,
-    event_horizon=true,
-    target=true,
-    voucher_bundle=true,
-    skip=true,
-    scrawl=true,
-    reserve_area=true,
-    overkill=true,
+    -- normal vouchers
+    v_oversupply=true,
+    v_oversupply_plus=true,
+    v_gold_coin=true,
+    v_gold_bar=true,
+    v_abstract_art=true,
+    v_mondrian=true,
+    v_round_up=true,
+    v_round_up_plus=true,
+    v_event_horizon=true,
+    v_engulfer=true,
+    v_target=true,
+    v_bulls_eye=true,
+    v_voucher_bundle=true,
+    v_voucher_bulk=true,
+    v_skip=true,
+    v_skipper=true,
+    v_scrawl=true,
+    v_scribble=true,
+    v_reserve_area=true,
+    v_reserve_area_plus=true,
+    v_overkill=true,
+    v_big_blast=true,
     v_3d_boosters=true,
-    b1g50=true,
-    collector=true,
-    flipped_card=true,
-    prologue=true,
+    v_4d_boosters=true,
+    v_b1g50=true,
+    v_b1g1=true,
+    v_collector=true,
+    v_connoisseur=true,
+    v_flipped_card=true,
+    v_double_flipped_card=true,
+    v_prologue=true,
+    v_epilogue=true,
     -- fusion vouchers
-    gold_round_up=true,
-    overshopping=true
+    v_gold_round_up=true,
+    v_overshopping=true,
+    v_reroll_cut=true
 }
+
+
 local function randomly_redeem_voucher(no_random_please) -- xD
     -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
     -- time=1
@@ -129,7 +155,13 @@ local function randomly_create_tarot(tag,message,extra)
 end
 
 function SMODS.INIT.BetmmaVouchers()
-if config.oversupply then
+    local SMODS_Voucher_register=SMODS.Voucher.register
+    function SMODS.Voucher:register()
+        if SMODS._MOD_NAME=='Betmma Vouchers'and not config[self.slug] then return false end
+        SMODS_Voucher_register(self)
+    end
+
+
     local oversupply_loc_txt = {
         name = "Oversupply",
         text = {
@@ -173,8 +205,8 @@ if config.oversupply then
         end_round_ref()
     end
 
-end -- config end
-if config.gold_coin then
+
+
     local name="Gold Coin"
     local id="gold_coin"
     local gold_coin_loc_txt = {
@@ -244,8 +276,8 @@ if config.gold_coin then
     end
 
 
-end -- config end
-if config.abstract_art then
+
+
     
     local name="Abstract Art"
     local id="abstract_art"
@@ -350,8 +382,8 @@ if config.abstract_art then
     end
 
     
-end -- config end
-if config.round_up then
+
+
     local name="Round Up"
     local id="round_up"
     local loc_txt = {
@@ -412,8 +444,8 @@ if config.round_up then
         return mod_mult_ref(_mult)
     end
 
-end -- config end
-if config.event_horizon then
+
+
     
     local name="Event Horizon"
     local id="event_horizon"
@@ -513,8 +545,8 @@ if config.event_horizon then
     end
 
 
-end -- config end
-if config.target then
+
+
     
     local name="Target"
     local id="target"
@@ -587,8 +619,8 @@ if config.target then
     G.localization.misc.dictionary.k_bulls_eye_generate = "Bull's Eye!"
 
 
-end -- config end
-if config.voucher_bundle then
+
+
     local name="Voucher Bundle"
     local id="voucher_bundle"
     local loc_txt = {
@@ -695,8 +727,8 @@ if config.voucher_bundle then
     -- end
     -- local time=0
 
-end -- config end
-if config.skip then
+
+
     local name="Skip"
     local id="skip"
     local loc_txt = {
@@ -750,8 +782,8 @@ if config.skip then
     end
 
     
-end -- config end
-if config.scrawl then
+
+
         
     local name="Scrawl"
     local id="scrawl"
@@ -814,8 +846,8 @@ if config.scrawl then
     end
 
     
-end -- config end
-if config.reserve_area then
+
+
     local name="Reserve Area"
     local id="reserve_area"
     local loc_txt = {
@@ -949,8 +981,8 @@ if config.reserve_area then
     -- I suspect that this function does nothing too
     -- because replacing it with empty function seems do no harm
 
-end -- config end
-if config.overkill then
+
+
     local name="Overkill"
     local id="overkill"
     local loc_txt = {
@@ -1058,8 +1090,8 @@ if config.overkill then
     G.localization.misc.dictionary.k_big_blast_edition = "Big Blast!"
 
 
-end -- config end
-if config.v_3d_boosters then
+
+
     local name="3D Boosters"
     local id="3d_boosters"
     local loc_txt = {
@@ -1187,8 +1219,8 @@ if config.v_3d_boosters then
 
 
     
-end -- config end
-if config.big50 then
+
+
     local name="B1G50%"
     local id="b1g50"
     local loc_txt = {
@@ -1288,8 +1320,8 @@ if config.big50 then
         Card_redeem_ref(self)
     end
     
-end -- config end
-if config.collector then
+
+
     local name="Collector"
     local id="collector"
     local loc_txt = {
@@ -1377,8 +1409,8 @@ if config.collector then
         Card_apply_to_run_ref(self, center)
     end
 
-end -- config end
-if config.flipped_card then
+
+
     local name="Flipped Card"
     local id="flipped_card"
     local loc_txt = {
@@ -1551,8 +1583,8 @@ if config.flipped_card then
     end
 
 
-end -- config end
-if config.prologue then
+
+
     local name="Prologue"
     local id="prologue"
     local loc_txt = {
@@ -1638,7 +1670,7 @@ if config.prologue then
         end_round_ref()
     end
 
-end -- config end
+
 
     -- ################
     -- fusion vouchers!
@@ -1660,7 +1692,7 @@ end -- config end
         return retval
     end
 
-if config.gold_round_up then
+
     local name="Gold Round Up"
     local id="gold_round_up"
     local loc_txt = {
@@ -1690,8 +1722,8 @@ if config.gold_round_up then
         ease_dollars_ref(mod, instant)
     end
 
-end -- config end
-if config.overshopping then
+
+
     local name="Overshopping"
     local id="overshopping"
     local loc_txt = {
@@ -1737,6 +1769,57 @@ if config.overshopping then
             G:update_shop(dt)
         end
     end
+
+
+if 1 then 
+    -- not implemented
+    local name="Reroll Cut"
+    local id="reroll_cut"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Rerolling boss blind",
+            "also rerolls tags, and",
+            "gives a random tag",
+            "{C:inactive}(Director's Cut + Reroll Surplus)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_directors_cut','v_reroll_surplus'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
+
+    local G_FUNC_reroll_boss_ref =  G.FUNCS.reroll_boss
+    G.FUNCS.reroll_boss = function(e) 
+        G_FUNC_reroll_boss_ref(e)
+        
+        if G.GAME.used_vouchers.v_reroll_cut then
+            stop_use()
+            local tst=G.GAME.round_resets.blind_tags.Small
+            if G.GAME.round_resets.blind_states.Small ~= 'Defeated' then 
+                G.GAME.round_resets.blind_tags.Small = get_next_tag_key()
+                --create_UIBox_blind_choice('Small', true)
+            end
+            if G.GAME.round_resets.blind_states.Big ~= 'Defeated' then 
+                G.GAME.round_resets.blind_tags.Big = get_next_tag_key()
+                --create_UIBox_blind_choice('Big', true)
+            end
+            local random_tag_key = get_next_tag_key()
+            add_tag(Tag(random_tag_key))
+            G.blind_select:remove()
+            G.blind_prompt_box:remove()
+            G.blind_select = nil
+            G.STATE_COMPLETE=false
+            --create_UIBox_blind_select()
+        end
+    end
 end
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
@@ -1746,7 +1829,7 @@ end
     --         custom = {
     --         },
     --         modifiers = {
-    --             --{id = 'dollars', value = 4000},
+    --             {id = 'dollars', value = 4000},
     --         }
     --     },
     --     jokers = {
@@ -1767,8 +1850,8 @@ end
     --         -- {id = 'v_epilogue'},
     --         -- {id = 'v_oversupply_plus'},
     --         -- {id = 'v_b1g1'},
-    --         {id = 'v_gold_coin'},
-    --         {id = 'v_overshopping'},
+    --         {id = 'v_directors_cut'},
+    --         {id = 'v_reroll_cut'},
     --         -- {id = 'v_gold_round_up'},
     --         {id = 'v_scrawl'},
     --     },

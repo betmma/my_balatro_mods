@@ -51,6 +51,7 @@ A collection of mods made by me for Balatro.
 ## Fusion Vouchers
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number
 - Overshopping (Overstock + Oversupply): You can shop after skipping blinds
+- Reroll Cut (Director's Cut + Reroll Surplus): Rerolling boss blind also rerolls tags, and gives a random tag 
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
