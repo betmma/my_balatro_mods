@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 3 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 4 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -14,7 +14,6 @@
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
 -- stone cards don't take up hand space (so you can play 5 cards + any stones)
 -- fusion vouchers:
--- Reroll Cut (Director's Cut and Reroll Surplus): Rerolling boss blind also rerolls tag. Reduce the price to $5
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
 -- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
 -- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
@@ -60,7 +59,8 @@ local config = {
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
-    v_reroll_cut=true
+    v_reroll_cut=true,
+    v_vanish_magic=true
 }
 
 
@@ -1771,8 +1771,6 @@ function SMODS.INIT.BetmmaVouchers()
     end
 
 
-if 1 then 
-    -- not implemented
     local name="Reroll Cut"
     local id="reroll_cut"
     local loc_txt = {
@@ -1820,7 +1818,115 @@ if 1 then
             --create_UIBox_blind_select()
         end
     end
+
+if 1 then
+
+    local name="Vanish Magic"
+    local id="vanish_magic"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You can make playing cards",
+            "in the shop vanish and",
+            "earn {C:money}$#1#{} for each",
+            "{C:inactive}(Magic Trick + Blank)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=3},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_magic_trick','v_blank'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    G.FUNCS.vanish_card = function(e)
+        local card = e.config.ref_table
+        card:start_dissolve(nil,nil)
+        ease_dollars(G.P_CENTERS.v_vanish_magic.config.extra)
+    end
+    
+    G.FUNCS.can_vanish_card = function(e)
+        e.config.colour = G.C.DARK_EDITION
+        e.config.button = 'vanish_card'
+    end
+    G.localization.misc.dictionary.b_vanish = "VANISH"
+
+    local Card_highlight_ref=Card.highlight
+    function Card:highlight(is_higlighted)
+        if self.area and self.area.config.type == 'shop' and (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_vanish_magic then
+            -- if self.children.use_button then
+            -- self.children.use_button:remove()
+            -- self.children.use_button = nil
+            -- end
+            if 1 then
+                local x_off = (self.ability.consumeable and -0.1 or 0)
+                self.children.buy_button = UIBox{
+                    definition = G.UIDEF.use_and_sell_buttons(self), 
+                    config = {align=
+                            ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                            "bmi"
+                        , offset = 
+                            ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                            {x=0,y=0.65},
+                        parent =self}
+                }
+                local tst=self.children
+            end
+            --create_shop_card_ui(self)
+            --return Card_highlight_ref(self,is_higlighted)
+        end
+        return Card_highlight_ref(self,is_higlighted)
+    end
+
+    local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
+    function G.UIDEF.use_and_sell_buttons(card)
+        local retval = G_UIDEF_use_and_sell_buttons_ref(card)
+        if card.area and card.area.config.type == 'shop' and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers.v_vanish_magic then
+            local buy={
+            n=G.UIT.R, config = {ref_table = card, minw = 1.1, maxw = 1.3, padding = 0.1, align = 'bm', colour = G.C.GOLD, shadow = true, r = 0.08, minh = 0.94, func = 'can_buy', one_press = true, button = 'buy_from_shop', hover = true}, nodes={
+                {n=G.UIT.T, config={text = localize('b_buy'),colour = G.C.WHITE, scale = 0.5}}
+            }}
+            local vanish = 
+            {n=G.UIT.R, config={align = "bm"}, nodes={
+            
+            {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.GOLD, one_press = true, button = 'useless parameter lol', func = 'can_vanish_card'}, nodes={
+                {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                {n=G.UIT.C, config={align = "tm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                        {n=G.UIT.T, config={text = localize('b_vanish'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                    }},
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                        {n=G.UIT.T, config={text = '+'..localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+                        {n=G.UIT.T, config={ref_table = G.P_CENTERS.v_vanish_magic.config, ref_value = 'extra',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                    }}
+                }}
+            }}
+            }}
+            retval.nodes[1].nodes[2].config.padding=-0.1
+            retval.nodes[1].nodes[2].nodes = retval.nodes[1].nodes[2].nodes or {}
+            table.insert(retval.nodes[1].nodes[2].nodes, buy)
+            table.insert(retval.nodes[1].nodes[2].nodes, vanish)
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            table.insert(retval.nodes[1].nodes[2].nodes, {n=G.UIT.R, config = {align = "bm", w=7.7*card.T.w}})
+            return retval
+        end
+        return retval
+    end
+    
+
 end
+
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -1849,11 +1955,11 @@ end
     --         -- {id = 'v_prologue'},
     --         -- {id = 'v_epilogue'},
     --         -- {id = 'v_oversupply_plus'},
-    --         -- {id = 'v_b1g1'},
-    --         {id = 'v_directors_cut'},
-    --         {id = 'v_reroll_cut'},
-    --         -- {id = 'v_gold_round_up'},
-    --         {id = 'v_scrawl'},
+    --         {id = 'v_4d_boosters'},
+    --         -- {id = 'v_vanish_magic'},
+    --         {id = 'v_magic_trick'},
+    --         {id = 'v_blank'},
+    --         -- {id = 'v_scrawl'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
