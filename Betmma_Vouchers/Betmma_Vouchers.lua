@@ -594,8 +594,8 @@ function SMODS.INIT.BetmmaVouchers()
             "If chips scored are under",
             "{C:attention}#1#%{} of required chips",
             "at end of round,",
-            "create a {C:spectral}Spectral{} card",
-            "{C:inactive}(Must have room)"
+            "create a random",
+            "{C:dark_edition}Negative{} {C:attention}Joker{} card"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -620,9 +620,7 @@ function SMODS.INIT.BetmmaVouchers()
             end
         end
         if G.GAME.used_vouchers.v_bulls_eye and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS.v_bulls_eye.config.extra <= 0 then
-            if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
-                randomly_create_spectral('bulls_eye',localize("k_bulls_eye_generate"))
-            end
+            randomly_create_joker(1,'target',localize("k_bulls_eye_generate"),{edition={negative=true}})
         end
 
         end_round_ref()

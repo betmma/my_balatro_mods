@@ -27,7 +27,7 @@ A collection of mods made by me for Balatro.
 - Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create 2 random planet cards now.
 - Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
 - Target: If chips scored are under 120% of required chips at end of round, create a random Joker card.
-- Bull's Eye: If chips scored are under 105% of required chips at end of round, create a Spectral card.
+- Bull's Eye: If chips scored are under 105% of required chips at end of round, create a random negative Joker card.
 - Voucher Bundle: Gives 2 random vouchers. ($15)
 - Voucher Bulk: Gives 4 random vouchers. ($25)
 - Skip: Earn $4 when skipping blind.
