@@ -24,7 +24,7 @@ A collection of mods made by me for Balatro.
 - Mondrian: +1 Ante to win, +1 joker slot.
 - Round Up: Chips always round up to nearest tens when calculating hands.
 - Round Up Plus: Mult always round up to nearest tens when calculating hands.
-- Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create a Black Hole now.
+- Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create 2 random planet cards now.
 - Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
 - Target: If chips scored are under 120% of required chips at end of round, create a random Joker card.
 - Bull's Eye: If chips scored are under 105% of required chips at end of round, create a Spectral card.

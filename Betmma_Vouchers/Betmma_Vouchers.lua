@@ -454,8 +454,8 @@ function SMODS.INIT.BetmmaVouchers()
         text = {
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
-            "when opening a planet pack,",
-            "create a {C:spectral}Black Hole{} now",
+            "when opening a planet pack.",
+            "Create up to {C:attention}2{} random {C:planet}Planet{} cards now",
             "{C:inactive}(Must have room)"
         }
     }
@@ -479,8 +479,8 @@ function SMODS.INIT.BetmmaVouchers()
         text = {
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
-            "when using a planet card,",
-            "create a {C:spectral}Black Hole{} now",
+            "when using a planet card.",
+            "Create a {C:spectral}Black Hole{} now",
             "{C:inactive}(Must have room)"
         }
     }
@@ -503,7 +503,20 @@ function SMODS.INIT.BetmmaVouchers()
             name = center and center.name or self and self.ability.name,
             extra = center and center.config.extra or self and self.ability.extra
         }
-        if center_table.name == 'Event Horizon' or center_table.name == 'Engulfer' then
+        if center_table.name == 'Event Horizon' then
+            
+            for i = 1, math.min(2, G.consumeables.config.card_limit - #G.consumeables.cards) do
+                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+                    if G.consumeables.config.card_limit > #G.consumeables.cards then
+                        play_sound('timpani')
+                        local card = create_card('Planet', G.consumeables, nil, nil, nil, nil, nil, 'Event Horizon')
+                        card:add_to_deck()
+                        G.consumeables:emplace(card)
+                    end
+                    return true end }))
+            end
+        end
+        if center_table.name == 'Engulfer' then
             create_black_hole()
         end
         Card_apply_to_run_ref(self, center)
