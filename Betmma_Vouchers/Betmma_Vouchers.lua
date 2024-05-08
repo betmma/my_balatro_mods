@@ -1282,6 +1282,7 @@ function SMODS.INIT.BetmmaVouchers()
                 name = self.ability.name,
                 extra = self.ability.extra
             }
+            local vouchers_to_get={}
             for i,v in pairs(G.P_CENTER_POOLS.Voucher) do
                 local unredeemed_vouchers={}
                 if v.requires and not G.GAME.used_vouchers[v.key]then
@@ -1293,7 +1294,12 @@ function SMODS.INIT.BetmmaVouchers()
                 end
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
                 if #unredeemed_vouchers==1 and only_need.name==center_table.name then
-                    Card_redeem_ref(self)
+                    table.insert(vouchers_to_get,v)
+                end
+            end
+            if #vouchers_to_get>0 then
+                Card_redeem_ref(self)
+                for i,v in pairs(vouchers_to_get) do
                     local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
                     G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, v,{bypass_discovery_center = true, bypass_discovery_ui = true})
                     --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
@@ -1313,8 +1319,8 @@ function SMODS.INIT.BetmmaVouchers()
                             card:start_dissolve()
                             return true
                         end}))   
-                    return -- exit the whole function as Card_redeem_ref has been called
                 end
+                return -- exit the whole function as Card_redeem_ref has been called
             end
         end
         Card_redeem_ref(self)
@@ -1738,7 +1744,7 @@ function SMODS.INIT.BetmmaVouchers()
         name, id,
         {},
         {x=0,y=0}, loc_txt,
-        10, true, true, true, {'v_overstock','v_oversupply'}
+        10, true, true, true, {'v_overstock_norm','v_oversupply'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
@@ -1929,42 +1935,42 @@ end
 
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 4000},
-    --         }
+        --     name = "TestVoucher",
+        --     id = 'c_mod_testvoucher',
+        --     rules = {
+            --         custom = {
+            --         },
+            --         modifiers = {
+                --             {id = 'dollars', value = 4000},
+            --         }
     --     },
-    --     jokers = {
-    --         -- {id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_hasty'},
-    --         -- {id = 'j_dna'},
-    --         -- {id = 'j_mime'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_blueprint'},
-    --         -- {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         -- {id = 'c_death'},
-    --     },
-    --     vouchers = {
-    --         -- {id = 'v_prologue'},
-    --         -- {id = 'v_epilogue'},
-    --         -- {id = 'v_oversupply_plus'},
-    --         {id = 'v_4d_boosters'},
-    --         -- {id = 'v_vanish_magic'},
-    --         {id = 'v_magic_trick'},
-    --         {id = 'v_blank'},
-    --         -- {id = 'v_scrawl'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         -- cards = {{s='D',r='2',e='m_steel',g='Red'},{s='D',r='3',e='m_steel',g='Red'},{s='D',r='4',e='m_steel',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
-    --     },
+        --     jokers = {
+            --         -- {id = 'j_jjookkeerr'},
+            --         -- {id = 'j_ascension'},
+            --         -- {id = 'j_hasty'},
+            --         -- {id = 'j_dna'},
+            --         -- {id = 'j_mime'},
+            --         -- {id = 'j_piggy_bank'},
+            --         -- {id = 'j_blueprint'},
+            --         -- {id = 'j_triboulet'},
+        --     },
+        --     consumeables = {
+            --         -- {id = 'c_death'},
+        --     },
+        --     vouchers = {
+            --         -- {id = 'v_prologue'},
+            --         -- {id = 'v_epilogue'},
+            --         -- {id = 'v_oversupply_plus'},
+            --         {id = 'v_4d_boosters'},
+            --         -- {id = 'v_vanish_magic'},
+            --         {id = 'v_magic_trick'},
+            --         {id = 'v_blank'},
+            --         -- {id = 'v_scrawl'},
+        --     },
+        --     deck = {
+            --         type = 'Challenge Deck',
+            --         -- cards = {{s='D',r='2',e='m_steel',g='Red'},{s='D',r='3',e='m_steel',g='Red'},{s='D',r='4',e='m_steel',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
+        --     },
     --     restrictions = {
     --         banned_cards = {
     --         },
