@@ -801,20 +801,21 @@ function SMODS.INIT.BetmmaVouchers()
     local loc_txt = {
         name = name,
         text = {
-            "Randomly create {C:attention}Joker{} cards",
+            "Gives {C:money}$#1#{} for each joker you have,",
+            "then randomly create {C:attention}Jokers{}",
             "until joker slots are full"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {},
+        {extra=2},
         {x=0,y=0}, loc_txt,
         10, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {}--{self.config.extra}
+        return {self.config.extra}
     end
 
     
@@ -846,6 +847,7 @@ function SMODS.INIT.BetmmaVouchers()
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == 'Scrawl' then
+            ease_dollars(G.P_CENTERS.v_scrawl.config.extra*#G.jokers.cards)
             randomly_create_joker(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer),nil,nil)
         end
         if center_table.name == 'Scribble' then
@@ -1353,7 +1355,7 @@ function SMODS.INIT.BetmmaVouchers()
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra=5},
+        {extra=4},
         {x=0,y=0}, loc_txt,
         10, true, true, true
     )
@@ -1836,8 +1838,6 @@ function SMODS.INIT.BetmmaVouchers()
         end
     end
 
-if 1 then
-
     local name="Vanish Magic"
     local id="vanish_magic"
     local loc_txt = {
@@ -1942,7 +1942,6 @@ if 1 then
     end
     
 
-end
 
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{

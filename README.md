@@ -32,7 +32,7 @@ A collection of mods made by me for Balatro.
 - Voucher Bulk: Gives 4 random vouchers. ($25)
 - Skip: Earn $4 when skipping blind.
 - Skipper: Get a Double Tag when skipping blind.
-- Scrawl: Randomly create Jokers until joker slots are full.
+- Scrawl: Gives $2 for each joker you have, and then randomly create Jokers until joker slots are full.
 - Scribble: Randomly create 3 Negative Spectral cards.
 - Reserve Area: You can reserve tarot cards instead of using them when opening a tarot pack.
 - Reserve Area Plus: You can reserve spectral cards instead of using them when opening a spectral pack. Also get an ethereal tag now.
@@ -42,7 +42,7 @@ A collection of mods made by me for Balatro.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
 - B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
 - B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $10.
-- Collector: Each Voucher redeemed reduces Blind requirement by 5%. (multiplicative)
+- Collector: Each Voucher redeemed reduces Blind requirement by 4%. (multiplicative)
 - Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
 - Double Flipped Card: Flipped cards are held in hand when scoring and can trigger hold-in-hand effects. 
