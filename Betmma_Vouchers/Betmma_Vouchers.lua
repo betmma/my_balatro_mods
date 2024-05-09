@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 4 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 5 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -13,6 +13,7 @@
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
 -- stone cards don't take up hand space (so you can play 5 cards + any stones)
+-- complete a quest to get a soul
 -- fusion vouchers:
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
 -- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
@@ -60,7 +61,8 @@ local config = {
     v_gold_round_up=true,
     v_overshopping=true,
     v_reroll_cut=true,
-    v_vanish_magic=true
+    v_vanish_magic=true,
+    v_darkness=true
 }
 
 
@@ -1291,6 +1293,7 @@ function SMODS.INIT.BetmmaVouchers()
             if G.GAME.used_vouchers.v_b1g1 then 
                 lose=G.P_CENTERS.v_b1g1.config.extra
             end
+            lose=lose*(100-G.GAME.discount_percent)/100 -- liquidation
             local center_table = {
                 name = self.ability.name,
                 extra = self.ability.extra
@@ -1784,7 +1787,10 @@ function SMODS.INIT.BetmmaVouchers()
             local chaos = find_joker('Chaos the Clown')
             G.GAME.current_round.free_rerolls = #chaos
             calculate_reroll_cost(true)
-
+            
+            if G.GAME.used_vouchers.v_3d_boosters then
+                my_reroll_shop(get_booster_pack_max()-2,0)
+            end
             G:update_shop(dt)
         end
     end
@@ -1941,46 +1947,81 @@ function SMODS.INIT.BetmmaVouchers()
         return retval
     end
     
+    
+    local name="Darkness"
+    local id="darkness"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:dark_edition}Negative{} cards",
+            "appear {C:attention}#1#X{} more often",
+            "{C:inactive}(Glow Up + Antimatter)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=4},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_glow_up','v_antimatter'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local poll_edition_ref=poll_edition
+    function poll_edition(_key, _mod, _no_neg, _guaranteed)
+        _mod=_mod or 1
+        if G.GAME.used_vouchers.v_darkness then
+            local ret=poll_edition_ref(_key, _mod*(G.P_CENTERS.v_darkness.config.extra-1), _no_neg, _guaranteed)
+            if ret and ret.negative then
+                return ret
+            end
+        end
+        return poll_edition_ref(_key, _mod, _no_neg, _guaranteed)
+    end
 
 
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
-        --     name = "TestVoucher",
-        --     id = 'c_mod_testvoucher',
-        --     rules = {
-            --         custom = {
-            --         },
-            --         modifiers = {
-                --             {id = 'dollars', value = 4000},
-            --         }
+    --     name = "TestVoucher",
+    --     id = 'c_mod_testvoucher',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 4000},
+    --         }
     --     },
-        --     jokers = {
-            --         -- {id = 'j_jjookkeerr'},
-            --         -- {id = 'j_ascension'},
-            --         -- {id = 'j_hasty'},
-            --         -- {id = 'j_dna'},
-            --         -- {id = 'j_mime'},
-            --         -- {id = 'j_piggy_bank'},
-            --         -- {id = 'j_blueprint'},
-            --         -- {id = 'j_triboulet'},
-        --     },
-        --     consumeables = {
-            --         -- {id = 'c_death'},
-        --     },
-        --     vouchers = {
-            --         -- {id = 'v_prologue'},
-            --         -- {id = 'v_epilogue'},
-            --         -- {id = 'v_oversupply_plus'},
-            --         {id = 'v_4d_boosters'},
-            --         -- {id = 'v_vanish_magic'},
-            --         {id = 'v_magic_trick'},
-            --         {id = 'v_blank'},
-            --         -- {id = 'v_scrawl'},
-        --     },
-        --     deck = {
-            --         type = 'Challenge Deck',
-            --         -- cards = {{s='D',r='2',e='m_steel',g='Red'},{s='D',r='3',e='m_steel',g='Red'},{s='D',r='4',e='m_steel',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
-        --     },
+    --     jokers = {
+    --         {id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         -- {id = 'j_hasty'},
+    --         -- {id = 'j_dna'},
+    --         -- {id = 'j_mime'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_blueprint'},
+    --         -- {id = 'j_triboulet'},
+    --     },
+    --     consumeables = {
+    --         -- {id = 'c_death'},
+    --     },
+    --     vouchers = {
+    --         -- {id = 'v_prologue'},
+    --         -- {id = 'v_epilogue'},
+    --         {id = 'v_liquidation'},
+    --         {id = 'v_3d_boosters'},
+    --         {id = 'v_b1g1'},
+    --         -- {id = 'v_vanish_magic'},
+    --         {id = 'v_overshopping'},
+    --         {id = 'v_blank'},
+    --         {id = 'v_scrawl'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         -- cards = {{s='D',r='2',e='m_steel',g='Red'},{s='D',r='3',e='m_steel',g='Red'},{s='D',r='4',e='m_steel',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
+    --     },
     --     restrictions = {
     --         banned_cards = {
     --         },
