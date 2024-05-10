@@ -2025,7 +2025,7 @@ function SMODS.INIT.BetmmaVouchers()
         name = name,
         text = {
             "Create a random {C:planet}Planet{} card",
-            "when buying a planet card",
+            "when buying a Planet card",
             "{C:inactive}(Must have room)",
             "{C:inactive}(Planet Merchant + B1G50%)"
         }
