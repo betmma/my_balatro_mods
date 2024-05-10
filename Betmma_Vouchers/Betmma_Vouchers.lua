@@ -1697,7 +1697,7 @@ function SMODS.INIT.BetmmaVouchers()
     -- ################
     -- fusion vouchers!
     G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
-    G.ARGS.LOC_COLOURS["fusion"] = G.C.RARITY[5]
+    G.ARGS.LOC_COLOURS["fusion"] = HEX("F7D762")
     local card_h_popupref = G.UIDEF.card_h_popup
     function G.UIDEF.card_h_popup(card)
         local retval = card_h_popupref(card)
