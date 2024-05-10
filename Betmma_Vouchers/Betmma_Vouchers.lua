@@ -1819,13 +1819,24 @@ function SMODS.INIT.BetmmaVouchers()
         return {}
     end
 
+    local G_FUNC_can_reroll_ref=G.FUNCS.can_reroll
+    G.FUNCS.can_reroll= function(e)
+        G_FUNC_can_reroll_ref(e)
+        if not(G.blind_prompt_box) then 
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+            --e.children[1].children[1].config.shadow = false
+            --e.children[2].children[1].config.shadow = false
+            --e.children[2].children[2].config.shadow = false
+        end
+    end
+    
     local G_FUNC_reroll_boss_ref =  G.FUNCS.reroll_boss
     G.FUNCS.reroll_boss = function(e) 
         G_FUNC_reroll_boss_ref(e)
         
-        if G.GAME.used_vouchers.v_reroll_cut then
+        if G.GAME.used_vouchers.v_reroll_cut then -- adding a pack tag when in a pack causes double pack and will crash
             stop_use()
-            local tst=G.GAME.round_resets.blind_tags.Small
             if G.GAME.round_resets.blind_states.Small ~= 'Defeated' then 
                 G.GAME.round_resets.blind_tags.Small = get_next_tag_key()
                 --create_UIBox_blind_choice('Small', true)
@@ -1835,11 +1846,31 @@ function SMODS.INIT.BetmmaVouchers()
                 --create_UIBox_blind_choice('Big', true)
             end
             local random_tag_key = get_next_tag_key()
-            add_tag(Tag(random_tag_key))
-            G.blind_select:remove()
+            while random_tag_key == 'tag_boss' do -- reroll boss tag will cause double blind select box
+                random_tag_key = get_next_tag_key()
+            end
+            if not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then -- orbital tag
+                local _poker_hands = {}
+                for k, v in pairs(G.GAME.hands) do
+                    if v.visible then _poker_hands[#_poker_hands+1] = k end
+                end
+            
+                G.GAME.orbital_choices[G.GAME.round_resets.ante]['Small'] = pseudorandom_element(_poker_hands, pseudoseed('orbital'))
+              end
+            local random_tag=Tag(random_tag_key,false,'Small')
+        
+            if G.blind_select then G.blind_select:remove()end
             G.blind_prompt_box:remove()
             G.blind_select = nil
             G.STATE_COMPLETE=false
+            
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                func = (function() 
+                    
+                add_tag(random_tag)
+                    return true end)
+            }))
             --create_UIBox_blind_select()
         end
     end
