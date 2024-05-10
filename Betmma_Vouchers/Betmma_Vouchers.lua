@@ -19,7 +19,6 @@
 -- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
 -- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
 -- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
--- Glow Up and Antimatter: Negative jokers appear 4X more often.         Or: All jokers in the shop with editions are negative but appear 50% less often.
 -- Glow Up and Illusion: Playing cards in the shop always have an edition and may have an enhancement and/or a seal.          Or: Playing cards in the shop always have an enhancement, edition and a seal.
 
 -- Config: DISABLE UNWANTED MODS HERE
@@ -62,7 +61,8 @@ local config = {
     v_overshopping=true,
     v_reroll_cut=true,
     v_vanish_magic=true,
-    v_darkness=true
+    v_darkness=true,
+    v_double_planet=false
 }
 
 
@@ -1698,7 +1698,8 @@ function SMODS.INIT.BetmmaVouchers()
     -- ################
     -- fusion vouchers!
     G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
-    G.ARGS.LOC_COLOURS["fusion"] = HEX("F7D762")
+    if not G.ARGS.LOC_COLOURS then loc_colour() end
+    if not G.ARGS.LOC_COLOURS["fusion"] then G.ARGS.LOC_COLOURS["fusion"] = HEX("F7D762") end
     local card_h_popupref = G.UIDEF.card_h_popup
     function G.UIDEF.card_h_popup(card)
         local retval = card_h_popupref(card)
@@ -2015,6 +2016,28 @@ function SMODS.INIT.BetmmaVouchers()
     end
 
 
+    local name="Double Planet"
+    local id="double_planet"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Create a random {C:planet}Planet{} card",
+            "when buying a planet card",
+            "{C:inactive}(Must have room)",
+            "{C:inactive}(Planet Merchant + B1G50%)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_planet_merchant','v_b1g50'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2047,8 +2070,9 @@ function SMODS.INIT.BetmmaVouchers()
     --         {id = 'v_b1g1'},
     --         -- {id = 'v_vanish_magic'},
     --         {id = 'v_overshopping'},
-    --         {id = 'v_blank'},
-    --         {id = 'v_scrawl'},
+    --         {id = 'v_directors_cut'},
+    --         {id = 'v_retcon'},
+    --         {id = 'v_event_horizon'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
