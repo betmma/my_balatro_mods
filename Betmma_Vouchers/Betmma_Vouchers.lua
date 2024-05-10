@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 5 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 6 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -62,7 +62,7 @@ local config = {
     v_reroll_cut=true,
     v_vanish_magic=true,
     v_darkness=true,
-    v_double_planet=false
+    v_double_planet=true
 }
 
 
@@ -154,6 +154,9 @@ local function randomly_create_spectral(tag,message,extra)
 end
 local function randomly_create_tarot(tag,message,extra)
     return randomly_create_consumable('Tarot',tag,message,extra)
+end
+local function randomly_create_planet(tag,message,extra)
+    return randomly_create_consumable('Planet',tag,message,extra)
 end
 
 function SMODS.INIT.BetmmaVouchers()
@@ -2038,6 +2041,16 @@ function SMODS.INIT.BetmmaVouchers()
     this_v.loc_def = function(self)
         return {}
     end
+
+    local G_FUNCS_buy_from_shop_ref=G.FUNCS.buy_from_shop
+    G.FUNCS.buy_from_shop = function(e)
+        local c1 = e.config.ref_table
+        local ret=G_FUNCS_buy_from_shop_ref(e)
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet') and ret~=false and G.GAME.used_vouchers.v_double_planet and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- +1 is because buy_from_shop adds a card in an event that is executed after this code
+            randomly_create_planet('v_double_planet','Double Planet!',nil)
+        end
+    end
+
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2046,11 +2059,11 @@ function SMODS.INIT.BetmmaVouchers()
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 4000},
+    --             --{id = 'dollars', value = 4000},
     --         }
     --     },
     --     jokers = {
-    --         {id = 'j_jjookkeerr'},
+    --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         -- {id = 'j_hasty'},
     --         -- {id = 'j_dna'},
@@ -2063,16 +2076,16 @@ function SMODS.INIT.BetmmaVouchers()
     --         -- {id = 'c_death'},
     --     },
     --     vouchers = {
-    --         -- {id = 'v_prologue'},
+    --         {id = 'v_double_planet'},
     --         -- {id = 'v_epilogue'},
-    --         {id = 'v_liquidation'},
-    --         {id = 'v_3d_boosters'},
-    --         {id = 'v_b1g1'},
     --         -- {id = 'v_vanish_magic'},
-    --         {id = 'v_overshopping'},
-    --         {id = 'v_directors_cut'},
-    --         {id = 'v_retcon'},
-    --         {id = 'v_event_horizon'},
+    --         -- {id = 'v_liquidation'},
+    --         -- {id = 'v_3d_boosters'},
+    --         -- {id = 'v_b1g1'},
+    --         -- {id = 'v_overshopping'},
+    --         -- {id = 'v_directors_cut'},
+    --         -- {id = 'v_retcon'},
+    --         -- {id = 'v_event_horizon'},
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
