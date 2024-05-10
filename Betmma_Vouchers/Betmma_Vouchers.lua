@@ -457,8 +457,8 @@ function SMODS.INIT.BetmmaVouchers()
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
             "when opening a planet pack.",
-            "Create up to {C:attention}2{} random {C:planet}Planet{} cards now",
-            "{C:inactive}(Must have room)"
+            "Create up to {C:attention}2{} random",
+            "{C:dark_edition}Negative{} {C:planet}Planet{} cards now",
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -507,11 +507,12 @@ function SMODS.INIT.BetmmaVouchers()
         }
         if center_table.name == 'Event Horizon' then
             
-            for i = 1, math.min(2, G.consumeables.config.card_limit - #G.consumeables.cards) do
+            for i = 1, 2 do
                 G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
                     if G.consumeables.config.card_limit > #G.consumeables.cards then
                         play_sound('timpani')
                         local card = create_card('Planet', G.consumeables, nil, nil, nil, nil, nil, 'Event Horizon')
+                        card:set_edition({negative=true},true,false)
                         card:add_to_deck()
                         G.consumeables:emplace(card)
                     end
@@ -1830,7 +1831,7 @@ function SMODS.INIT.BetmmaVouchers()
             --e.children[2].children[2].config.shadow = false
         end
     end
-    
+
     local G_FUNC_reroll_boss_ref =  G.FUNCS.reroll_boss
     G.FUNCS.reroll_boss = function(e) 
         G_FUNC_reroll_boss_ref(e)
