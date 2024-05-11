@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 32 Vouchers and 6 fusion Vouchers.
+# Betmma Vouchers: Adds 32 Vouchers and 7 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -49,12 +49,14 @@ A collection of mods made by me for Balatro.
 - Prologue: When blind begins, create an Eternal Tarot card.
 - Epilogue: +1 consumable slot. When blind ends, create an Eternal Spectral card. This card disappears when a new Epilogue card is created.
 ## Fusion Vouchers
+Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.
 - Overshopping (Overstock + Oversupply): You can shop after skipping blinds.
 - Reroll Cut (Director's Cut + Reroll Surplus): Rerolling boss blind also rerolls tags, and gives a random tag .
 - Vanish Magic (Magic Trick + Blank): You can make playing cards in the shop vanish and earn $3 for each.
 - Darkness (Glow Up + Antimatter): Negative cards appear 4X more often.
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
+- Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.

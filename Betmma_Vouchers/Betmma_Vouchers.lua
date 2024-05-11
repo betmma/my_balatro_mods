@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 6 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 7 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -63,7 +63,8 @@ local config = {
     v_reroll_cut=true,
     v_vanish_magic=true,
     v_darkness=true,
-    v_double_planet=true
+    v_double_planet=true,
+    v_trash_picker=true
 }
 
 
@@ -160,14 +161,75 @@ local function randomly_create_planet(tag,message,extra)
     return randomly_create_consumable('Planet',tag,message,extra)
 end
 
+local function get_weight(v)
+    local _type=type(v)
+
+    if _type~='table' and _type~='string' then return 1 end
+    -- if _type=='table' and v.name == "Ace of Spades"then return 9999 end
+    if _type=='string' then
+        if G.P_CENTERS[v] then
+            v=G.P_CENTERS[v]
+        end
+    end
+    if v.weight then return v.weight end
+    if v.config and v.config.weight then return v.config.weight end
+    return 1
+end
+
 function SMODS.INIT.BetmmaVouchers()
+    local get_next_voucher_key_ref=get_next_voucher_key
+    function get_next_voucher_key(_from_tag)
+        -- local _pool, _pool_key = get_current_pool('Voucher')
+        -- this pool contains strings
+        local pseudorandom_element_ref=pseudorandom_element
+        pseudorandom_element=pseudorandom_element_weighted
+        local ret= get_next_voucher_key_ref(_from_tag)
+        pseudorandom_element=pseudorandom_element_ref
+        return ret
+    end
+    function pseudorandom_element_weighted(_t, seed)
+        if seed then math.randomseed(seed) end
+        -- local keys = {}
+        -- for k, v in pairs(_t) do
+        --     keys[#keys+1] = {k = k,v = v}
+        -- end
+      
+        -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
+        --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
+        -- else
+        --   table.sort(keys, function (a, b) return a.k < b.k end)
+        -- end
+        local _type
+        local cume, it, center, center_key = 0, 0, nil, nil
+        for k, v in pairs(_t) do
+            _type=type(v)
+            if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
+        end
+        local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
+        
+        for k, v in pairs(_t) do
+            if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
+                it = it + get_weight(v) 
+                if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
+            end
+        end
+        if center == nil then center.a() end
+        return center,center_key
+    end
+
+    local fusion_voucher_weight=4
     local SMODS_Voucher_register=SMODS.Voucher.register
     function SMODS.Voucher:register()
-        if SMODS._MOD_NAME=='Betmma Vouchers'and not config[self.slug] then return false end
+        if SMODS._MOD_NAME=='Betmma Vouchers' then
+            if not config[self.slug] then return false end
+            if self.requires and #self.requires>1 then 
+                self.config.weight=fusion_voucher_weight
+            end
+        end
         SMODS_Voucher_register(self)
     end
 
-
+do
     local oversupply_loc_txt = {
         name = "Oversupply",
         text = {
@@ -184,7 +246,6 @@ function SMODS.INIT.BetmmaVouchers()
     )
     SMODS.Sprite:new("v_oversupply", SMODS.findModByID("BetmmaVouchers").path, "v_oversupply.png", 71, 95, "asset_atli"):register();
     v_oversupply:register()
-
     
     local oversupply_plus_loc_txt = {
         name = "Oversupply Plus",
@@ -211,7 +272,7 @@ function SMODS.INIT.BetmmaVouchers()
         end_round_ref()
     end
 
-
+end
 
     local name="Gold Coin"
     local id="gold_coin"
@@ -461,7 +522,7 @@ function SMODS.INIT.BetmmaVouchers()
             "{C:green}#1# in #2#{} chance to",
             "create a {C:spectral}Black Hole{} card",
             "when opening a planet pack.",
-            "Create up to {C:attention}2{} random",
+            "Create {C:attention}2{} random",
             "{C:dark_edition}Negative{} {C:planet}Planet{} cards now",
         }
     }
@@ -1132,7 +1193,6 @@ function SMODS.INIT.BetmmaVouchers()
     this_v.loc_def = function(self)
         return {}--{self.config.extra}
     end
-
     
     local name="4D Boosters"
     local id="4d_boosters"
@@ -2052,6 +2112,63 @@ function SMODS.INIT.BetmmaVouchers()
         end
     end
 
+do
+    local name="Trash Picker"
+    local id="trash_picker"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round.",
+            "You can spend 1 hand to discard",
+            "if you have no discards.",
+            "Each discard gives {C:money}$1{} after rounds",
+            "{C:inactive}(Grabber + Wasteful)"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=1},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_grabber','v_wasteful'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Trash Picker' then
+            G.GAME.round_resets.hands = G.GAME.round_resets.hands + center_table.extra
+            ease_hands_played(center_table.extra)
+            G.GAME.round_resets.discards = G.GAME.round_resets.discards + center_table.extra
+            ease_discard(center_table.extra)
+            G.GAME.modifiers.money_per_discard = (G.GAME.modifiers.money_per_discard or 0) +1
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+    
+    local G_FUNCS_can_discard_ref=G.FUNCS.can_discard
+    G.FUNCS.can_discard = function(e)
+        G_FUNCS_can_discard_ref(e)
+        if G.GAME.current_round.discards_left <= 0 and #G.hand.highlighted > 0 and G.GAME.used_vouchers.v_trash_picker and G.GAME.current_round.hands_left>1 then
+            e.config.colour = G.C.RED
+            e.config.button = 'discard_cards_from_highlighted_using_hand'
+        end
+    end
+
+    local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted 
+    G.FUNCS.discard_cards_from_highlighted_using_hand = function(e, hook)
+        G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
+        ease_hands_played(-1)
+    end
+end --
+
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2066,7 +2183,7 @@ function SMODS.INIT.BetmmaVouchers()
     --     jokers = {
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_hasty'},
+    --         {id = 'j_hasty'},
     --         -- {id = 'j_dna'},
     --         -- {id = 'j_mime'},
     --         -- {id = 'j_piggy_bank'},
@@ -2077,8 +2194,9 @@ function SMODS.INIT.BetmmaVouchers()
     --         -- {id = 'c_death'},
     --     },
     --     vouchers = {
-    --         {id = 'v_double_planet'},
-    --         -- {id = 'v_epilogue'},
+    --         {id = 'v_trash_picker'},
+    --         {id = 'v_b1g50'},
+    --         {id = 'v_planet_merchant'},
     --         -- {id = 'v_vanish_magic'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
