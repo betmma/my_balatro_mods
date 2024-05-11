@@ -20,6 +20,7 @@
 -- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
 -- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
 -- Glow Up and Illusion: Playing cards in the shop always have an edition and may have an enhancement and/or a seal.          Or: Playing cards in the shop always have an enhancement, edition and a seal.
+-- Darkness and Double Planet: the planet card generated is negative
 
 -- Config: DISABLE UNWANTED MODS HERE
 local config = {
@@ -1297,7 +1298,7 @@ function SMODS.INIT.BetmmaVouchers()
             if G.GAME.used_vouchers.v_b1g1 then 
                 lose=G.P_CENTERS.v_b1g1.config.extra
             end
-            lose=lose*(100-G.GAME.discount_percent)/100 -- liquidation
+            lose=math.max(1, math.floor((lose+0.5)*(100-G.GAME.discount_percent)/100)) -- liquidation
             local center_table = {
                 name = self.ability.name,
                 extra = self.ability.extra
