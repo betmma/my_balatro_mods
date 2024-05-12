@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 7 Fusion Vouchers!
+--- MOD_DESCRIPTION: 32 More Vouchers and 9 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -15,6 +15,8 @@
 -- stone cards don't take up hand space (so you can play 5 cards + any stones)
 -- complete a quest to get a soul
 -- fusion vouchers:
+-- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
+-- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
 -- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
 -- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
@@ -64,7 +66,9 @@ local config = {
     v_vanish_magic=true,
     v_darkness=true,
     v_double_planet=true,
-    v_trash_picker=true
+    v_trash_picker=true,
+    v_money_target=true,
+    v_art_gallery=true
 }
 
 
@@ -176,6 +180,36 @@ local function get_weight(v)
     return 1
 end
 
+local function pseudorandom_element_weighted(_t, seed)
+    if seed then math.randomseed(seed) end
+    -- local keys = {}
+    -- for k, v in pairs(_t) do
+    --     keys[#keys+1] = {k = k,v = v}
+    -- end
+  
+    -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
+    --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
+    -- else
+    --   table.sort(keys, function (a, b) return a.k < b.k end)
+    -- end
+    local _type
+    local cume, it, center, center_key = 0, 0, nil, nil
+    for k, v in pairs(_t) do
+        _type=type(v)
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
+    end
+    local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
+    
+    for k, v in pairs(_t) do
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
+            it = it + get_weight(v) 
+            if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
+        end
+    end
+    if center == nil then center.a() end
+    return center,center_key
+end
+
 function SMODS.INIT.BetmmaVouchers()
     local get_next_voucher_key_ref=get_next_voucher_key
     function get_next_voucher_key(_from_tag)
@@ -186,35 +220,6 @@ function SMODS.INIT.BetmmaVouchers()
         local ret= get_next_voucher_key_ref(_from_tag)
         pseudorandom_element=pseudorandom_element_ref
         return ret
-    end
-    function pseudorandom_element_weighted(_t, seed)
-        if seed then math.randomseed(seed) end
-        -- local keys = {}
-        -- for k, v in pairs(_t) do
-        --     keys[#keys+1] = {k = k,v = v}
-        -- end
-      
-        -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
-        --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
-        -- else
-        --   table.sort(keys, function (a, b) return a.k < b.k end)
-        -- end
-        local _type
-        local cume, it, center, center_key = 0, 0, nil, nil
-        for k, v in pairs(_t) do
-            _type=type(v)
-            if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
-        end
-        local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
-        
-        for k, v in pairs(_t) do
-            if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
-                it = it + get_weight(v) 
-                if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
-            end
-        end
-        if center == nil then center.a() end
-        return center,center_key
     end
 
     local fusion_voucher_weight=4
@@ -272,8 +277,9 @@ do
         end_round_ref()
     end
 
-end
 
+end --
+do 
     local name="Gold Coin"
     local id="gold_coin"
     local gold_coin_loc_txt = {
@@ -344,7 +350,8 @@ end
 
 
 
-
+end --
+do 
     
     local name="Abstract Art"
     local id="abstract_art"
@@ -449,7 +456,8 @@ end
     end
 
     
-
+end --
+do 
 
     local name="Round Up"
     local id="round_up"
@@ -512,7 +520,8 @@ end
     end
 
 
-
+end --
+do 
     
     local name="Event Horizon"
     local id="event_horizon"
@@ -626,7 +635,8 @@ end
     end
 
 
-
+end --
+do 
 
     
     local name="Target"
@@ -698,7 +708,8 @@ end
     G.localization.misc.dictionary.k_bulls_eye_generate = "Bull's Eye!"
 
 
-
+end --
+do 
 
     local name="Voucher Bundle"
     local id="voucher_bundle"
@@ -806,7 +817,8 @@ end
     -- end
     -- local time=0
 
-
+end --
+do 
 
     local name="Skip"
     local id="skip"
@@ -861,8 +873,8 @@ end
     end
 
     
-
-
+end --
+do 
         
     local name="Scrawl"
     local id="scrawl"
@@ -927,7 +939,8 @@ end
     end
 
     
-
+end --
+do 
 
     local name="Reserve Area"
     local id="reserve_area"
@@ -1062,7 +1075,8 @@ end
     -- I suspect that this function does nothing too
     -- because replacing it with empty function seems do no harm
 
-
+end --
+do 
 
     local name="Overkill"
     local id="overkill"
@@ -1171,7 +1185,8 @@ end
     G.localization.misc.dictionary.k_big_blast_edition = "Big Blast!"
 
 
-
+end --
+do 
 
     local name="3D Boosters"
     local id="3d_boosters"
@@ -1298,7 +1313,8 @@ end
     end
 
 
-    
+end --
+do 
 
 
     local name="B1G50%"
@@ -1407,7 +1423,8 @@ end
         Card_redeem_ref(self)
     end
     
-
+end --
+do 
 
     local name="Collector"
     local id="collector"
@@ -1496,7 +1513,8 @@ end
         Card_apply_to_run_ref(self, center)
     end
 
-
+end --
+do 
 
     local name="Flipped Card"
     local id="flipped_card"
@@ -1670,7 +1688,8 @@ end
     end
 
 
-
+end --
+do 
 
     local name="Prologue"
     local id="prologue"
@@ -1756,7 +1775,8 @@ end
         end
         end_round_ref()
     end
-
+end --
+ 
 
 
     -- ################
@@ -1781,6 +1801,7 @@ end
     end
 
 
+do 
     local name="Gold Round Up"
     local id="gold_round_up"
     local loc_txt = {
@@ -1810,7 +1831,8 @@ end
         ease_dollars_ref(mod, instant)
     end
 
-
+end --
+do 
 
     local name="Overshopping"
     local id="overshopping"
@@ -1861,7 +1883,8 @@ end
         end
     end
 
-
+end --
+do 
     local name="Reroll Cut"
     local id="reroll_cut"
     local loc_txt = {
@@ -1940,7 +1963,8 @@ end
             --create_UIBox_blind_select()
         end
     end
-
+end --
+do 
     local name="Vanish Magic"
     local id="vanish_magic"
     local loc_txt = {
@@ -2044,7 +2068,8 @@ end
         return retval
     end
     
-    
+end --
+do 
     local name="Darkness"
     local id="darkness"
     local loc_txt = {
@@ -2079,7 +2104,8 @@ end
         return poll_edition_ref(_key, _mod, _no_neg, _guaranteed)
     end
 
-
+end --
+do
     local name="Double Planet"
     local id="double_planet"
     local loc_txt = {
@@ -2111,7 +2137,7 @@ end
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
-
+end --
 do
     local name="Trash Picker"
     local id="trash_picker"
@@ -2168,7 +2194,100 @@ do
         ease_hands_played(-1)
     end
 end --
+do
+    local name="Money Target"
+    local id="money_target"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Earn double {C:money}interest{}", 
+            "at end of round if your",
+            "money is multiples of 5",
+            "{C:inactive}(Seed Money + Target){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=2},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_seed_money','v_target'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
 
+    local G_FUNCS_evaluate_round_ref=G.FUNCS.evaluate_round
+    G.FUNCS.evaluate_round = function()
+        G.GAME.interest_amount_ref=G.GAME.interest_amount
+        --print("interest_ref",G.GAME.interest_amount_ref)
+        G.GAME.v_money_target_triggered=false
+        if G.GAME.used_vouchers.v_money_target and G.GAME.dollars%5==0 then
+            G.GAME.v_money_target_triggered=true
+            G.GAME.interest_amount=G.GAME.interest_amount*G.P_CENTERS.v_money_target.config.extra
+        end
+        --print("interest",G.GAME.interest_amount)
+        G_FUNCS_evaluate_round_ref()
+    end
+
+    
+    local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
+    G.FUNCS.cash_out=function (e)
+        if G.GAME.used_vouchers.v_money_target and G.GAME.v_money_target_triggered then
+            local delta= G.GAME.interest_amount-G.GAME.interest_amount_ref*G.P_CENTERS.v_money_target.config.extra -- if delta ~= 0 then jokers adding amount were sold between evaluate_round and cash_out
+            --print("delta",delta)
+            G.GAME.interest_amount=G.GAME.interest_amount_ref+delta
+        end
+        G_FUNCS_cash_out_ref(e)
+    end
+end --
+
+do
+    local name="Art Gallery"
+    local id="art_gallery"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When {C:attention}Boss Blind{} is defeated,", 
+            "randomly get one of the following:",
+            "{C:blue}+#1#{} hand, {C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
+            "{C:inactive}(Hieroglyph + Abstract Art){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=1},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_hieroglyph','v_abstract_art'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local end_round_ref = end_round
+    function end_round()
+        if G.GAME.used_vouchers.v_art_gallery and G.GAME.blind:get_type() == 'Boss' then
+            local random_number=pseudorandom('v_art_gallery')
+            local value=G.P_CENTERS.v_art_gallery.config.extra
+            if random_number < 1/3 then
+                G.GAME.round_resets.hands = G.GAME.round_resets.hands + value
+                ease_hands_played(value)
+            elseif random_number < 2/3 then
+                G.GAME.round_resets.discards = G.GAME.round_resets.discards + value
+                ease_discard(value)
+            else
+                ease_ante(-value)
+                G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
+                G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante-value
+            end
+            
+        end
+        end_round_ref()
+    end
+end --
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2177,26 +2296,30 @@ end --
     --         custom = {
     --         },
     --         modifiers = {
-    --             --{id = 'dollars', value = 4000},
+    --             {id = 'dollars', value = 5},
     --         }
     --     },
     --     jokers = {
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         {id = 'j_hasty'},
+    --         {id = 'j_to_the_moon'},
+    --         {id = 'j_to_the_moon'},
+    --         {id = 'j_to_the_moon'},
+    --         {id = 'j_to_the_moon'},
     --         -- {id = 'j_dna'},
     --         -- {id = 'j_mime'},
     --         -- {id = 'j_piggy_bank'},
     --         -- {id = 'j_blueprint'},
-    --         -- {id = 'j_triboulet'},
+    --         {id = 'j_triboulet'},
     --     },
     --     consumeables = {
     --         -- {id = 'c_death'},
     --     },
     --     vouchers = {
     --         {id = 'v_trash_picker'},
-    --         {id = 'v_b1g50'},
-    --         {id = 'v_planet_merchant'},
+    --         {id = 'v_money_target'},
+    --         {id = 'v_art_gallery'},
     --         -- {id = 'v_vanish_magic'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},

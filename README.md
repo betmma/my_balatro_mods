@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 32 Vouchers and 7 fusion Vouchers.
+# Betmma Vouchers: Adds 32 Vouchers and 9 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -57,6 +57,8 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Darkness (Glow Up + Antimatter): Negative cards appear 4X more often.
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
 - Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
+- Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
+- Art Gallery (Hierogpyph + Abstract Art): When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
