@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 32 More Vouchers and 9 Fusion Vouchers!
+--- MOD_DESCRIPTION: 34 More Vouchers and 9 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -59,6 +59,8 @@ local config = {
     v_double_flipped_card=true,
     v_prologue=true,
     v_epilogue=true,
+    v_bonus_plus=true,
+    v_mult_plus=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -1786,6 +1788,70 @@ do
         end_round_ref()
     end
 end --
+do 
+
+    local name="Bonus+"
+    local id="bonus_plus"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Permanently increases",
+            "{C:blue}Bonus Card{} bonus",
+            "by {C:blue}+#1#{} extra chips",
+            "{C:inactive}(e.g. +30 -> +#2#){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=30},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra,self.config.extra+30}
+    end
+
+    local name="Mult+"
+    local id="mult_plus"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Permanently increases",
+            "{C:red}Mult cards{} bonus",
+            "by {C:red}+#1#{} Mult",
+            "{C:inactive}(e.g. +4 -> +#2#){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=8},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_bonus_plus'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra,self.config.extra+4}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Bonus+' then
+            G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS.v_bonus_plus.config.extra
+        end
+        if center_table.name == 'Mult+' then
+            G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS.v_mult_plus.config.extra
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+end --
  
 
 
@@ -2325,10 +2391,6 @@ end --
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         {id = 'j_hasty'},
-    --         {id = 'j_to_the_moon'},
-    --         {id = 'j_to_the_moon'},
-    --         {id = 'j_to_the_moon'},
-    --         {id = 'j_to_the_moon'},
     --         -- {id = 'j_dna'},
     --         -- {id = 'j_mime'},
     --         -- {id = 'j_piggy_bank'},
@@ -2341,7 +2403,8 @@ end --
     --     vouchers = {
     --         {id = 'v_trash_picker'},
     --         {id = 'v_money_target'},
-    --         {id = 'v_art_gallery'},
+    --         {id = 'v_bonus_plus'},
+    --         {id = 'v_mult_plus'},
     --         -- {id = 'v_vanish_magic'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
