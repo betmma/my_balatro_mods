@@ -1697,7 +1697,9 @@ do
         name = name,
         text = {
             "When blind begins, create",
-            "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
+            "an {C:attention}Eternal{} {C:tarot}Tarot{} card.",
+            "This card disappears when a",
+            "new Prologue card is created",
             "{C:inactive}(Must have room)"
         }
     }
@@ -1722,7 +1724,7 @@ do
             "When blind ends, create an",
             "{C:attention}Eternal{} {C:spectral}Spectral{} card.",
             "This card disappears when a",
-            "new Epilogue card is created.",
+            "new Epilogue card is created",
             "{C:inactive}(Must have room)"
         }
     }
@@ -1753,7 +1755,15 @@ do
     local new_round_ref=new_round
     function new_round()
         if G.GAME.used_vouchers.v_prologue then
-            randomly_create_tarot('v_prologue',nil,{eternal=true})
+            for i=1,#G.consumeables.cards do
+                if G.consumeables.cards[i].ability.v_prologue then
+                    G.consumeables.cards[i]:start_dissolve(nil,nil)
+                end
+            end
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                func = (function() randomly_create_tarot('v_prologue',nil,{eternal=true,extra_ability='v_prologue'}) return true end)
+            }))
         end
         return new_round_ref()
     end
@@ -2242,13 +2252,13 @@ do
         G_FUNCS_cash_out_ref(e)
     end
 end --
-
 do
     local name="Art Gallery"
     local id="art_gallery"
     local loc_txt = {
         name = name,
         text = {
+            "{C:attention}+#1#{} Ante to win.",
             "When {C:attention}Boss Blind{} is defeated,", 
             "randomly get one of the following:",
             "{C:blue}+#1#{} hand, {C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
@@ -2265,6 +2275,18 @@ do
     this_v:register()
     this_v.loc_def = function(self)
         return {self.config.extra}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Art Gallery' then
+            ease_ante_to_win(center_table.extra)
+        end
+        Card_apply_to_run_ref(self, center)
     end
 
     local end_round_ref = end_round

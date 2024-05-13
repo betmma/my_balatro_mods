@@ -46,7 +46,7 @@ A collection of mods made by me for Balatro.
 - Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
 - Double Flipped Card: Flipped cards are held in hand when scoring and can trigger hold-in-hand effects. 
-- Prologue: When blind begins, create an Eternal Tarot card.
+- Prologue: When blind begins, create an Eternal Tarot card. This card disappears when a new Prologue card is created.
 - Epilogue: +1 consumable slot. When blind ends, create an Eternal Spectral card. This card disappears when a new Epilogue card is created.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
@@ -58,7 +58,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
 - Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
 - Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
-- Art Gallery (Hierogpyph + Abstract Art): When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
+- Art Gallery (Hierogpyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
