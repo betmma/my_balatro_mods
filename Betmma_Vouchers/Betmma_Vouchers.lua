@@ -70,7 +70,8 @@ local config = {
     v_double_planet=true,
     v_trash_picker=true,
     v_money_target=true,
-    v_art_gallery=true
+    v_art_gallery=true,
+    -- v_slate=true
 }
 
 
@@ -212,7 +213,65 @@ local function pseudorandom_element_weighted(_t, seed)
     return center,center_key
 end
 
+
+--- deal with enhances effect changes when saving & loading
+do
+    local enhanced_prototype_centers = {}
+
+    function setup_consumables()
+        -- Save vanilla enhanced centers
+        enhanced_prototype_centers.m_bonus = G.P_CENTERS.m_bonus.config.bonus
+        enhanced_prototype_centers.m_mult = G.P_CENTERS.m_mult.config.mult
+        enhanced_prototype_centers.m_glass = G.P_CENTERS.m_glass.config.Xmult
+        enhanced_prototype_centers.m_steel = G.P_CENTERS.m_steel.config.h_x_mult
+        enhanced_prototype_centers.m_stone = G.P_CENTERS.m_stone.config.bonus
+        enhanced_prototype_centers.m_gold = G.P_CENTERS.m_gold.config.h_dollars
+    end
+
+
+    -- Restore vanilla enhancements
+    local Game_delete_run_ref = Game.delete_run
+    function Game.delete_run(self)
+
+        G.P_CENTERS.m_bonus.config.bonus = enhanced_prototype_centers.m_bonus
+        G.P_CENTERS.m_mult.config.mult = enhanced_prototype_centers.m_mult
+        G.P_CENTERS.m_glass.config.Xmult = enhanced_prototype_centers.m_glass
+        G.P_CENTERS.m_steel.config.h_x_mult = enhanced_prototype_centers.m_steel
+        G.P_CENTERS.m_stone.config.bonus = enhanced_prototype_centers.m_stone
+        G.P_CENTERS.m_gold.config.h_dollars = enhanced_prototype_centers.m_gold
+
+
+        Game_delete_run_ref(self)
+    end
+
+    -- Restore enhanced cards effect changes
+    local Game_start_run_ref = Game.start_run
+    function Game.start_run(self, args)
+
+        G.P_CENTERS.m_bonus.config.bonus = enhanced_prototype_centers.m_bonus
+        G.P_CENTERS.m_mult.config.mult = enhanced_prototype_centers.m_mult
+        G.P_CENTERS.m_glass.config.Xmult = enhanced_prototype_centers.m_glass
+        G.P_CENTERS.m_steel.config.h_x_mult = enhanced_prototype_centers.m_steel
+        G.P_CENTERS.m_stone.config.bonus = enhanced_prototype_centers.m_stone
+        G.P_CENTERS.m_gold.config.h_dollars = enhanced_prototype_centers.m_gold
+
+        Game_start_run_ref(self, args)
+        if G.GAME.used_vouchers.v_bonus_plus then
+            G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS.v_bonus_plus.config.extra
+        end
+        if G.GAME.used_vouchers.v_mult_plus then
+            G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS.v_mult_plus.config.extra
+        end
+        if G.GAME.used_vouchers.v_slate then
+            G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
+        end
+        
+    end
+end --
+
 function SMODS.INIT.BetmmaVouchers()
+    setup_consumables()
+
     local get_next_voucher_key_ref=get_next_voucher_key
     function get_next_voucher_key(_from_tag)
         -- local _pool, _pool_key = get_current_pool('Voucher')
@@ -1298,6 +1357,7 @@ do
                 play_sound('other1')
                 
                 for i = 1, num - #G.shop_booster.cards do
+                    G.GAME.current_round.used_packs = G.GAME.current_round.used_packs or {}
                     G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
                     local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
                     G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
@@ -1857,6 +1917,7 @@ end --
 
     -- ################
     -- fusion vouchers!
+do
     G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
     if not G.ARGS.LOC_COLOURS then loc_colour() end
     if not G.ARGS.LOC_COLOURS["fusion"] then G.ARGS.LOC_COLOURS["fusion"] = HEX("F7D762") end
@@ -1875,7 +1936,7 @@ end --
 
         return retval
     end
-
+end
 
 do 
     local name="Gold Round Up"
@@ -2376,6 +2437,44 @@ do
         end_round_ref()
     end
 end --
+do
+    local name="Slate"
+    local id="slate"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Permanently increases {C:attention}Stone Card{}",
+            "bonus by {C:blue}+#1#{} extra chips.",
+            "{C:attention}Stone Cards{} don't occupy space", 
+            "both in hand and when played",
+            "{C:inactive}(Petroglyph + Bonus+){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=100},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_petroglyph','v_bonus_plus'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Slate' then
+            G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+end --
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2398,13 +2497,14 @@ end --
     --         {id = 'j_triboulet'},
     --     },
     --     consumeables = {
-    --         -- {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         --{id = 'c_death'},
     --     },
     --     vouchers = {
     --         {id = 'v_trash_picker'},
     --         {id = 'v_money_target'},
     --         {id = 'v_bonus_plus'},
-    --         {id = 'v_mult_plus'},
+    --         {id = 'v_engulfer'},
     --         -- {id = 'v_vanish_magic'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
