@@ -585,7 +585,7 @@ do
             
             for i = 1, 2 do
                 G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
-                    if G.consumeables.config.card_limit > #G.consumeables.cards then
+                    if 1 then
                         play_sound('timpani')
                         local card = create_card('Planet', G.consumeables, nil, nil, nil, nil, nil, 'Event Horizon')
                         card:set_edition({negative=true},true,false)
