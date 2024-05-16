@@ -14,7 +14,6 @@
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
 -- complete a quest to get a soul
 -- fusion vouchers:
--- Gild Glide: when a gold card is triggered and the card right to it is not enhanced, remove its gold enhancement and pass it to the right card
 -- Wild Cards can't be debuffed and retrigger themselves
 -- Randomize Lucky Card effects (+Chip, Mult, xMult, money, copy first card played, generate consumable, generate joker (oops all 6 maybe), comsumable slot, joker slot, random tag, enhance jokers, enhance cards, retrigger ...)
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
@@ -73,7 +72,8 @@ local config = {
     v_trash_picker=true,
     v_money_target=true,
     v_art_gallery=true,
-    v_slate=true
+    v_slate=true,
+    v_gilded_glider=true
 }
 
 
@@ -2554,6 +2554,51 @@ do
     -- end
 
 end --
+do
+    local name="Gilded Glider"
+    local id="gilded_glider"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When a {C:attention}Gold Card{} gives money, if",
+            "the card to its right isn't enhanced,",
+            "transfer the {C:attention}Gold Card{} enhancement", 
+            "from this card to that card",
+            "{C:inactive}(Gold Bar + Bonus+){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_gold_bar','v_bonus_plus'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
+
+    local Card_get_end_of_round_effect_ref=Card.get_end_of_round_effect
+    function Card:get_end_of_round_effect(context)
+        local ret=Card_get_end_of_round_effect_ref(self,context)
+        if G.GAME.used_vouchers.v_gilded_glider and self.config.center_key=='m_gold' then
+            local index=1
+            while G.hand.cards[index]~=self and index<=#G.hand.cards do
+                index=index+1
+            end
+            if index<#G.hand.cards then
+                local right_card=G.hand.cards[index+1]
+                if right_card.config.center_key=='c_base' then
+                    self:set_ability(G.P_CENTERS['c_base'],nil,true)
+                    right_card:set_ability(G.P_CENTERS['m_gold'],nil,true)
+                end
+            end
+        end
+        return ret
+    end
+
+end --
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2569,22 +2614,22 @@ end --
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         {id = 'j_hasty'},
-    --         -- {id = 'j_dna'},
-    --         -- {id = 'j_mime'},
+    --         {id = 'j_reserved_parking'},
+    --         {id = 'j_mime'},
     --         -- {id = 'j_piggy_bank'},
     --         -- {id = 'j_blueprint'},
     --         {id = 'j_triboulet'},
     --     },
     --     consumeables = {
-    --         {id = 'c_death'},
+    --         {id = 'c_devil'},
     --         --{id = 'c_death'},
     --     },
     --     vouchers = {
     --         {id = 'v_trash_picker'},
-    --         {id = 'v_money_target'},
+    --         {id = 'v_slate'},
     --         {id = 'v_bonus_plus'},
-    --         {id = 'v_engulfer'},
-    --         -- {id = 'v_vanish_magic'},
+    --         {id = 'v_gilded_glider'},
+    --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
     --         -- {id = 'v_b1g1'},
@@ -2595,7 +2640,7 @@ end --
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         -- cards = {{s='D',r='2',e='m_steel',g='Red'},{s='D',r='3',e='m_steel',g='Red'},{s='D',r='4',e='m_steel',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
+    --         -- cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_stone',g='Red'},{s='D',r='4',e='m_stone',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
     --     },
     --     restrictions = {
     --         banned_cards = {
@@ -2606,7 +2651,7 @@ end --
     --         }
     --     }
     -- })
-    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------

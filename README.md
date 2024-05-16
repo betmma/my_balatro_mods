@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 34 Vouchers and 10 fusion Vouchers.
+# Betmma Vouchers: Adds 34 Vouchers and 11 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -62,6 +62,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
 - Art Gallery (Hieroglyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
 - Slate (Petroglyph + Bonus+): Permanently increases Stone Card bonus by +100 extra chips. Stone Cards don't take up space when played.
+- Gilded Glider (Gold Bar + Bonus+): When a Gold Card gives money, if the card to its right isn't enhanced, transfer the Gold Card enhancement from this card to that card.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
