@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 34 More Vouchers and 9 Fusion Vouchers!
+--- MOD_DESCRIPTION: 34 More Vouchers and 10 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -12,9 +12,11 @@
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
--- stone cards don't take up hand space (so you can play 5 cards + any stones)
 -- complete a quest to get a soul
 -- fusion vouchers:
+-- Gild Glide: when a gold card is triggered and the card right to it is not enhanced, remove its gold enhancement and pass it to the right card
+-- Wild Cards can't be debuffed and retrigger themselves
+-- Randomize Lucky Card effects (+Chip, Mult, xMult, money, copy first card played, generate consumable, generate joker (oops all 6 maybe), comsumable slot, joker slot, random tag, enhance jokers, enhance cards, retrigger ...)
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
@@ -71,7 +73,7 @@ local config = {
     v_trash_picker=true,
     v_money_target=true,
     v_art_gallery=true,
-    -- v_slate=true
+    v_slate=true
 }
 
 
@@ -256,16 +258,29 @@ do
         G.P_CENTERS.m_gold.config.h_dollars = enhanced_prototype_centers.m_gold
 
         Game_start_run_ref(self, args)
-        if G.GAME.used_vouchers.v_bonus_plus then
-            G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS.v_bonus_plus.config.extra
+
+        local saveTable = args.savetext or nil
+        if saveTable then -- without this, vouchers given at the start of the run (in challenge) will be calculated twice
+            if G.GAME.used_vouchers.v_bonus_plus then
+                G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS.v_bonus_plus.config.extra
+                for k, v in pairs(G.playing_cards) do
+                    if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
+                end
+            end
+            if G.GAME.used_vouchers.v_mult_plus then
+                G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS.v_mult_plus.config.extra
+                for k, v in pairs(G.playing_cards) do
+                    if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
+                end
+            end
+            if G.GAME.used_vouchers.v_slate then
+                G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
+                for k, v in pairs(G.playing_cards) do
+                    if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
+                end
+            end
         end
-        if G.GAME.used_vouchers.v_mult_plus then
-            G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS.v_mult_plus.config.extra
-        end
-        if G.GAME.used_vouchers.v_slate then
-            G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
-        end
-        
+
     end
 end --
 
@@ -1904,9 +1919,16 @@ do
         }
         if center_table.name == 'Bonus+' then
             G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS.v_bonus_plus.config.extra
+            for k, v in pairs(G.playing_cards) do
+                if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
+            end
+        
         end
         if center_table.name == 'Mult+' then
             G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS.v_mult_plus.config.extra
+            for k, v in pairs(G.playing_cards) do
+                if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
+            end
         end
         Card_apply_to_run_ref(self, center)
     end
@@ -2445,8 +2467,8 @@ do
         text = {
             "Permanently increases {C:attention}Stone Card{}",
             "bonus by {C:blue}+#1#{} extra chips.",
-            "{C:attention}Stone Cards{} don't occupy space", 
-            "both in hand and when played",
+            "{C:attention}Stone Cards{} don't occupy", 
+            "space when played",
             "{C:inactive}(Petroglyph + Bonus+){}"
         }
     }
@@ -2470,9 +2492,66 @@ do
         }
         if center_table.name == 'Slate' then
             G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
+            for k, v in pairs(G.playing_cards) do
+                if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
+            end
         end
         Card_apply_to_run_ref(self, center)
     end
+
+    local G_FUNCS_can_play_ref=G.FUNCS.can_play
+    G.FUNCS.can_play = function(e)
+        G_FUNCS_can_play_ref(e)
+        if G.GAME.used_vouchers.v_slate then
+            local stone=0
+            for k, val in ipairs(G.hand.highlighted) do
+                if val.ability.name == 'Stone Card' then stone=stone + 1 end
+            end
+            if not G.GAME.blind.block_play and #G.hand.highlighted >0 and #G.hand.highlighted<=5+stone then
+                e.config.colour = G.C.BLUE
+                e.config.button = 'play_cards_from_highlighted'
+            end
+        end
+    end
+
+    local CardArea_add_to_highlighted_ref=CardArea.add_to_highlighted
+    function CardArea:add_to_highlighted(card, silent)
+        if G.GAME.used_vouchers.v_slate and self.config.type ~='shop' and self.config.type ~='joker' and self.config.type ~='consumeable' then
+            local stone=0
+            for k, val in ipairs(self.highlighted) do
+                if val.ability.name == 'Stone Card' then stone=stone + 1 end
+            end
+            if #self.highlighted < stone+self.config.highlighted_limit or card.ability.name=='Stone Card' then
+                self.highlighted[#self.highlighted+1] = card
+                card:highlight(true)
+                if not silent then play_sound('cardSlide1') end
+                self:parse_highlighted()
+                return
+            end
+        end
+        CardArea_add_to_highlighted_ref(self,card,silent)
+    end
+
+    -- local G_FUNCS_draw_from_deck_to_hand_ref=G.FUNCS.draw_from_deck_to_hand
+    -- G.FUNCS.draw_from_deck_to_hand = function(e) -- failed :(
+        
+    --     G_FUNCS_draw_from_deck_to_hand_ref(e)
+    --     if G.GAME.used_vouchers.v_slate then
+    --         delay(1.51)
+    --         local stone=0
+    --         for k, val in ipairs(G.hand.cards) do
+    --             if val.ability.name == 'Stone Card' then stone=stone + 1 end
+    --         end
+    --         print('fhkkc',#G.hand.cards)
+    --         local deck_cards=#G.deck.cards
+    --         local hand_cards=#G.hand.cards
+    --         while deck_cards>0 and G.hand.config.card_limit+stone - hand_cards>0 do
+    --             draw_card(G.deck,G.hand, 0,'up', true)
+    --             hand_cards=hand_cards+1
+    --             deck_cards=deck_cards-1
+    --         end
+    --     end
+    -- end
 
 end --
     -- -- this challenge is only for test

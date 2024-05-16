@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 34 Vouchers and 9 fusion Vouchers.
+# Betmma Vouchers: Adds 34 Vouchers and 10 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -24,7 +24,7 @@ A collection of mods made by me for Balatro.
 - Mondrian: +1 Ante to win, +1 joker slot.
 - Round Up: Chips always round up to nearest tens when calculating hands.
 - Round Up Plus: Mult always round up to nearest tens when calculating hands.
-- Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create 2 random planet cards now.
+- Event Horizon: 1 in 4 chance to create a Black Hole card when buying a planet pack, and create 2 random negative planet cards now.
 - Engulfer: 1 in 5 chance to create a Black Hole card when using a planet card, and create a Black Hole now.
 - Target: If chips scored are under 120% of required chips at end of round, create a random Joker card.
 - Bull's Eye: If chips scored are under 105% of required chips at end of round, create a random negative Joker card.
@@ -60,7 +60,8 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
 - Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
 - Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
-- Art Gallery (Hierogpyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
+- Art Gallery (Hieroglyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
+- Slate (Petroglyph + Bonus+): Permanently increases Stone Card bonus by +100 extra chips. Stone Cards don't take up space when played.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
