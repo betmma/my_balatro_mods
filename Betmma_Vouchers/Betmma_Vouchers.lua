@@ -62,6 +62,8 @@ local config = {
     v_epilogue=true,
     v_bonus_plus=true,
     v_mult_plus=true,
+    v_omnicard=false,
+    v_bulletproof=false,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -354,7 +356,7 @@ do
     end
 
 
-end --
+end -- oversupply
 do 
     local name="Gold Coin"
     local id="gold_coin"
@@ -426,7 +428,7 @@ do
 
 
 
-end --
+end -- gold coin
 do 
     
     local name="Abstract Art"
@@ -532,7 +534,7 @@ do
     end
 
     
-end --
+end -- abstract art
 do 
 
     local name="Round Up"
@@ -596,7 +598,7 @@ do
     end
 
 
-end --
+end -- round up
 do 
     
     local name="Event Horizon"
@@ -711,7 +713,7 @@ do
     end
 
 
-end --
+end -- event horizon
 do 
 
     
@@ -784,7 +786,7 @@ do
     G.localization.misc.dictionary.k_bulls_eye_generate = "Bull's Eye!"
 
 
-end --
+end -- target
 do 
 
     local name="Voucher Bundle"
@@ -792,7 +794,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:Attention}#1#{} random vouchers"
+            "Gives {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -813,7 +815,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:Attention}#1#{} random vouchers"
+            "Gives {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -893,7 +895,7 @@ do
     -- end
     -- local time=0
 
-end --
+end -- voucher bundle
 do 
 
     local name="Skip"
@@ -949,7 +951,7 @@ do
     end
 
     
-end --
+end -- skip
 do 
         
     local name="Scrawl"
@@ -1015,7 +1017,7 @@ do
     end
 
     
-end --
+end -- scrawl
 do 
 
     local name="Reserve Area"
@@ -1151,7 +1153,7 @@ do
     -- I suspect that this function does nothing too
     -- because replacing it with empty function seems do no harm
 
-end --
+end -- reserve area
 do 
 
     local name="Overkill"
@@ -1261,7 +1263,7 @@ do
     G.localization.misc.dictionary.k_big_blast_edition = "Big Blast!"
 
 
-end --
+end -- overkill
 do 
 
     local name="3D Boosters"
@@ -1390,7 +1392,7 @@ do
     end
 
 
-end --
+end -- 3d boosters
 do 
 
 
@@ -1500,7 +1502,7 @@ do
         Card_redeem_ref(self)
     end
     
-end --
+end -- b1g50
 do 
 
     local name="Collector"
@@ -1590,7 +1592,7 @@ do
         Card_apply_to_run_ref(self, center)
     end
 
-end --
+end -- collector
 do 
 
     local name="Flipped Card"
@@ -1765,7 +1767,7 @@ do
     end
 
 
-end --
+end -- flipped card
 do 
 
     local name="Prologue"
@@ -1862,7 +1864,7 @@ do
         end
         end_round_ref()
     end
-end --
+end -- prologue
 do 
 
     local name="Bonus+"
@@ -1933,7 +1935,84 @@ do
         Card_apply_to_run_ref(self, center)
     end
 
-end --
+end -- bonus+
+do 
+
+    local name="Omnicard"
+    local id="omnicard"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Wild Cards{} can't be",
+            "debuffed. Retrigger",
+            "all {C:attention}Wild Cards{}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end
+
+    local name="Bulletproof"
+    local id="bulletproof"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Reduce currect score",
+            "by {C:green}#1#%{} to prevent",
+            "{C:attention}Glass Cards{}",
+            "from breaking",
+            "{C:inactive}not implemented yet",
+            "{C:attention}Glass Cards{}",
+            "lose {X:mult,C:white}X#1#{} instead",
+            "of breaking",
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {extra=20},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_omnicard'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {self.config.extra}
+    end
+
+    local Card_set_debuff=Card.set_debuff
+    function Card:set_debuff(should_debuff)
+        if G.GAME.used_vouchers.v_omnicard and self.config and self.config.center_key=='m_wild' then
+            should_debuff=false
+        end
+        Card_set_debuff(self,should_debuff)
+    end
+
+    local Card_calculate_seal_ref=Card.calculate_seal
+    function Card:calculate_seal(context)
+        local ret=Card_calculate_seal_ref(self,context)
+        if context.repetition and G.GAME.used_vouchers.v_omnicard and self.config and self.config.center_key=='m_wild' then
+            if ret then
+                ret.repetitions=ret.repetitions+1
+            else
+                ret={
+                    message = localize('k_again_ex'),
+                    repetitions = 1,
+                    card = self
+                }
+            end
+        end
+        return ret
+    end
+
+end -- omnicard
  
 
 
@@ -1958,7 +2037,7 @@ do
 
         return retval
     end
-end
+end -- prepare for fusions
 
 do 
     local name="Gold Round Up"
@@ -1984,13 +2063,18 @@ do
     end
     local ease_dollars_ref = ease_dollars
     function ease_dollars(mod, instant)
-        if G.GAME.used_vouchers.v_gold_round_up and (G.GAME.dollars+mod) % 2 == 1 then
-            mod=mod+1
+        if G.GAME.used_vouchers.v_gold_round_up then
+            local original=G.GAME.dollars+mod
+            local new=math.ceil(original)
+            if new % 2 == 1 then
+                new=new+1
+            end
+            mod=mod+(new-original)
         end
         ease_dollars_ref(mod, instant)
     end
 
-end --
+end -- gold round up
 do 
 
     local name="Overshopping"
@@ -2042,7 +2126,7 @@ do
         end
     end
 
-end --
+end -- overshopping
 do 
     local name="Reroll Cut"
     local id="reroll_cut"
@@ -2122,7 +2206,7 @@ do
             --create_UIBox_blind_select()
         end
     end
-end --
+end -- reroll cut
 do 
     local name="Vanish Magic"
     local id="vanish_magic"
@@ -2227,7 +2311,7 @@ do
         return retval
     end
     
-end --
+end -- vanish magic
 do 
     local name="Darkness"
     local id="darkness"
@@ -2263,7 +2347,7 @@ do
         return poll_edition_ref(_key, _mod, _no_neg, _guaranteed)
     end
 
-end --
+end -- darkness
 do
     local name="Double Planet"
     local id="double_planet"
@@ -2292,11 +2376,11 @@ do
     G.FUNCS.buy_from_shop = function(e)
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
-        if c1.ability.consumeable and (c1.config.center.set == 'Planet') and ret~=false and G.GAME.used_vouchers.v_double_planet and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- +1 is because buy_from_shop adds a card in an event that is executed after this code
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and G.GAME.used_vouchers.v_double_planet and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, +1 is because buy_from_shop adds a card in an event that is executed after this code
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
-end --
+end -- double planet
 do
     local name="Trash Picker"
     local id="trash_picker"
@@ -2352,7 +2436,7 @@ do
         G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
         ease_hands_played(-1)
     end
-end --
+end -- trash picker
 do
     local name="Money Target"
     local id="money_target"
@@ -2400,7 +2484,7 @@ do
         end
         G_FUNCS_cash_out_ref(e)
     end
-end --
+end -- money target
 do
     local name="Art Gallery"
     local id="art_gallery"
@@ -2458,7 +2542,7 @@ do
         end
         end_round_ref()
     end
-end --
+end -- art gallery
 do
     local name="Slate"
     local id="slate"
@@ -2553,7 +2637,7 @@ do
     --     end
     -- end
 
-end --
+end -- slate
 do
     local name="Gilded Glider"
     local id="gilded_glider"
@@ -2598,7 +2682,7 @@ do
         return ret
     end
 
-end --
+end -- gilded glider
     -- -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -2607,14 +2691,14 @@ end --
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 5},
+    --             {id = 'dollars', value = 5.25},
     --         }
     --     },
     --     jokers = {
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         {id = 'j_hasty'},
-    --         {id = 'j_reserved_parking'},
+    --         {id = 'j_errorr'},
     --         {id = 'j_mime'},
     --         -- {id = 'j_piggy_bank'},
     --         -- {id = 'j_blueprint'},
@@ -2627,8 +2711,8 @@ end --
     --     vouchers = {
     --         {id = 'v_trash_picker'},
     --         {id = 'v_slate'},
-    --         {id = 'v_bonus_plus'},
-    --         {id = 'v_gilded_glider'},
+    --         {id = 'v_gold_round_up'},
+    --         {id = 'v_omnicard'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
@@ -2640,7 +2724,7 @@ end --
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         -- cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_stone',g='Red'},{s='D',r='4',e='m_stone',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},}
+    --         cards = {{s='D',r='2',e='m_wild',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_wild',},{s='D',r='K',e='m_wild',},{s='D',r='A',e='m_steel',},}
     --     },
     --     restrictions = {
     --         banned_cards = {
@@ -2651,7 +2735,7 @@ end --
     --         }
     --     }
     -- })
-    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------
