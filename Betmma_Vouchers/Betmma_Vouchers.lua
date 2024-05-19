@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 34 More Vouchers and 10 Fusion Vouchers!
+--- MOD_DESCRIPTION: 36 More Vouchers and 11 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -62,8 +62,8 @@ local config = {
     v_epilogue=true,
     v_bonus_plus=true,
     v_mult_plus=true,
-    v_omnicard=false,
-    v_bulletproof=false,
+    v_omnicard=true,
+    v_bulletproof=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -279,6 +279,15 @@ do
                 G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS.v_slate.config.extra
                 for k, v in pairs(G.playing_cards) do
                     if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
+                end
+            end
+            if G.GAME.used_vouchers.v_bulletproof then
+                for k, v in pairs(G.playing_cards) do
+                    if v.config.center_key == 'm_glass' then 
+                        v.config.center=copy_table(v.config.center)
+                        v.config.center.config.Xmult=v.ability.x_mult
+                        -- if the x_mult has been decreased, change the number on hover UI from m_glass value to x_mult
+                    end
                 end
             end
         end
@@ -1965,11 +1974,11 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Reduce currect score",
-            "by {C:green}#1#%{} to prevent",
-            "{C:attention}Glass Cards{}",
-            "from breaking",
-            "{C:inactive}not implemented yet",
+            -- "Reduce currect score",
+            -- "by {C:green}#1#%{} to prevent",
+            -- "{C:attention}Glass Cards{}",
+            -- "from breaking",
+            -- "{C:inactive}not implemented yet",
             "{C:attention}Glass Cards{}",
             "lose {X:mult,C:white}X#1#{} instead",
             "of breaking",
@@ -1977,7 +1986,7 @@ do
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra=20},
+        {extra=0.1},
         {x=0,y=0}, loc_txt,
         10, true, true, true, {'v_omnicard'}
     )
@@ -2012,6 +2021,88 @@ do
         return ret
     end
 
+    local Card_shatter_ref=Card.shatter
+    function Card:shatter()
+        if G.GAME.used_vouchers.v_bulletproof and self.ability.name == 'Glass Card' and self.ability.x_mult>1+G.P_CENTERS.v_bulletproof.config.extra then
+            -- G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+            -- local new_card=copy_card(self, nil, nil, G.playing_card)
+            -- new_card.shattered=false
+            -- new_card.destroyed=false
+            -- new_card:add_to_deck()
+            
+            -- G.deck.config.card_limit = G.deck.config.card_limit + 1
+            -- table.insert(G.playing_cards,new_card)
+            -- new_card.ability.x_mult=new_card.ability.x_mult-0.1
+            -- -- the hover ui is still x2
+            
+            -- local index=1
+            -- while G.play.cards[index]~=self and index<=#G.play.cards do
+            --     index=index+1
+            -- end
+            -- G.play:emplace(new_card)--,index) can't insert it in the middle, only front or back
+            self.ability.x_mult=self.ability.x_mult-G.P_CENTERS.v_bulletproof.config.extra
+            self.config.center=copy_table(self.config.center)
+            self.config.center.config.Xmult=self.config.center.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra
+            self.shattered=false
+            self.destroyed=false
+            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize('k_bulletproof')})
+            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize{type='variable',key='a_xmult_minus',vars={G.P_CENTERS.v_bulletproof.config.extra}},colour=G.C.RED})
+            Card_shatter_not_remove(self)
+            return
+        end
+        Card_shatter_ref(self)
+    end
+    G.localization.misc.dictionary.k_bulletproof = "Bulletproof!"
+    
+    function Card_shatter_not_remove(self)
+        local dissolve_time = 0.7
+        -- self.dissolve = 0
+        self.dissolve_colours = {{1,1,1,0.8}}
+        -- self:juice_up()
+        local childParts = Particles(0, 0, 0,0, {
+            timer_type = 'TOTAL',
+            timer = 0.007*dissolve_time,
+            scale = 0.3,
+            speed = 4,
+            lifespan = 0.5*dissolve_time,
+            attach = self,
+            colours = self.dissolve_colours,
+            fill = true
+        })
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            blockable = false,
+            delay =  0.5*dissolve_time,
+            func = (function() childParts:fade(0.15*dissolve_time) return true end)
+        }))
+        G.E_MANAGER:add_event(Event({
+            blockable = false,
+            func = (function()
+                    play_sound('glass'..math.random(1, 6), math.random()*0.2 + 0.9,0.5)
+                    play_sound('generic1', math.random()*0.2 + 0.9,0.5)
+                return true end)
+        }))
+        -- G.E_MANAGER:add_event(Event({
+        --     trigger = 'ease',
+        --     blockable = false,
+        --     ref_table = self,
+        --     ref_value = 'dissolve',
+        --     ease_to = 1,
+        --     delay =  0.5*dissolve_time,
+        --     func = (function(t) return t end)
+        -- }))
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            blockable = false,
+            delay =  0.55*dissolve_time,
+            func = (function()  return true end)
+        }))
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            blockable = false,
+            delay =  0.51*dissolve_time,
+        }))
+    end
 end -- omnicard
  
 
@@ -2691,28 +2782,29 @@ end -- gilded glider
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 5.25},
+    --             {id = 'dollars', value = 5},
     --         }
     --     },
     --     jokers = {
     --         --{id = 'j_jjookkeerr'},
     --         -- {id = 'j_ascension'},
     --         {id = 'j_hasty'},
-    --         {id = 'j_errorr'},
-    --         {id = 'j_mime'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_glass'},
     --         -- {id = 'j_piggy_bank'},
     --         -- {id = 'j_blueprint'},
     --         {id = 'j_triboulet'},
     --     },
     --     consumeables = {
-    --         {id = 'c_devil'},
+    --         {id = 'c_devil', edition = 'polychrome'},
     --         --{id = 'c_death'},
     --     },
     --     vouchers = {
     --         {id = 'v_trash_picker'},
     --         {id = 'v_slate'},
     --         {id = 'v_gold_round_up'},
-    --         {id = 'v_omnicard'},
+    --         {id = 'v_bulletproof'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
     --         -- {id = 'v_3d_boosters'},
@@ -2724,7 +2816,7 @@ end -- gilded glider
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_wild',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_steel',g='Red'},{s='D',r='7',e='m_steel',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_steel',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_steel',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_wild',},{s='D',r='K',e='m_wild',},{s='D',r='A',e='m_steel',},}
+    --         cards = {{s='D',r='2',e='m_glass',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_glass',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_glass',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_glass',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_wild',},{s='D',r='K',e='m_wild',},{s='D',r='A',e='m_steel',},}
     --     },
     --     restrictions = {
     --         banned_cards = {
