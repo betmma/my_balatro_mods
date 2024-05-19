@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 34 Vouchers and 11 fusion Vouchers.
+# Betmma Vouchers: Adds 36 Vouchers and 11 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -50,6 +50,8 @@ A collection of mods made by me for Balatro.
 - Epilogue: +1 consumable slot. When blind ends, create an Eternal Spectral card. This card disappears when a new Epilogue card is created.
 - Bonus+: Permanently increases Bonus Card bonus by +30 extra chips.
 - Mult+: Permanently increases Mult Card bonus by +8 Mult.
+- Omnicard: Wild Cards can't be debuffed. Reteigger all Wild Cards.
+- Bulletproof: Glass Cards lose X0.1 instead of breaking. They break when they reach X1.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.

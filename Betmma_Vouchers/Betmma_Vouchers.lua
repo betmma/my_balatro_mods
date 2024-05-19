@@ -1979,9 +1979,10 @@ do
             -- "{C:attention}Glass Cards{}",
             -- "from breaking",
             -- "{C:inactive}not implemented yet",
-            "{C:attention}Glass Cards{}",
-            "lose {X:mult,C:white}X#1#{} instead",
-            "of breaking",
+            "{C:attention}Glass Cards{} lose {X:mult,C:white}X#1#{}",
+            "instead of breaking.",
+            "They break when",
+            "they reach {X:mult,C:white}X1{}"
         }
     }
     local this_v = SMODS.Voucher:new(
