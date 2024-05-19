@@ -1342,7 +1342,7 @@ do
     local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
     G.FUNCS.cash_out=function (e)
         G_FUNCS_cash_out_ref(e)
-        if G.GAME.used_vouchers.v_3d_boosters then
+        if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.miser then -- prevent reroll if shop is skipped by Miser boss in Bunco mod
             my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
@@ -1982,19 +1982,19 @@ do
             "{C:attention}Glass Cards{} lose {X:mult,C:white}X#1#{}",
             "instead of breaking.",
             "They break when",
-            "they reach {X:mult,C:white}X1{}"
+            "they reach {X:mult,C:white}X#2#{}"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra=0.1},
+        {extra={lose=0.1,lower_bound=1.5}},
         {x=0,y=0}, loc_txt,
         10, true, true, true, {'v_omnicard'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {self.config.extra}
+        return {self.config.extra.lose,self.config.extra.lower_bound}
     end
 
     local Card_set_debuff=Card.set_debuff
@@ -2024,7 +2024,7 @@ do
 
     local Card_shatter_ref=Card.shatter
     function Card:shatter()
-        if G.GAME.used_vouchers.v_bulletproof and self.ability.name == 'Glass Card' and self.ability.x_mult>1+G.P_CENTERS.v_bulletproof.config.extra then
+        if G.GAME.used_vouchers.v_bulletproof and self.ability.name == 'Glass Card' and self.ability.x_mult>G.P_CENTERS.v_bulletproof.config.extra.lower_bound+G.P_CENTERS.v_bulletproof.config.extra.lose then
             -- G.playing_card = (G.playing_card and G.playing_card + 1) or 1
             -- local new_card=copy_card(self, nil, nil, G.playing_card)
             -- new_card.shattered=false
@@ -2041,13 +2041,13 @@ do
             --     index=index+1
             -- end
             -- G.play:emplace(new_card)--,index) can't insert it in the middle, only front or back
-            self.ability.x_mult=self.ability.x_mult-G.P_CENTERS.v_bulletproof.config.extra
+            self.ability.x_mult=self.ability.x_mult-G.P_CENTERS.v_bulletproof.config.extra.lose
             self.config.center=copy_table(self.config.center)
-            self.config.center.config.Xmult=self.config.center.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra
+            self.config.center.config.Xmult=self.config.center.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra.lose
             self.shattered=false
             self.destroyed=false
             card_eval_status_text(self,'extra',nil,nil,nil,{message=localize('k_bulletproof')})
-            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize{type='variable',key='a_xmult_minus',vars={G.P_CENTERS.v_bulletproof.config.extra}},colour=G.C.RED})
+            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize{type='variable',key='a_xmult_minus',vars={G.P_CENTERS.v_bulletproof.config.extra.lose}},colour=G.C.RED})
             Card_shatter_not_remove(self)
             return
         end
