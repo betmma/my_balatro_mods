@@ -43,7 +43,7 @@ A collection of mods made by me for Balatro.
 - B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
 - B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $10.
 - Collector: Each Voucher redeemed reduces Blind requirement by 4%. (multiplicative)
-- Connoisseur: If all Vouchers have been redeemed and you have more than $20, redeeming Blank triggers *that Voucher* and doubles the money requirement.
+- Connoisseur: If you have more than $400/(Vouchers Redeemed + 1),  redeeming a voucher gives Antimatter and lets the money requirement X5.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
 - Double Flipped Card: Flipped cards are held in hand when scoring and can trigger hold-in-hand effects. 
 - Prologue: When blind begins, create an Eternal Tarot card. This card disappears when a new Prologue card is created.
@@ -51,7 +51,7 @@ A collection of mods made by me for Balatro.
 - Bonus+: Permanently increases Bonus Card bonus by +30 extra chips.
 - Mult+: Permanently increases Mult Card bonus by +8 Mult.
 - Omnicard: Wild Cards can't be debuffed. Reteigger all Wild Cards.
-- Bulletproof: Glass Cards lose X0.1 instead of breaking. They break when they reach X1.
+- Bulletproof: Glass Cards lose X0.1 instead of breaking. They break when they reach X1.5. (Warning: this voucher has incompatibility issue with mod content that changes glass cards base xMult. Game won't crash but the effect will be strange)
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.
