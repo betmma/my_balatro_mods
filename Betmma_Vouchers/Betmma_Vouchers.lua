@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 11 Fusion Vouchers!
+--- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers!
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -14,13 +14,11 @@
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
 -- complete a quest to get a soul
 -- fusion vouchers:
--- Wild Cards can't be debuffed and retrigger themselves
+-- Forbidden Word: Fusion voucher and joker may appear in the store.  Forbidden magic: Purchased fusion Joker and voucher give things related to their fusion
 -- Randomize Lucky Card effects (+Chip, Mult, xMult, money, copy first card played, generate consumable, generate joker (oops all 6 maybe), comsumable slot, joker slot, random tag, enhance jokers, enhance cards, retrigger ...)
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
--- Epilogue and Engulfer: When blind ends, create a negative Black Hole.
--- Epilogue and Scribble: Spectral cards received from Epilogue are negative.
 -- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
 -- Glow Up and Illusion: Playing cards in the shop always have an edition and may have an enhancement and/or a seal.          Or: Playing cards in the shop always have an enhancement, edition and a seal.
 -- Darkness and Double Planet: the planet card generated is negative
@@ -76,7 +74,7 @@ local config = {
     v_art_gallery=true,
     v_slate=true,
     v_gilded_glider=true,
-    v_mirror=false
+    v_mirror=true
 }
 
 
@@ -2785,24 +2783,31 @@ do
         return {}
     end
 
-    -- local Card_get_end_of_round_effect_ref=Card.get_end_of_round_effect
-    -- function Card:get_end_of_round_effect(context)
-    --     local ret=Card_get_end_of_round_effect_ref(self,context)
-    --     if G.GAME.used_vouchers.v_gilded_glider and self.config.center_key=='m_gold' then
-    --         local index=1
-    --         while G.hand.cards[index]~=self and index<=#G.hand.cards do
-    --             index=index+1
-    --         end
-    --         if index<#G.hand.cards then
-    --             local right_card=G.hand.cards[index+1]
-    --             if right_card.config.center_key=='c_base' then
-    --                 self:set_ability(G.P_CENTERS['c_base'],nil,true)
-    --                 right_card:set_ability(G.P_CENTERS['m_gold'],nil,true)
-    --             end
-    --         end
-    --     end
-    --     return ret
-    -- end
+    local eval_card_ref=eval_card
+    function eval_card(card, context)
+        local ret=eval_card_ref(card, context)
+        if G.GAME.used_vouchers.v_mirror and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
+            local index=1
+            while G.play.cards[index]~=card and index<=#G.play.cards do
+                index=index+1
+            end
+            if index<#G.play.cards then
+                local right_card=G.play.cards[index+1]
+                right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+1
+            end
+        end
+        if G.GAME.used_vouchers.v_mirror and context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
+            if not ret.seals then ret.seals={
+                message = localize('k_again_ex'),
+                repetitions = card.ability.temp_repetition,
+                card = card
+            }
+            else ret.seals.repetitions=ret.seals.repetitions+card.ability.temp_repetition
+            end
+            card.ability.temp_repetition=0
+        end
+        return ret
+    end
 
 end -- mirror
     -- -- this challenge is only for test
