@@ -16,12 +16,12 @@
 -- fusion vouchers:
 -- Forbidden Word: Fusion voucher and joker may appear in the store.  Forbidden magic: Purchased fusion Joker and voucher give things related to their fusion
 -- Randomize Lucky Card effects (+Chip, Mult, xMult, money, copy first card played, generate consumable, generate joker (oops all 6 maybe), comsumable slot, joker slot, random tag, enhance jokers, enhance cards, retrigger ...)
+-- (upgraded of above) if probabilities in lucky card, that is written as A in B, satisfies A>B, this can trigger more than 1 time
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
 -- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
--- Glow Up and Illusion: Playing cards in the shop always have an edition and may have an enhancement and/or a seal.          Or: Playing cards in the shop always have an enhancement, edition and a seal.
--- Darkness and Double Planet: the planet card generated is negative
+-- you can discard the hand when opening a pack once
 
 -- Config: DISABLE UNWANTED MODS HERE
 local config = {
@@ -689,7 +689,7 @@ do
     function Card:open()
         if self.ability.set == "Booster" and self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_event_horizon and
         pseudorandom('event_horizon') < G.GAME.probabilities.normal/G.P_CENTERS.v_event_horizon.config.extra then
-            create_black_hole()
+            create_black_hole(localize("k_event_horizon_generate"))
         end
         return Card_open_ref(self)
     end
@@ -698,14 +698,16 @@ do
     G.FUNCS.use_card =function(e, mute, nosave)
         local card = e.config.ref_table
         if card.ability.consumeable then
-            if card.ability.set == 'Planet' and G.GAME.used_vouchers.v_engulfer and pseudorandom('engulfer') < G.GAME.probabilities.normal/G.P_CENTERS.v_engulfer.config.extra then
-                create_black_hole()
+            if (card.ability.set == 'Planet' or card.ability.set == "Planet_dx") and G.GAME.used_vouchers.v_engulfer and pseudorandom('engulfer') < G.GAME.probabilities.normal/G.P_CENTERS.v_engulfer.config.extra then
+                create_black_hole(localize("k_engulfer_generate"))
             end
         end
         G_FUNCS_use_card_ref(e, mute, nosave)
     end
+    G.localization.misc.dictionary.k_event_horizon_generate = "Event Horizon!"
+    G.localization.misc.dictionary.k_engulfer_generate = "Engulfer!"
 
-    function create_black_hole()
+    function create_black_hole(message)
         if #G.consumeables.cards + G.GAME.consumeable_buffer >= G.consumeables.config.card_limit then return end
         G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
         G.E_MANAGER:add_event(Event({
@@ -716,6 +718,9 @@ do
                     card:add_to_deck()
                     G.consumeables:emplace(card)
                     G.GAME.consumeable_buffer = 0
+                    if message~=nil then
+                        card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                    end
                     return true
                     end)}))
     end
@@ -2000,6 +2005,9 @@ do
     function Card:set_debuff(should_debuff)
         if G.GAME.used_vouchers.v_omnicard and self.config and self.config.center_key=='m_wild' then
             should_debuff=false
+            if self.params.debuff_by_curse then -- DX tarots mod curses that still debuff when should_debuff is false
+                self.params.debuff_by_curse=false
+            end
         end
         Card_set_debuff(self,should_debuff)
     end
