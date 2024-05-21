@@ -2227,20 +2227,9 @@ do
         return {}
     end
 
-    local G_FUNC_can_reroll_ref=G.FUNCS.can_reroll
-    G.FUNCS.can_reroll= function(e)
-        G_FUNC_can_reroll_ref(e)
-        if not(G.blind_prompt_box) then 
-            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
-            e.config.button = nil
-            --e.children[1].children[1].config.shadow = false
-            --e.children[2].children[1].config.shadow = false
-            --e.children[2].children[2].config.shadow = false
-        end
-    end
-
     local G_FUNC_reroll_boss_ref =  G.FUNCS.reroll_boss
     G.FUNCS.reroll_boss = function(e) 
+        if G.STATE~=G.STATES.BLIND_SELECT then return end
         G_FUNC_reroll_boss_ref(e)
         
         if G.GAME.used_vouchers.v_reroll_cut then -- adding a pack tag when in a pack causes double pack and will crash
@@ -2810,66 +2799,68 @@ do
     end
 
 end -- mirror
-    -- -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 5000},
-    --         }
-    --     },
-    --     jokers = {
-    --         --{id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         {id = 'j_hasty'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_glass'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_blueprint'},
-    --         {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         -- {id = 'c_justice_cu'},
-    --         -- {id = 'c_heirophant_cu'},
-    --         -- {id = 'c_tower_cu'},
-    --         {id = 'c_devil_cu'},
-    --         --{id = 'c_death'},
-    --     },
-    --     vouchers = {
-    --         {id = 'v_trash_picker'},
-    --         {id = 'v_slate'},
-    --         {id = 'v_3d_boosters'},
-    --         {id = 'v_4d_boosters'},
-    --         --{id = 'v_bonus_plus'},
-    --         {id = 'v_gilded_glider'},
-    --         {id = 'v_bulletproof'},
-    --         {id = 'v_paint_brush'},
-    --         -- {id = 'v_liquidation'},
-    --         -- {id = 'v_3d_boosters'},
-    --         -- {id = 'v_b1g1'},
-    --         -- {id = 'v_overshopping'},
-    --         -- {id = 'v_directors_cut'},
-    --         {id = 'v_retcon'},
-    --         -- {id = 'v_event_horizon'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_glass',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_glass',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_glass',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_wild',},{s='D',r='K',e='m_wild',},{s='D',r='A',e='m_steel',},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
-    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    -- this challenge is only for test
+    table.insert(G.CHALLENGES,1,{
+        name = "TestVoucher",
+        id = 'c_mod_testvoucher',
+        rules = {
+            custom = {
+            },
+            modifiers = {
+                {id = 'dollars', value = 5000},
+            }
+        },
+        jokers = {
+            --{id = 'j_jjookkeerr'},
+            -- {id = 'j_ascension'},
+            {id = 'j_sock_and_buskin'},
+            {id = 'j_sock_and_buskin'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_glass'},
+            -- {id = 'j_piggy_bank'},
+            -- {id = 'j_blueprint'},
+            {id = 'j_triboulet'},
+            {id = 'j_triboulet'},
+        },
+        consumeables = {
+            -- {id = 'c_justice_cu'},
+            -- {id = 'c_heirophant_cu'},
+            -- {id = 'c_tower_cu'},
+            {id = 'c_devil_cu'},
+            --{id = 'c_death'},
+        },
+        vouchers = {
+            {id = 'v_trash_picker'},
+            {id = 'v_mirror'},
+            {id = 'v_3d_boosters'},
+            {id = 'v_4d_boosters'},
+            --{id = 'v_bonus_plus'},
+            {id = 'v_gilded_glider'},
+            -- {id = 'v_connoisseur'},
+            {id = 'v_paint_brush'},
+            -- {id = 'v_liquidation'},
+            -- {id = 'v_3d_boosters'},
+            -- {id = 'v_b1g1'},
+            -- {id = 'v_overshopping'},
+            {id = 'v_reroll_cut'},
+            {id = 'v_retcon'},
+            -- {id = 'v_event_horizon'},
+        },
+        deck = {
+            type = 'Challenge Deck',
+            cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_glass',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_glass',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+        },
+        restrictions = {
+            banned_cards = {
+            },
+            banned_tags = {
+            },
+            banned_other = {
+            }
+        }
+    })
+    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------
