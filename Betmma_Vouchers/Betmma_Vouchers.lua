@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers!
+--- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers! v1.1.3.1
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -2799,68 +2799,66 @@ do
     end
 
 end -- mirror
-    -- this challenge is only for test
-    table.insert(G.CHALLENGES,1,{
-        name = "TestVoucher",
-        id = 'c_mod_testvoucher',
-        rules = {
-            custom = {
-            },
-            modifiers = {
-                {id = 'dollars', value = 5000},
-            }
-        },
-        jokers = {
-            --{id = 'j_jjookkeerr'},
-            -- {id = 'j_ascension'},
-            {id = 'j_sock_and_buskin'},
-            {id = 'j_sock_and_buskin'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_glass'},
-            -- {id = 'j_piggy_bank'},
-            -- {id = 'j_blueprint'},
-            {id = 'j_triboulet'},
-            {id = 'j_triboulet'},
-        },
-        consumeables = {
-            -- {id = 'c_justice_cu'},
-            -- {id = 'c_heirophant_cu'},
-            -- {id = 'c_tower_cu'},
-            {id = 'c_devil_cu'},
-            --{id = 'c_death'},
-        },
-        vouchers = {
-            {id = 'v_trash_picker'},
-            {id = 'v_mirror'},
-            {id = 'v_3d_boosters'},
-            {id = 'v_4d_boosters'},
-            --{id = 'v_bonus_plus'},
-            {id = 'v_gilded_glider'},
-            -- {id = 'v_connoisseur'},
-            {id = 'v_paint_brush'},
-            -- {id = 'v_liquidation'},
-            -- {id = 'v_3d_boosters'},
-            -- {id = 'v_b1g1'},
-            -- {id = 'v_overshopping'},
-            {id = 'v_reroll_cut'},
-            {id = 'v_retcon'},
-            -- {id = 'v_event_horizon'},
-        },
-        deck = {
-            type = 'Challenge Deck',
-            cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_glass',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_glass',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-        },
-        restrictions = {
-            banned_cards = {
-            },
-            banned_tags = {
-            },
-            banned_other = {
-            }
-        }
-    })
-    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    -- -- this challenge is only for test
+    -- table.insert(G.CHALLENGES,1,{
+    --     name = "TestVoucher",
+    --     id = 'c_mod_testvoucher',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 5000},
+    --         }
+    --     },
+    --     jokers = {
+    --         --{id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         {id = 'j_hasty'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_glass'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_blueprint'},
+    --         {id = 'j_triboulet'},
+    --     },
+    --     consumeables = {
+    --         -- {id = 'c_justice_cu'},
+    --         -- {id = 'c_heirophant_cu'},
+    --         -- {id = 'c_tower_cu'},
+    --         {id = 'c_devil_cu'},
+    --         --{id = 'c_death'},
+    --     },
+    --     vouchers = {
+    --         {id = 'v_trash_picker'},
+    --         {id = 'v_slate'},
+    --         {id = 'v_3d_boosters'},
+    --         {id = 'v_4d_boosters'},
+    --         --{id = 'v_bonus_plus'},
+    --         {id = 'v_gilded_glider'},
+    --         {id = 'v_bulletproof'},
+    --         {id = 'v_paint_brush'},
+    --         -- {id = 'v_liquidation'},
+    --         -- {id = 'v_3d_boosters'},
+    --         -- {id = 'v_b1g1'},
+    --         -- {id = 'v_overshopping'},
+    --         -- {id = 'v_directors_cut'},
+    --         {id = 'v_retcon'},
+    --         -- {id = 'v_event_horizon'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         cards = {{s='D',r='2',e='m_stone',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_steel',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_glass',},{s='D',r='8',e='m_steel',},{s='D',r='9',e='m_glass',},{s='D',r='T',e='m_steel',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_steel',},{s='D',r='K',e='m_glass',},{s='D',r='A',e='m_steel',},{s='D',r='K',e='m_steel',},{s='D',r='A',e='m_wild',},{s='D',r='K',e='m_wild',},{s='D',r='A',e='m_steel',},}
+    --     },
+    --     restrictions = {
+    --         banned_cards = {
+    --         },
+    --         banned_tags = {
+    --         },
+    --         banned_other = {
+    --         }
+    --     }
+    -- })
+    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------
