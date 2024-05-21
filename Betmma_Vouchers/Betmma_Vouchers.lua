@@ -1561,7 +1561,7 @@ do
     this_v.loc_def = function(self)
         local count=G and G.GAME and G.GAME.v_connoisseur_count or 0
         local redeemed=G and G.GAME and G.GAME.vouchers_bought or 0
-        return {self.config.extra.base,
+        return {self.config.extra.base*self.config.extra.multiplier^(count),
         math.ceil(self.config.extra.base/(redeemed+1)*self.config.extra.multiplier^(count)),self.config.extra.multiplier}
     end
     local v_connoisseur=this_v
@@ -1585,7 +1585,7 @@ do
         G.GAME.vouchers_bought=(G.GAME.vouchers_bought or 0)+1
         if center_table.name ~= 'Antimatter'then
             if G.GAME.used_vouchers.v_connoisseur and G.GAME.dollars>=v_connoisseur:loc_def()[2] then
-                
+                G.GAME.v_connoisseur_count= (G.GAME.v_connoisseur_count or 0)+1
                 G.E_MANAGER:add_event(Event({
                     trigger = 'before',
                     --blockable = false,
@@ -1595,7 +1595,7 @@ do
                         --ease_dollars(-v_connoisseur:loc_def()[1])
                         -- the description doesn't say you will pay that amount, so don't ease_dollars feels right lol
                         randomly_redeem_voucher("v_antimatter")
-                        G.GAME.v_connoisseur_count= (G.GAME.v_connoisseur_count or 0)+1
+                        
                         return true
                     end}))   
             end
