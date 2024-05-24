@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers! v1.1.3.1
+--- MOD_DESCRIPTION: 36 More Vouchers and 13 Fusion Vouchers! v1.1.3.1
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -22,6 +22,8 @@
 -- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
 -- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
 -- you can discard the hand when opening a pack once
+-- random voucher pack $8
+-- change b1g50 to half the price
 
 -- Config: DISABLE UNWANTED MODS HERE
 local config = {
@@ -2968,7 +2970,7 @@ do
             }
         },
         joker_slot={
-            weight=0.2,
+            weight=0.15,
             chance_range={777,777},
             base_value_function=function(chance)
                 return 1
@@ -2979,7 +2981,7 @@ do
             }
         },
         consumable_slot={
-            weight=0.2,
+            weight=0.15,
             chance_range={177,177},
             base_value_function=function(chance)
                 return 1
@@ -2990,7 +2992,7 @@ do
             }
         },
         random_voucher={
-            weight=0.2,
+            weight=0.15,
             chance_range={77,77},
             base_value_function=function(chance)
                 return 1
@@ -3001,7 +3003,7 @@ do
             }
         },
         random_negative_joker={
-            weight=0.2,
+            weight=0.15,
             chance_range={77,77},
             base_value_function=function(chance)
                 return 1
@@ -3012,7 +3014,7 @@ do
             }
         },
         new_ability={
-            weight=1.2,
+            weight=0.15,
             chance_function=function(center)
                 return 10^(#center.real_random_abilities-1)
             end,
@@ -3022,6 +3024,30 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for a new ability"
+            }
+        },
+        double_probability={
+            weight=0.1,
+            chance_function=function(center)
+                return math.ceil(4.938*(G.GAME.probabilities.normal+0.5)^2)
+            end,
+            base_value_function=function(chance)
+                return 1
+            end,
+            text={
+                "{C:green}#1# in #3#{} chance",
+                "to double all probabilities"
+            }
+        },
+        random_tag={
+            weight=0.15,
+            chance_range={17,17},
+            base_value_function=function(chance)
+                return 1
+            end,
+            text={
+                "{C:green}#1# in #3#{} chance",
+                "for a random {C:attention}tag{}"
             }
         }
     }
@@ -3096,6 +3122,7 @@ do
                     ret=ret*loc_vars[1]
                 end
             end
+            if ret==1 then ret=0 end
         end
         return ret
     end
@@ -3159,6 +3186,22 @@ do
                 elseif v.key=='new_ability' and pseudorandom('new_ability') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
                     real_random_add_abilities_to_card(card,1)
+                elseif v.key=='double_probability' and pseudorandom('double_probability') < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    for k, v in pairs(G.GAME.probabilities) do -- are there really other probabilities?
+                        G.GAME.probabilities[k] = v*2
+                    end
+                elseif v.key=='random_tag' and pseudorandom('random_tag') < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    
+                    local random_tag_key = get_next_tag_key()
+                    local random_tag=Tag(random_tag_key,false,'Small')
+                    
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        func = function()
+                            add_tag(random_tag)
+                        return true end }))
                 end
 
                 
@@ -3211,12 +3254,12 @@ end -- real random
     --         {id = 'j_oops'},
     --         {id = 'j_oops'},
     --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
     --         -- {id = 'j_piggy_bank'},
     --         -- {id = 'j_blueprint'},
     --         -- {id = 'j_triboulet'},
