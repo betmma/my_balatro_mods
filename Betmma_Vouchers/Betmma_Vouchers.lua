@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 13 Fusion Vouchers! v1.1.3.1
+--- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers! v1.1.3.1
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -1431,20 +1431,20 @@ do
             "{C:attention}tier 1{} Voucher,",
             "have {C:green}#1#%{} chance to",
             "redeem the {C:attention}tier 2{} one",
-            "and lose {C:money}$#2#{}",
+            "and pay half the price",
             "{C:inactive}(This chance can't be doubled){}"
         }
     }
     local this_v = SMODS.Voucher:new(
         name, id,
-        {extra={chance=50,lose=5}},
+        {extra={chance=50}},
         {x=0,y=0}, loc_txt,
         10, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
     this_v:register()
     this_v.loc_def = function(self)
-        return {self.config.extra.chance,self.config.extra.lose}
+        return {self.config.extra.chance}
     end
 
     
@@ -1456,7 +1456,7 @@ do
             "When you redeem a",
             "{C:attention}tier 1{} Voucher, always",
             "redeem the {C:attention}tier 2{}",
-            "one and lose {C:money}$#1#{}"
+            "one and pay the price"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -1475,11 +1475,11 @@ do
     local Card_redeem_ref = Card.redeem
     function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
         if G.GAME.used_vouchers.v_b1g1 or G.GAME.used_vouchers.v_b1g50 and  pseudorandom('b1g1')*100 < G.P_CENTERS.v_b1g50.config.extra.chance then
-            local lose=G.P_CENTERS.v_b1g50.config.extra.lose
+            local lose_percent=50
             if G.GAME.used_vouchers.v_b1g1 then 
-                lose=G.P_CENTERS.v_b1g1.config.extra
+                lose_percent=100
             end
-            lose=math.max(1, math.floor((lose+0.5)*(100-G.GAME.discount_percent)/100)) -- liquidation
+            -- lose=math.max(1, math.floor((lose+0.5)*(100-G.GAME.discount_percent)/100)) -- liquidation
             local center_table = {
                 name = self.ability.name,
                 extra = self.ability.extra
@@ -1507,7 +1507,7 @@ do
                     --create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
                     card:start_materialize()
                     G.play:emplace(card)
-                    card.cost=lose
+                    card.cost=math.ceil(card.cost*lose_percent/100)
                     card.shop_voucher=false -- this doesn't help keeping current_round_voucher i guess
                     local current_round_voucher=G.GAME.current_round.voucher
                     card:redeem()
@@ -3234,75 +3234,75 @@ do
     end
 
 end -- real random
-    -- -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 5000},
-    --         }
-    --     },
-    --     jokers = {
-    --         --{id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_blueprint'},
-    --         -- {id = 'j_triboulet'},
-    --         -- {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         -- {id = 'c_justice_cu'},
-    --         -- {id = 'c_heirophant_cu'},
-    --         -- {id = 'c_tower_cu'},
-    --         {id = 'c_devil_cu'},
-    --         --{id = 'c_death'},
-    --     },
-    --     vouchers = {
-    --         {id = 'v_trash_picker'},
-    --         {id = 'v_mirror'},
-    --         {id = 'v_3d_boosters'},
-    --         {id = 'v_4d_boosters'},
-    --         --{id = 'v_bonus_plus'},
-    --         {id = 'v_real_random'},
-    --         -- {id = 'v_connoisseur'},
-    --         {id = 'v_paint_brush'},
-    --         -- {id = 'v_liquidation'},
-    --         -- {id = 'v_3d_boosters'},
-    --         -- {id = 'v_b1g1'},
-    --         -- {id = 'v_overshopping'},
-    --         {id = 'v_reroll_cut'},
-    --         {id = 'v_retcon'},
-    --         -- {id = 'v_event_horizon'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_wild',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
-    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    -- this challenge is only for test
+    table.insert(G.CHALLENGES,1,{
+        name = "TestVoucher",
+        id = 'c_mod_testvoucher',
+        rules = {
+            custom = {
+            },
+            modifiers = {
+                {id = 'dollars', value = 5000},
+            }
+        },
+        jokers = {
+            --{id = 'j_jjookkeerr'},
+            -- {id = 'j_ascension'},
+            -- {id = 'j_sock_and_buskin'},
+            -- {id = 'j_sock_and_buskin'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_piggy_bank'},
+            -- {id = 'j_blueprint'},
+            -- {id = 'j_triboulet'},
+            -- {id = 'j_triboulet'},
+        },
+        consumeables = {
+            -- {id = 'c_justice_cu'},
+            -- {id = 'c_heirophant_cu'},
+            -- {id = 'c_tower_cu'},
+            {id = 'c_devil_cu'},
+            --{id = 'c_death'},
+        },
+        vouchers = {
+            {id = 'v_trash_picker'},
+            {id = 'v_mirror'},
+            {id = 'v_3d_boosters'},
+            {id = 'v_4d_boosters'},
+            --{id = 'v_bonus_plus'},
+            {id = 'v_real_random'},
+            -- {id = 'v_connoisseur'},
+            {id = 'v_paint_brush'},
+            -- {id = 'v_liquidation'},
+            -- {id = 'v_3d_boosters'},
+            {id = 'v_b1g1'},
+            -- {id = 'v_overshopping'},
+            {id = 'v_reroll_cut'},
+            {id = 'v_retcon'},
+            -- {id = 'v_event_horizon'},
+        },
+        deck = {
+            type = 'Challenge Deck',
+            cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_wild',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+        },
+        restrictions = {
+            banned_cards = {
+            },
+            banned_tags = {
+            },
+            banned_other = {
+            }
+        }
+    })
+    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------
