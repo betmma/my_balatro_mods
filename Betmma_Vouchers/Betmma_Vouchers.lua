@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 12 Fusion Vouchers! v1.1.3.1
+--- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v1.1.3.1
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -74,6 +74,7 @@ local config = {
     v_trash_picker=true,
     v_money_target=true,
     v_art_gallery=true,
+    v_b1ginf=true,
     v_slate=true,
     v_gilded_glider=true,
     v_mirror=true,
@@ -1340,26 +1341,10 @@ do
         if G.GAME.used_vouchers.v_3d_boosters then value=value+1 end
         return value
     end
-    local Game_update_shop_ref= Game.update_shop
-    function Game:update_shop(dt)
-        Game_update_shop_ref(self,dt) -- Though the original function is called before, the modification of used_packs happens 0.2s later, so enumerate i from #used_packs+1 to max will add 3 packs
-        -- local i=get_booster_pack_max() -- if max number added is 2 or more this may be bugged?
-        -- G.GAME.current_round.used_packs = G.GAME.current_round.used_packs or {}
-        -- if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.current_round.used_packs[i] then
-        --             G.GAME.current_round.used_packs[i] = get_pack('shop_pack').key 
-        --             local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
-        --             G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i]], {bypass_discovery_center = true, bypass_discovery_ui = true})
-        --             create_shop_card_ui(card, 'Booster', G.shop_booster)
-        --             card.ability.booster_pos = i
-        --             card:start_materialize()
-        --             G.shop_booster:emplace(card)
-                
-        -- end
-    end
     local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
     G.FUNCS.cash_out=function (e)
         G_FUNCS_cash_out_ref(e)
-        if G.GAME.used_vouchers.v_3d_boosters and not G.GAME.miser and not(G.GAME.final_trident == true and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
+        if G.GAME.used_vouchers.v_3d_boosters and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
             my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
@@ -1385,9 +1370,12 @@ do
         end
     end
     function my_reroll_shop(num,price_mod)
-            G.E_MANAGER:add_event(Event({
-                trigger = 'immediate',
-                func = function()
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = function()
+                if not (G.GAME.current_round and G.GAME.current_round.used_packs and G.shop_booster and G.shop_booster.cards) then
+                    return true
+                end
                 for i = #G.shop_booster.cards,1, -1 do
                     local c = G.shop_booster:remove_card(G.shop_booster.cards[i])
                     c:remove()
@@ -1410,10 +1398,10 @@ do
                     card:start_materialize()
                     G.shop_booster:emplace(card)
                 end
-                return true
-                end
-            }))
-            G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
+            return true
+            end
+        }))
+        G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
         
     end
 
@@ -1427,10 +1415,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When you redeem a",
-            "{C:attention}tier 1{} Voucher,",
-            "have {C:green}#1#%{} chance to",
-            "redeem the {C:attention}tier 2{} one",
+            "When you redeem a {C:attention}Voucher{},",
+            "have {C:green}#1#%{} chance to redeem",
+            "a {C:attention}higher tier{} Voucher",
             "and pay half the price",
             "{C:inactive}(This chance can't be doubled){}"
         }
@@ -1454,9 +1441,9 @@ do
         name = name,
         text = {
             "When you redeem a",
-            "{C:attention}tier 1{} Voucher, always",
-            "redeem the {C:attention}tier 2{}",
-            "one and pay the price"
+            "{C:attention}Voucher{}, always redeem",
+            "a {C:attention}higher tier{} Voucher",
+            "and pay the price"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -1474,7 +1461,7 @@ do
         
     local Card_redeem_ref = Card.redeem
     function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
-        if G.GAME.used_vouchers.v_b1g1 or G.GAME.used_vouchers.v_b1g50 and  pseudorandom('b1g1')*100 < G.P_CENTERS.v_b1g50.config.extra.chance then
+        if not G.GAME.block_b1g1 and (G.GAME.used_vouchers.v_b1g50 and pseudorandom('b1g1')*100 < G.P_CENTERS.v_b1g50.config.extra.chance  or G.GAME.used_vouchers.v_b1g1 or G.GAME.used_vouchers.v_b1ginf) then
             local lose_percent=50
             if G.GAME.used_vouchers.v_b1g1 then 
                 lose_percent=100
@@ -1497,6 +1484,7 @@ do
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
                 if #unredeemed_vouchers==1 and only_need.name==center_table.name then
                     table.insert(vouchers_to_get,v)
+                    if not G.GAME.used_vouchers.v_b1ginf then break end 
                 end
             end
             if #vouchers_to_get>0 then
@@ -1510,7 +1498,13 @@ do
                     card.cost=math.ceil(card.cost*lose_percent/100)
                     card.shop_voucher=false -- this doesn't help keeping current_round_voucher i guess
                     local current_round_voucher=G.GAME.current_round.voucher
+                    
+                    if not G.GAME.used_vouchers.v_b1ginf then 
+                        G.GAME.block_b1g1=true -- can only get 1 extra
+                    end 
                     card:redeem()
+                    G.GAME.block_b1g1=false
+
                     G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher may be from voucher pack or other non-shop source
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
@@ -2630,6 +2624,31 @@ do
     end
 end -- art gallery
 do
+    local name="B1Ginf"
+    local id="b1ginf"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When you redeem a",
+            "{C:attention}Voucher{}, always redeem",
+            "all {C:attention}higher tier{} Vouchers",
+            "and pay their prices",
+            "{C:inactive}(Collector + B1G1){}"
+        }
+    }
+    local this_v = SMODS.Voucher:new(
+        name, id,
+        {},
+        {x=0,y=0}, loc_txt,
+        10, true, true, true, {'v_collector','v_b1g1'}
+    )
+    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
+    this_v:register()
+    this_v.loc_def = function(self)
+        return {}
+    end -- the effect is written in b1g50 code
+end -- b1ginf
+do
     local name="Slate"
     local id="slate"
     local loc_txt = {
@@ -3041,7 +3060,7 @@ do
         },
         random_tag={
             weight=0.15,
-            chance_range={17,17},
+            chance_range={7,7},
             base_value_function=function(chance)
                 return 1
             end,
@@ -3234,75 +3253,74 @@ do
     end
 
 end -- real random
-    -- this challenge is only for test
-    table.insert(G.CHALLENGES,1,{
-        name = "TestVoucher",
-        id = 'c_mod_testvoucher',
-        rules = {
-            custom = {
-            },
-            modifiers = {
-                {id = 'dollars', value = 5000},
-            }
-        },
-        jokers = {
-            --{id = 'j_jjookkeerr'},
-            -- {id = 'j_ascension'},
-            -- {id = 'j_sock_and_buskin'},
-            -- {id = 'j_sock_and_buskin'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_piggy_bank'},
-            -- {id = 'j_blueprint'},
-            -- {id = 'j_triboulet'},
-            -- {id = 'j_triboulet'},
-        },
-        consumeables = {
-            -- {id = 'c_justice_cu'},
-            -- {id = 'c_heirophant_cu'},
-            -- {id = 'c_tower_cu'},
-            {id = 'c_devil_cu'},
-            --{id = 'c_death'},
-        },
-        vouchers = {
-            {id = 'v_trash_picker'},
-            {id = 'v_mirror'},
-            {id = 'v_3d_boosters'},
-            {id = 'v_4d_boosters'},
-            --{id = 'v_bonus_plus'},
-            {id = 'v_real_random'},
-            -- {id = 'v_connoisseur'},
-            {id = 'v_paint_brush'},
-            -- {id = 'v_liquidation'},
-            -- {id = 'v_3d_boosters'},
-            {id = 'v_b1g1'},
-            -- {id = 'v_overshopping'},
-            {id = 'v_reroll_cut'},
-            {id = 'v_retcon'},
-            -- {id = 'v_event_horizon'},
-        },
-        deck = {
-            type = 'Challenge Deck',
-            cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_wild',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-        },
-        restrictions = {
-            banned_cards = {
-            },
-            banned_tags = {
-            },
-            banned_other = {
-            }
-        }
-    })
-    G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
+    -- -- this challenge is only for test
+    -- table.insert(G.CHALLENGES,1,{
+    --     name = "TestVoucher",
+    --     id = 'c_mod_testvoucher',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 5000},
+    --         }
+    --     },
+    --     jokers = {
+    --         --{id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_blueprint'},
+    --         -- {id = 'j_triboulet'},
+    --         -- {id = 'j_triboulet'},
+    --     },
+    --     consumeables = {
+    --         -- {id = 'c_justice_cu'},
+    --         -- {id = 'c_heirophant_cu'},
+    --         -- {id = 'c_tower_cu'},
+    --         {id = 'c_devil_cu'},
+    --         --{id = 'c_death'},
+    --     },
+    --     vouchers = {
+    --         {id = 'v_trash_picker'},
+    --         {id = 'v_mirror'},
+    --         {id = 'v_3d_boosters'},
+    --         {id = 'v_4d_boosters'},
+    --         --{id = 'v_bonus_plus'},
+    --         {id = 'v_real_random'},
+    --         -- {id = 'v_connoisseur'},
+    --         {id = 'v_paint_brush'},
+    --         -- {id = 'v_liquidation'},
+    --         {id = 'v_b1ginf'},
+    --         -- {id = 'v_overshopping'},
+    --         {id = 'v_reroll_cut'},
+    --         {id = 'v_retcon'},
+    --         -- {id = 'v_event_horizon'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_wild',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --     },
+    --     restrictions = {
+    --         banned_cards = {
+    --         },
+    --         banned_tags = {
+    --         },
+    --         banned_other = {
+    --         }
+    --     }
+    -- })
+    -- G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     init_localization()
 end
 ----------------------------------------------

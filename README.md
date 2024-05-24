@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Also adds a challenge beginning with these 5 jokers to test them.
 
-# Betmma Vouchers: Adds 36 Vouchers and 11 fusion Vouchers.
+# Betmma Vouchers: Adds 36 Vouchers and 14 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -40,8 +40,8 @@ A collection of mods made by me for Balatro.
 - Big Blast: If chips scored are above X5 of required chips at end of round, add Negative edition to a random Joker, and increase the target amount.
 - 3D Boosters: +1 Booster Pack available in shop.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
-- B1G50%: When you redeem a tier 1 Voucher, have 50% chance to redeem the tier 2 one and lose $5.
-- B1G1: When you redeem a tier 1 Voucher, always redeem the tier 2 one and lose $10.
+- B1G50%: When you redeem a Voucher, have 50% chance to redeem a higher tier Voucher and pay half the price.
+- B1G1: When you redeem a Voucher, always redeem a higher tier Voucher and pay the price.
 - Collector: Each Voucher redeemed reduces Blind requirement by 4%. (multiplicative)
 - Connoisseur: If you have more than $400/(Vouchers Redeemed + 1),  redeeming a voucher gives Antimatter and lets the money requirement X5.
 - Flipped Card: You can flip up to 3 cards once before playing each hand. Flipped cards will return to your hand after they are played.
@@ -63,9 +63,11 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
 - Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
 - Art Gallery (Hieroglyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
+- B1Ginf (Collector + B1G1): B1G1: When you redeem a Voucher, always redeem all higher tier Vouchers and pay their prices.
 - Slate (Petroglyph + Bonus+): Permanently increases Stone Card bonus by +100 extra chips. Stone Cards don't take up space when played.
 - Gilded Glider (Gold Bar + Bonus+): When a Gold Card gives money, if the card to its right isn't enhanced, transfer the Gold Card enhancement from this card to that card.
 - Mirror (Flipped Card + Omnicard): When a Steel Card scores, the card to its right triggers one more time.
+- Real Random (Crystal Ball + Omnicard): Randomize all Lucky Card effects. Create a negative Magician when blind begins.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
