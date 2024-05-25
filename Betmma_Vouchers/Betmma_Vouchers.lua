@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v1.1.3.1
+--- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v1.1.4
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -80,6 +80,18 @@ local config = {
     v_mirror=true,
     v_real_random=true
 }
+
+local function get_plain_text_from_localize(final_line)
+    local ret=''
+    for k,v in pairs(final_line) do
+        local config=v.config
+        if config.text then ret=ret..config.text..''
+        elseif v.nodes then ret=ret..v.nodes[1].config.text..''
+        else ret=ret..config.object.config.string[1]..''
+        end
+    end
+    return ret
+end
 
 
 local function randomly_redeem_voucher(no_random_please) -- xD
@@ -2825,7 +2837,7 @@ do
                 right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+1
             end
         end
-        if G.GAME.used_vouchers.v_mirror and context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
+        if context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
             if not ret.seals then ret.seals={
                 message = localize('k_again_ex'),
                 repetitions = card.ability.temp_repetition,
@@ -2901,22 +2913,26 @@ do
         
     end
 
+    function real_random_get_random_ability()
+        local _,random_ability_key=pseudorandom_element_weighted(real_random_data,pseudoseed('real_random'))
+        local ability_data=real_random_data[random_ability_key]
+        local ability={key=random_ability_key}
+        if ability_data.chance_range then --chance is randomly chosen between ranges that won't change
+            local chance_range=ability_data.chance_range
+            local chance=log_random(chance_range[1],chance_range[2])
+            ability.loc_vars={
+                    ability_data.base_value_function(chance),
+                    math.ceil(chance)
+                }
+        end --chance is a function taking in this card and returning a value
+        return ability
+    end
+
     function real_random_add_abilities_to_card(v,times)
         -- v:card
         local abilities=v.config.center.real_random_abilities or {}
         for i=1,(times or G.P_CENTERS.v_real_random.config.extra.ability) do
-            local _,random_ability_key=pseudorandom_element_weighted(real_random_data,pseudoseed('real_random'))
-            local ability_data=real_random_data[random_ability_key]
-            local ability={key=random_ability_key}
-            if ability_data.chance_range then --chance is randomly chosen between ranges that won't change
-                local chance_range=ability_data.chance_range
-                local chance=log_random(chance_range[1],chance_range[2])
-                ability.loc_vars={
-                        ability_data.base_value_function(chance),
-                        math.ceil(chance)
-                    }
-            end --chance is a function taking in this card and returning a value
-                
+            ability=real_random_get_random_ability()
             table.insert(abilities,ability)
         end
         v.config.center=copy_table(v.config.center)
@@ -3035,7 +3051,7 @@ do
         new_ability={
             weight=0.15,
             chance_function=function(center)
-                return 10^(#center.real_random_abilities-1)
+                return (#center.real_random_abilities-1)^3
             end,
             base_value_function=function(chance)
                 return 1
@@ -3059,7 +3075,7 @@ do
             }
         },
         random_tag={
-            weight=0.15,
+            weight=0.25,
             chance_range={7,7},
             base_value_function=function(chance)
                 return 1
@@ -3068,12 +3084,27 @@ do
                 "{C:green}#1# in #3#{} chance",
                 "for a random {C:attention}tag{}"
             }
-        }
+        },
+        retrigger_next={
+            weight=0.15,
+            chance_range={3,25},
+            base_value_function=function(chance)
+                return math.ceil(math.log(chance))-1
+            end,
+            text={
+                "{C:green}#1# in #3#{} chance",
+                "to retrigger the card",
+                "to its right {C:attention}#2#{} times"
+            }
+        }-- handsize
     }
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
     end
-    G.localization.descriptions.Enhanced.real_random_collection_page={text={"{C:dark_edition}RANDOM{}"}} -- shuold be random effects like misprint
+    G.localization.descriptions.Enhanced.real_random_collection_page={text={
+        "{C:dark_edition}Hover again to{}",
+        "{C:dark_edition}see another ability{}"
+    }} -- shuold be random effects like misprint
 
     local generate_card_ui_ref=generate_card_ui
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
@@ -3084,7 +3115,7 @@ do
             for i=1,4 do
                 table.remove(main,#main)-- the description of vanilla lucky card is 4 lines
             end
-            if _c.real_random_abilities then
+            if _c.real_random_abilities and not(G.your_collection) then
                 for k,v in pairs(_c.real_random_abilities) do
                     local loc_vars=copy_table(real_random_loc_def(_c,v))
                     --print(loc_vars[1])
@@ -3092,7 +3123,26 @@ do
                     localize{type = 'descriptions', key = 'real_random_'..v.key, set = _c.set, nodes = main, vars = loc_vars}
                 end
             else
-                localize{type = 'descriptions', key = 'real_random_collection_page', set = _c.set, nodes = main, vars = {}}
+                local strings={}
+                for i=1,20 do
+                    local ability=real_random_get_random_ability()
+                    local loc_vars=copy_table(real_random_loc_def({real_random_abilities={ability,ability,ability}},ability))
+                    table.insert(loc_vars,1,G.GAME.probabilities.normal)
+                    localize{type = 'descriptions', key = 'real_random_'..ability.key, set = 'Enhanced', nodes = strings, vars = loc_vars}
+                end
+                for k,v in pairs(strings) do
+                    strings[k]=get_plain_text_from_localize(strings[k])
+                end
+                
+                --localize{type = 'descriptions', key = 'real_random_collection_page', set = _c.set, nodes = main, vars = {}}
+                -- local loc_mult = ' '..(localize('k_mult'))..' '
+                main_start = {
+                    --{n=G.UIT.T, config={text = '  +',colour = G.C.MULT, scale = 0.32}},
+                    --{n=G.UIT.O, config={object = DynaText({string = r_mults, colours = {G.C.RED},pop_in_rate = 9999999, silent = true, random_element = true, pop_delay = 0.5, scale = 0.32, min_cycle_time = 0})}},
+                    {n=G.UIT.O, config={object = DynaText({string = strings,
+                    colours = {G.C.DARK_EDITION},pop_in_rate = 9999999, silent = true, random_element = true, pop_delay = 0.2011, scale = 0.32, min_cycle_time = 0})}},
+                }
+                main[#main+1]=main_start
             end
         end
         return full_UI_table
@@ -3221,6 +3271,16 @@ do
                         func = function()
                             add_tag(random_tag)
                         return true end }))
+                elseif v.key=='retrigger_next' and pseudorandom('retrigger_next') < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    local index=1
+                    while G.play.cards[index]~=card and index<=#G.play.cards do
+                        index=index+1
+                    end
+                    if index<#G.play.cards then
+                        local right_card=G.play.cards[index+1]
+                        right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+loc_vars[1]
+                    end
                 end
 
                 
