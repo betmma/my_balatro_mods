@@ -308,10 +308,10 @@ do
             
             if G.GAME.used_vouchers.v_real_random then
                 for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_lucky' then 
+                    if v.ability.real_random_abilities then 
                         v.config.center=copy_table(v.config.center)
                         v.config.center.real_random_abilities=v.ability.real_random_abilities
-                        -- restore random abilities from v.ability
+                        -- restore random abilities from v.ability (lucky card or got random ability from lucky card)
                     end
                 end
             end
@@ -2053,6 +2053,7 @@ do
         if G.GAME.used_vouchers.v_bulletproof and self.ability.name == 'Glass Card' and G.P_CENTERS.m_glass.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra.lose*(self.ability.breaking_count or 0)+1>G.P_CENTERS.v_bulletproof.config.extra.lower_bound then
             self.ability.breaking_count=(self.ability.breaking_count or 0)+1
             self.ability.x_mult=G.P_CENTERS.m_glass.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra.lose*self.ability.breaking_count
+            print(G.P_CENTERS.m_glass.config.Xmult,self.ability.x_mult)
             self.config.center=copy_table(self.config.center) -- prevent modifying value of G.P_CENTERS.m_glass
             self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-G.P_CENTERS.v_bulletproof.config.extra.lose
             self.shattered=false
@@ -2519,14 +2520,14 @@ do
         G_FUNCS_can_discard_ref(e)
         if G.GAME.current_round.discards_left <= 0 and #G.hand.highlighted > 0 and G.GAME.used_vouchers.v_trash_picker and G.GAME.current_round.hands_left>1 then
             e.config.colour = G.C.RED
-            e.config.button = 'discard_cards_from_highlighted_using_hand'
+            e.config.button = 'discard_cards_from_highlighted'
         end
     end
 
     local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted 
-    G.FUNCS.discard_cards_from_highlighted_using_hand = function(e, hook)
+    G.FUNCS.discard_cards_from_highlighted = function(e, hook)
         G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
-        ease_hands_played(-1)
+        if G.GAME.current_round.discards_left <= 0 then ease_hands_played(-1) end
     end
 end -- trash picker
 do
@@ -2983,7 +2984,7 @@ do
                 "{C:green}#1# in #3#{} chance",
                 "for {C:mult}+#2#{} Mult"
             }
-            },
+        },
         x_mult={
             chance_range={4,30},
             base_value_function=function(chance)
@@ -3062,7 +3063,7 @@ do
             }
         },
         double_probability={
-            weight=0.1,
+            weight=0.05,
             chance_function=function(center)
                 return math.ceil(4.938*(G.GAME.probabilities.normal+0.5)^2)
             end,
@@ -3086,7 +3087,7 @@ do
             }
         },
         retrigger_next={
-            weight=0.15,
+            weight=0.1,
             chance_range={3,25},
             base_value_function=function(chance)
                 return math.ceil(math.log(chance))-1
@@ -3096,26 +3097,64 @@ do
                 "to retrigger the card",
                 "to its right {C:attention}#2#{} times"
             }
-        }-- handsize
+        },
+        hand_size={
+            weight=0.15,
+            chance_function=function(center)
+                return G.hand.config.card_limit^2
+            end,
+            base_value_function=function(chance)
+                return 1
+            end,
+            text={
+                "{C:green}#1# in #3#{} chance",
+                "to {C:attention}+#2#{} hand size"
+            }
+        },
+        transfer_ability={
+            weight=0.05,
+            chance_range={77,77},
+            base_value_function=function(chance)
+                return 1
+            end,
+            text={
+                "{C:green}#1# in #3#{} chance",
+                "to {C:attention}transfer{} a random",
+                "{C:attention}ability{} of this card",
+                "to the card to its right"
+            }
+        }
     }
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
     end
-    G.localization.descriptions.Enhanced.real_random_collection_page={text={
-        "{C:dark_edition}Hover again to{}",
-        "{C:dark_edition}see another ability{}"
-    }} -- shuold be random effects like misprint
+
+    local G_FUNCS_exit_overlay_menu_ref=G.FUNCS.exit_overlay_menu
+    G.FUNCS.exit_overlay_menu = function()
+        local ret=G_FUNCS_exit_overlay_menu_ref()
+        G.in_overlay_menu=false
+        return ret
+    end
+
+    local create_UIBox_your_collection_enhancements_ref=create_UIBox_your_collection_enhancements
+    function create_UIBox_your_collection_enhancements(exit)
+        local ret=create_UIBox_your_collection_enhancements_ref(exit)
+        G.in_overlay_menu=true
+        return ret
+    end
 
     local generate_card_ui_ref=generate_card_ui
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
         local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
-        if G and G.GAME and G.GAME.used_vouchers.v_real_random and _c.effect == 'Lucky Card' and specific_vars then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
+        if G and G.GAME and G.GAME.used_vouchers.v_real_random and (_c.effect == 'Lucky Card' or _c.real_random_abilities) and specific_vars then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
             local main=full_UI_table.main
             local main_last=main[#main]
-            for i=1,4 do
-                table.remove(main,#main)-- the description of vanilla lucky card is 4 lines
+            if _c.effect == 'Lucky Card' then
+                for i=1,4 do
+                    table.remove(main,#main)-- the description of vanilla lucky card is 4 lines
+                end
             end
-            if _c.real_random_abilities and not(G.your_collection) then
+            if _c.real_random_abilities and not(G.in_overlay_menu) then
                 for k,v in pairs(_c.real_random_abilities) do
                     local loc_vars=copy_table(real_random_loc_def(_c,v))
                     --print(loc_vars[1])
@@ -3134,11 +3173,7 @@ do
                     strings[k]=get_plain_text_from_localize(strings[k])
                 end
                 
-                --localize{type = 'descriptions', key = 'real_random_collection_page', set = _c.set, nodes = main, vars = {}}
-                -- local loc_mult = ' '..(localize('k_mult'))..' '
                 main_start = {
-                    --{n=G.UIT.T, config={text = '  +',colour = G.C.MULT, scale = 0.32}},
-                    --{n=G.UIT.O, config={object = DynaText({string = r_mults, colours = {G.C.RED},pop_in_rate = 9999999, silent = true, random_element = true, pop_delay = 0.5, scale = 0.32, min_cycle_time = 0})}},
                     {n=G.UIT.O, config={object = DynaText({string = strings,
                     colours = {G.C.DARK_EDITION},pop_in_rate = 9999999, silent = true, random_element = true, pop_delay = 0.2011, scale = 0.32, min_cycle_time = 0})}},
                 }
@@ -3151,7 +3186,7 @@ do
     local get_chip_bonus_ref=Card.get_chip_bonus
     function Card:get_chip_bonus()
         local ret=get_chip_bonus_ref(self)
-        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.ability.effect == 'Lucky Card' then
+        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.config.center.real_random_abilities then
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
                 if v.key=='chip' and pseudorandom('lucky_chip') < G.GAME.probabilities.normal/loc_vars[2] then
@@ -3166,8 +3201,8 @@ do
     local get_chip_mult_ref=Card.get_chip_mult
     function Card:get_chip_mult()
         local ret=get_chip_mult_ref(self)
-        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.ability.effect == 'Lucky Card' then
-            ret=0 -- to override the original lucky card mult
+        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.config.center.real_random_abilities then
+            if self.ability.effect == 'Lucky Card' then ret=0 end -- to override the original lucky card mult
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
                 if v.key=='mult' and pseudorandom('lucky_mult') < G.GAME.probabilities.normal/loc_vars[2] then
@@ -3182,7 +3217,7 @@ do
     local get_chip_x_mult_ref=Card.get_chip_x_mult
     function Card:get_chip_x_mult(context)
         local ret=get_chip_x_mult_ref(self)
-        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.ability.effect == 'Lucky Card' then
+        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.config.center.real_random_abilities then
             if ret==0 then ret=1 end
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
@@ -3197,12 +3232,13 @@ do
     end
 
     local get_p_dollars_ref=Card.get_p_dollars
-    function Card:get_p_dollars(context)
-        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.ability.effect == 'Lucky Card' then
+    function Card:get_p_dollars(context) -- vanilla function modify dollar_buffer so I just don't execute vanilla function (though I don't clearly know what dollar_buffer does)
+        if G.GAME.used_vouchers.v_real_random and not self.debuff and self.config.center.real_random_abilities then
             local ret=0
             if self.seal == 'Gold' then
                 ret = ret +  3
             end
+            
 
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
@@ -3225,21 +3261,22 @@ do
     local eval_card_ref=eval_card
     function eval_card(card, context) --other abilities
         local ret=eval_card_ref(card,context)
-        if context.cardarea == G.play and not context.repetition_only and G.GAME.used_vouchers.v_real_random and not card.debuff and card.ability.effect == 'Lucky Card' then
+        if context.cardarea == G.play and not context.repetition_only and G.GAME.used_vouchers.v_real_random and not card.debuff and card.config.center.real_random_abilities then
+            local abilities_ref=copy_table(card.config.center.real_random_abilities)
             for k,v in pairs(card.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(card.config.center,v)
                 if v.key=='joker_slot' and pseudorandom('joker_slot') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
                     G.E_MANAGER:add_event(Event({func = function()
                         if G.jokers then 
-                            G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+                            G.jokers.config.card_limit = G.jokers.config.card_limit + loc_vars[1]
                         end
                         return true end }))
                 elseif v.key=='consumable_slot' and pseudorandom('consumable_slot') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
                     G.E_MANAGER:add_event(Event({func = function()
                         if G.consumeables then 
-                            G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
+                            G.consumeables.config.card_limit = G.consumeables.config.card_limit + loc_vars[1]
                         end
                         return true end }))
                 elseif v.key=='random_voucher' and pseudorandom('random_voucher') < G.GAME.probabilities.normal/loc_vars[2] then
@@ -3247,18 +3284,20 @@ do
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
                         func = function()
-                        randomly_redeem_voucher()
+                            for i=1,loc_vars[1] do
+                                randomly_redeem_voucher()
+                            end
                         return true end }))
                 elseif v.key=='random_negative_joker' and pseudorandom('random_negative_joker') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
-                        randomly_create_joker(1,'random_negative_joker',nil,{edition={negative=true}})
+                        randomly_create_joker(loc_vars[1],'random_negative_joker',nil,{edition={negative=true}})
                 elseif v.key=='new_ability' and pseudorandom('new_ability') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
-                    real_random_add_abilities_to_card(card,1)
+                    real_random_add_abilities_to_card(card,loc_vars[1])
                 elseif v.key=='double_probability' and pseudorandom('double_probability') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
                     for k, v in pairs(G.GAME.probabilities) do -- are there really other probabilities?
-                        G.GAME.probabilities[k] = v*2
+                        G.GAME.probabilities[k] = v*2^loc_vars[1]
                     end
                 elseif v.key=='random_tag' and pseudorandom('random_tag') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
@@ -3269,7 +3308,9 @@ do
                     G.E_MANAGER:add_event(Event({
                         trigger = 'after',
                         func = function()
-                            add_tag(random_tag)
+                            for i=1,loc_vars[1] do
+                                add_tag(random_tag)
+                            end
                         return true end }))
                 elseif v.key=='retrigger_next' and pseudorandom('retrigger_next') < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
@@ -3281,13 +3322,38 @@ do
                         local right_card=G.play.cards[index+1]
                         right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+loc_vars[1]
                     end
+                elseif v.key=='hand_size' and pseudorandom('hand_size') < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    G.hand:change_size(loc_vars[1])
+                elseif v.key=='transfer_ability' and pseudorandom('transfer_ability') < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    local index=1
+                    while G.play.cards[index]~=card and index<=#G.play.cards do
+                        index=index+1
+                    end
+                    if index<#G.play.cards then
+                        local right_card=G.play.cards[index+1]
+                        right_card.config.center=copy_table(right_card.config.center)
+                        right_card.config.center.real_random_abilities=right_card.config.center.real_random_abilities or {}
+                        if abilities_ref then
+                            local index=math.ceil(pseudorandom('transfer_ability')*#abilities_ref)
+                            local ability=abilities_ref[index]
+                            table.insert(right_card.config.center.real_random_abilities,ability)
+                            right_card.ability.real_random_abilities=right_card.config.center.real_random_abilities
+                            table.remove(abilities_ref,index)
+                            card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('k_transfer_ability')})
+                        end
+                    end
+            
                 end
-
+            card.config.center.real_random_abilities=abilities_ref
+            card.ability.real_random_abilities=abilities_ref
                 
             end
         end
         return ret
     end
+    G.localization.misc.dictionary.k_transfer_ability = "Transfer!"
 
     local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
     G.FUNCS.draw_from_discard_to_deck = function(e)
