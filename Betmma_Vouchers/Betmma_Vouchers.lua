@@ -3112,7 +3112,7 @@ do
             }
         },
         transfer_ability={
-            weight=0.05,
+            weight=10.05,
             chance_range={77,77},
             base_value_function=function(chance)
                 return 1
@@ -3335,8 +3335,16 @@ do
                         local right_card=G.play.cards[index+1]
                         right_card.config.center=copy_table(right_card.config.center)
                         right_card.config.center.real_random_abilities=right_card.config.center.real_random_abilities or {}
-                        if abilities_ref then
-                            local index=math.ceil(pseudorandom('transfer_ability')*#abilities_ref)
+                        local non_transfer_indexes={}
+                        for k,v in pairs(abilities_ref) do
+                            if v.key~='transfer_ability' then
+                                table.insert(non_transfer_indexes,k)
+                                --print(k)
+                            end
+                        end
+                        
+                        if #non_transfer_indexes>0 then
+                            local index=non_transfer_indexes[math.ceil(pseudorandom('transfer_ability')*#non_transfer_indexes)]
                             local ability=abilities_ref[index]
                             table.insert(right_card.config.center.real_random_abilities,ability)
                             right_card.ability.real_random_abilities=right_card.config.center.real_random_abilities
@@ -3399,6 +3407,9 @@ end -- real random
     --         {id = 'j_oops'},
     --         {id = 'j_oops'},
     --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
@@ -3411,10 +3422,11 @@ end -- real random
     --         -- {id = 'j_triboulet'},
     --     },
     --     consumeables = {
-    --         -- {id = 'c_justice_cu'},
+    --         {id = 'c_justice_cu'},
+    --         {id = 'c_hanged_man'},
     --         -- {id = 'c_heirophant_cu'},
     --         -- {id = 'c_tower_cu'},
-    --         {id = 'c_devil_cu'},
+    --         --{id = 'c_devil_cu'},
     --         --{id = 'c_death'},
     --     },
     --     vouchers = {
@@ -3427,7 +3439,7 @@ end -- real random
     --         -- {id = 'v_connoisseur'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
-    --         {id = 'v_b1ginf'},
+    --         {id = 'v_bulletproof'},
     --         -- {id = 'v_overshopping'},
     --         {id = 'v_reroll_cut'},
     --         {id = 'v_retcon'},
@@ -3435,7 +3447,7 @@ end -- real random
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_wild',g='Red'},{s='D',r='4',e='m_wild',g='Red'},{s='D',r='5',e='m_wild',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
     --     },
     --     restrictions = {
     --         banned_cards = {
