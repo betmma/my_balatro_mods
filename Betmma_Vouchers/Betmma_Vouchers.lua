@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v1.1.4
+--- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v1.1.4.1
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -1659,8 +1659,8 @@ do
         name = name,
         text = {
             "{C:attention}Flipped{} cards are",
-            "held in hand when scoring",
-            "and can trigger hold-in-hand effects"
+            "held in hand when scoring and",
+            "can trigger hold-in-hand effects"
         }
     }
     local this_v = SMODS.Voucher:new(
@@ -3101,7 +3101,7 @@ do
         hand_size={
             weight=0.15,
             chance_function=function(center)
-                return G.hand.config.card_limit^2
+                return math.ceil(2.5*(math.max(G.hand.config.card_limit,8)-4)^2.5)
             end,
             base_value_function=function(chance)
                 return 1
@@ -3112,7 +3112,7 @@ do
             }
         },
         transfer_ability={
-            weight=10.05,
+            weight=0.05,
             chance_range={77,77},
             base_value_function=function(chance)
                 return 1
