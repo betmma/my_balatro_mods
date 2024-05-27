@@ -1,15 +1,24 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
+--- PREFIX: betm_jokers
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 5 More Jokers!
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+local MOD_PREFIX="betm_jokers_"
+function SMODS.current_mod.process_loc_text()
+    G.localization.misc.dictionary.k_errorr = "Rank Changed!"
+    G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
+
+end
+
+-- you can disable joker here
+jokerBlacklists={}
 
 
-function SMODS.INIT.BetmmaJokers()
     
     local localization = {
         jjookkeerr = {
@@ -55,6 +64,17 @@ function SMODS.INIT.BetmmaJokers()
                 "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
                 -- dollar in it adds to its sold price
             }
+        },
+        housing_choice = {
+            name = "Housing Choice",
+            text = {
+                "Get a random {C:attention}Voucher{}",
+                "if played hand contains",
+                "a {C:attention}Full House{}. This can",
+                "only trigger #1# times",
+                "{C:inactive}({C:attention}#2#{C:inactive} left)"
+                -- dollar in it adds to its sold price
+            }
         }
     }
 
@@ -67,49 +87,116 @@ function SMODS.INIT.BetmmaJokers()
     ]]
 
     local jokers = {
-        jjookkeerr = SMODS.Joker:new(
-            "JJookkeerr", "",
-            {extra=1.5},
-            {x=0,y=0}, "",
-            2, 6, true, true, true, true
-        ),
-        ascension = SMODS.Joker:new(
-            "Ascension", "",
-            {},
-            {x=0,y=0}, "",
-            2, 6, true, true, true, true
-        ),
-        hasty = SMODS.Joker:new(
-            "Hasty Joker", "",
-            {extra=8},
-            {x=0,y=0}, "",
-            1, 5, true, true, false, true
-        ),
-        errorr = SMODS.Joker:new(
-            "ERRORR", "",
-            {
-                extra={odds = 3}
-            },
-            {x=0,y=0}, "",
-            3, 8, true, true, false, true
-        ),
-        piggy_bank = SMODS.Joker:new(
-            " Piggy Bank ", "",
-            {
-                extra={mults = 0, mult_mod = 1}
-            },
-            {x=0,y=0}, "",
-            1, 5, true, true, true, true
-        ),
+        jjookkeerr = SMODS.Joker{
+            name="JJookkeerr", key="jjookkeerr",
+            config={extra=1.5},
+            spritePos={x=0,y=0}, loc_txt="",
+            rarity=2, cost=6, unlocked=true, discovered=true, blueprint_compat=true, eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra}}
+            end
+        },
+        ascension = SMODS.Joker{
+            name="Ascension", key="ascension",
+            config={},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=2, 
+            cost=6, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true
+        },
+        hasty = SMODS.Joker{
+            name="Hasty Joker", key="hasty",
+            config={extra=8},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=1, 
+            cost=5, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=false, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra}}
+            end
+        },
+        errorr = SMODS.Joker{
+            name="ERRORR", key="errorr",
+            config={extra={odds=3}},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=3, 
+            cost=8, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=false, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={''..(G.GAME and G.GAME.probabilities.normal or 1), center.ability.extra.odds}}
+            end
+        },
+        piggy_bank = SMODS.Joker{
+            name=" Piggy Bank ", key="piggy_bank",
+            config={extra={mults=0, mult_mod=1}},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=1, 
+            cost=5, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra.mults, center.ability.extra.mult_mod}}
+            end
+        },
+        housing_choice = SMODS.Joker{
+            name="Housing Choice", key="housing_choice",
+            config={extra={value=8,remaining=8}},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=3, 
+            cost=8, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=false, 
+            eternal_compat=false,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra.value,center.ability.extra.remaining}}
+            end,
+            calculate=function(self,card,context)
+                if context.cardarea==G.jokers and context.before and not context.blueprint and next(context.poker_hands["Full House"])then
+                    card.ability.extra.remaining=card.ability.extra.remaining-1
+                    randomly_redeem_voucher()
+                    if card.ability.extra.remaining<=0 then 
+                        G.E_MANAGER:add_event(Event({
+                            func = function()
+                                play_sound('tarot1')
+                                card.T.r = -0.2
+                                card:juice_up(0.3, 0.4)
+                                card.states.drag.is = true
+                                card.children.center.pinch.x = true
+                                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.3, blockable = false,
+                                    func = function()
+                                            G.jokers:remove_card(card)
+                                            card:remove()
+                                            card = nil
+                                        return true; end})) 
+                                return true
+                            end
+                        })) 
+                    end
+                end
+            end
+        },
     }
 
-    -- Blacklist individual Jokers here
-    local jokerBlacklists = {
-        jjookkeerr = false,
-        ascension = false
-    }
+
     -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,#G.CHALLENGES+1,{
+    -- table.insert(G.CHALLENGES,1,{
     --     name = "TestJoker",
     --     id = 'c_mod_testjoker',
     --     rules = {
@@ -120,13 +207,13 @@ function SMODS.INIT.BetmmaJokers()
     --         }
     --     },
     --     jokers = {
-    --         {id = 'j_jjookkeerr'},
-    --         {id = 'j_ascension'},
-    --         {id = 'j_hasty'},
-    --         {id = 'j_errorr'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_piggy_bank'},
-    --         {id = 'j_piggy_bank'},
+    --         {id = MOD_PREFIX..'j_jjookkeerr'},
+    --         {id = MOD_PREFIX..'j_ascension'},
+    --         {id = MOD_PREFIX..'j_hasty'},
+    --         {id = MOD_PREFIX..'j_errorr'},
+    --         {id = MOD_PREFIX..'j_piggy_bank'},
+    --         {id = MOD_PREFIX..'j_piggy_bank'},
+    --         {id = MOD_PREFIX..'j_housing_choice'},
     --     },
     --     consumeables = {
     --         {id = 'c_temperance'},
@@ -147,24 +234,25 @@ function SMODS.INIT.BetmmaJokers()
     --         }
     --     }
     -- })
-    -- G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
     -- Localization
     init_localization()
 
     -- Add Jokers to center
     for k, v in pairs(jokers) do
         if not jokerBlacklists[k] then
-            v.slug = "j_" .. k
             v.loc_txt = localization[k]
-            v.spritePos = { x = 0, y = 0 }
-            v:register()
-            SMODS.Sprite:new(v.slug, SMODS.findModByID("BetmmaJokers").path, v.slug..".png", 71, 95, "asset_atli"):register()
+            --v.spritePos = { x = 0, y = 0 }
+            --v:register()
+            v.key = "j_" .. k
+            SMODS.Atlas{key=v.key, path=v.key..".png", px=71, py=95}
+            v.key = MOD_PREFIX .. v.key
+            v.atlas=v.key
         end
     end
 
     --- Joker abilities ---
-    SMODS.Jokers.j_jjookkeerr.calculate = function(self, context)
-        if context.other_joker and context.other_joker ~= self and not context.other_joker.debuff then
+    jokers.jjookkeerr.calculate = function(self, card, context)
+        if context.other_joker and context.other_joker ~= card and not context.other_joker.debuff then
             if string.match(context.other_joker.ability.name, "Joker") then
                 G.E_MANAGER:add_event(Event({
                     func = function()
@@ -173,16 +261,16 @@ function SMODS.INIT.BetmmaJokers()
                     end
                 })) 
                 return {
-                    message = localize{type='variable',key='a_xmult',vars={self.ability.extra}},
-                    Xmult_mod = self.ability.extra
+                    message = localize{type='variable',key='a_xmult',vars={card.ability.extra}},
+                    Xmult_mod = card.ability.extra
                 }
             end
         end
     end
 
-    SMODS.Jokers.j_errorr.calculate = function(self, context)
+    jokers.errorr.calculate = function(self, card, context)
         if context.discard and not context.other_card.debuff and
-        pseudorandom('errorr') < G.GAME.probabilities.normal/self.ability.extra.odds then -- the argument of pseudorandom is hashed and only for random seed, so every string is ok
+        pseudorandom('errorr') < G.GAME.probabilities.normal/card.ability.extra.odds then -- the argument of pseudorandom is hashed and only for random seed, so every string is ok
             local card=context.other_card
             local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
             local rank_suffix = {'2','3','4','5','6','7','8','9','T','J','Q','K','A'}
@@ -195,23 +283,22 @@ function SMODS.INIT.BetmmaJokers()
             }
         end
     end
-    G.localization.misc.dictionary.k_errorr = "Rank Changed!"
 
-    SMODS.Jokers.j_piggy_bank.calculate = function(self, context)
-        if SMODS.end_calculate_context(context) and self.ability.extra.mults > 0 then
+    jokers.piggy_bank.calculate = function(self, card, context)
+        if SMODS.end_calculate_context(context) and card.ability.extra.mults > 0 then
             return {
-                message = localize{type='variable',key='a_mult',vars={self.ability.extra.mults}},
-                mult_mod = self.ability.extra.mults, 
+                message = localize{type='variable',key='a_mult',vars={card.ability.extra.mults}},
+                mult_mod = card.ability.extra.mults, 
                 colour = G.C.MULT
             }
         end
         if context.selling_self then
-            self.selling_self = true
+            card.selling_self = true
         end
     end
 
     
-end
+
 
 local poker_hand_list = {
     "Flush Five",
@@ -286,68 +373,63 @@ function ease_dollars(mod, instant)
 
 end
 
--- UIBox garbage / Copied from LushMod. Thanks luscious!
-local generate_UIBox_ability_tableref = Card.generate_UIBox_ability_table
-function Card.generate_UIBox_ability_table(self)
-    local card_type, hide_desc = self.ability.set or "None", nil
-    local loc_vars = nil
-    local main_start, main_end = nil, nil
-    local no_badge = nil
 
-    if self.config.center.unlocked == false and not self.bypass_lock then    -- For everyting that is locked
-    elseif card_type == 'Undiscovered' and not self.bypass_discovery_ui then -- Any Joker or tarot/planet/voucher that is not yet discovered
-    elseif self.debuff then
-    elseif card_type == 'Default' or card_type == 'Enhanced' then
-    elseif self.ability.set == 'Joker' then
-        local customJoker = false
 
-        if self.ability.name == 'JJookkeerr' or self.ability.name == 'Ascension' or self.ability.name == 'Hasty Joker' or self.ability.name == 'ERRORR' or self.ability.name == ' Piggy Bank 'then
-            customJoker = true
-        end
-
-        if self.ability.name == 'JJookkeerr' or self.ability.name == 'Hasty Joker'then
-            loc_vars = {self.ability.extra}
-        elseif self.ability.name == 'ERRORR' then loc_vars = {''..(G.GAME and G.GAME.probabilities.normal or 1), self.ability.extra.odds}
-        elseif self.ability.name == ' Piggy Bank ' then loc_vars = {self.ability.extra.mults, self.ability.extra.mult_mod}
-        end
-        if customJoker then
-            local badges = {}
-            if (card_type ~= 'Locked' and card_type ~= 'Undiscovered' and card_type ~= 'Default') or self.debuff then
-                badges.card_type = card_type
-            end
-            if self.ability.set == 'Joker' and self.bypass_discovery_ui and (not no_badge) then
-                badges.force_rarity = true
-            end
-            if self.edition then
-                if self.edition.type == 'negative' and self.ability.consumeable then
-                    badges[#badges + 1] = 'negative_consumable'
-                else
-                    badges[#badges + 1] = (self.edition.type == 'holo' and 'holographic' or self.edition.type)
-                end
-            end
-            if self.seal then
-                badges[#badges + 1] = string.lower(self.seal) .. '_seal'
-            end
-            if self.ability.eternal then
-                badges[#badges + 1] = 'eternal'
-            end
-            if self.pinned then
-                badges[#badges + 1] = 'pinned_left'
-            end
-
-            if self.sticker then
-                loc_vars = loc_vars or {};
-                loc_vars.sticker = self.sticker
-            end
-
-            local center = self.config.center
-            return generate_card_ui(center, nil, loc_vars, card_type, badges, hide_desc, main_start, main_end)
-        end
+function SMODS.end_calculate_context(c)
+    if not c.after and not c.before and not c.other_joker and not c.repetition and not c.individual and
+        not c.end_of_round and not c.discard and not c.pre_discard and not c.debuffed_hand and not c.using_consumeable and
+        not c.remove_playing_cards and not c.cards_destroyed and not c.destroying_card and not c.setting_blind and
+        not c.first_hand_drawn and not c.playing_card_added and not c.skipping_booster and not c.skip_blind and
+        not c.ending_shop and not c.reroll_shop and not c.selling_card and not c.selling_self and not c.buying_card and
+        not c.open_booster then
+        return true
     end
-    return generate_UIBox_ability_tableref(self)
+    return false
 end
 
-
-
+function randomly_redeem_voucher(no_random_please) -- xD
+    -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
+    -- time=1
+    local voucher_key = no_random_please or get_next_voucher_key(true)
+    local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+    G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+    card:start_materialize()
+    G.play:emplace(card)
+    card.cost=0
+    card.shop_voucher=false
+    local current_round_voucher=G.GAME.current_round.voucher
+    card:redeem()
+    G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher bulk may be from voucher pack or other non-shop source
+    card.should_remove=true -- if this function is called when calculating hand, this voucher will go to the deck and cause problem. I could only think of removing these vouchers in draw_from_discard_to_deck
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        --blockable = false,
+        --blocking = false,
+        delay =  0,
+        func = function() 
+            card:start_dissolve()
+            return true
+        end}))   
+end
+local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
+    G.FUNCS.draw_from_discard_to_deck = function(e)
+        for k, v in ipairs(G.discard.cards) do
+            if v.ability.set=='Voucher' then
+                -- print(k,'addad')
+                --k.k()
+                G.E_MANAGER:add_event(Event({
+                    func = (function()     
+                            v:remove()
+                    return true end)
+                }))
+            end
+        end
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()     
+                G_FUNCS_draw_from_discard_to_deck_ref(e)
+            return true end)
+          }))
+    end
 ----------------------------------------------
 ------------MOD CODE END----------------------

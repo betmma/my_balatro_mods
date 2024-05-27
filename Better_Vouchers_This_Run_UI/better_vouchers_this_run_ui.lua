@@ -6,7 +6,7 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-function SMODS.INIT.BetterVouchersThisRunUI()
+
 
     -- This is a version that only changes the limit of vouchers in a row and is capable of displaying 64 vouchers, but it's not enough
     -- function G.UIDEF.used_vouchers()
@@ -221,6 +221,6 @@ function SMODS.INIT.BetterVouchersThisRunUI()
         end
         INIT_COLLECTION_CARD_ALERTS()
     end
-end
+
 ----------------------------------------------
 ------------MOD CODE END----------------------
