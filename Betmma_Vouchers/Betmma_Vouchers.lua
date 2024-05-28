@@ -2743,6 +2743,7 @@ do
     local end_round_ref = end_round
     function end_round()
         if G.GAME.used_vouchers[MOD_PREFIX..'v_art_gallery'] and G.GAME.blind:get_type() == 'Boss' then
+            end_round_ref()
             local random_number=pseudorandom('v_art_gallery')
             local value=G.P_CENTERS[MOD_PREFIX..'v_art_gallery'].config.extra
             if random_number < 1/3 then
@@ -2756,7 +2757,7 @@ do
                 G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
                 G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante-value
             end
-            
+            return
         end
         end_round_ref()
     end
@@ -3521,77 +3522,78 @@ do
     end
 
 end -- real random
-    -- this challenge is only for test
-    table.insert(G.CHALLENGES,1,{
-        name = "TestVoucher",
-        id = 'c_mod_testvoucher',
-        rules = {
-            custom = {
-            },
-            modifiers = {
-                {id = 'dollars', value = 5000},
-            }
-        },
-        jokers = {
-            --{id = 'j_jjookkeerr'},
-            -- {id = 'j_ascension'},
-            -- {id = 'j_sock_and_buskin'},
-            -- {id = 'j_sock_and_buskin'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'betm_jokers_j_housing_choice'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_piggy_bank'},
-            -- {id = 'j_blueprint'},
-            -- {id = 'j_triboulet'},
-            -- {id = 'j_triboulet'},
-        },
-        consumeables = {
-            --{id = 'c_justice_cu'},
-            {id = 'c_hanged_man'},
-            -- {id = 'c_heirophant_cu'},
-            -- {id = 'c_tower_cu'},
-            --{id = 'c_devil_cu'},
-            --{id = 'c_death'},
-        },
-        vouchers = {
-            {id = MOD_PREFIX.. 'v_trash_picker'},
-            {id = MOD_PREFIX.. 'v_mirror'},
-            {id = MOD_PREFIX.. 'v_3d_boosters'},
-            {id = MOD_PREFIX.. 'v_4d_boosters'},
-            --{id = 'v_bonus_plus'},
-            {id = MOD_PREFIX.. 'v_real_random'},
-            -- {id = 'v_connoisseur'},
-            {id = 'v_paint_brush'},
-            -- {id = 'v_liquidation'},
-            {id = MOD_PREFIX.. 'v_bulletproof'},
-            -- {id = 'v_overshopping'},
-            {id = MOD_PREFIX.. 'v_reroll_cut'},
-            {id = 'v_retcon'},
-            -- {id = 'v_event_horizon'},
-        },
-        deck = {
-            type = 'Challenge Deck',
-            cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-        },
-        restrictions = {
-            banned_cards = {
-            },
-            banned_tags = {
-            },
-            banned_other = {
-            }
-        }
-    })
+    -- -- this challenge is only for test
+    -- table.insert(G.CHALLENGES,1,{
+    --     name = "TestVoucher",
+    --     id = 'c_mod_testvoucher',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 5000},
+    --         }
+    --     },
+    --     jokers = {
+    --         --{id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_dna'},
+    --         {id = 'betm_jokers_j_housing_choice'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_blueprint'},
+    --         -- {id = 'j_triboulet'},
+    --         -- {id = 'j_triboulet'},
+    --     },
+    --     consumeables = {
+    --         --{id = 'c_justice_cu'},
+    --         {id = 'c_cryptid'},
+    --         -- {id = 'c_heirophant_cu'},
+    --         -- {id = 'c_tower_cu'},
+    --         --{id = 'c_devil_cu'},
+    --         --{id = 'c_death'},
+    --     },
+    --     vouchers = {
+    --         {id = MOD_PREFIX.. 'v_trash_picker'},
+    --         {id = MOD_PREFIX.. 'v_mirror'},
+    --         {id = MOD_PREFIX.. 'v_3d_boosters'},
+    --         {id = MOD_PREFIX.. 'v_4d_boosters'},
+    --         --{id = 'v_bonus_plus'},
+    --         {id = MOD_PREFIX.. 'v_real_random'},
+    --         -- {id = 'v_connoisseur'},
+    --         {id = 'v_paint_brush'},
+    --         -- {id = 'v_liquidation'},
+    --         {id = MOD_PREFIX.. 'v_bulletproof'},
+    --         -- {id = 'v_overshopping'},
+    --         {id = MOD_PREFIX.. 'v_art_gallery'},
+    --         {id = 'v_retcon'},
+    --         -- {id = 'v_event_horizon'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --     },
+    --     restrictions = {
+    --         banned_cards = {
+    --         },
+    --         banned_tags = {
+    --         },
+    --         banned_other = {
+    --         }
+    --     }
+    -- })
     init_localization()
 
 ----------------------------------------------
