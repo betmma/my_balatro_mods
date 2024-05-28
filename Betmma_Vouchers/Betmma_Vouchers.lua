@@ -119,6 +119,12 @@ local config = {
     v_real_random=true
 }
 
+local usingTalisman = SMODS.Mods["Talisman"]
+
+local function TalismanCompat(num)
+	return usingTalisman and Big:new(num) or num
+end
+
 local function get_plain_text_from_localize(final_line)
     local ret=''
     for k,v in pairs(final_line) do
@@ -373,7 +379,7 @@ end --
     end
 
     local fusion_voucher_weight=4
-    local SMODS_Voucher_register=SMODS.Voucher.register
+    local SMODS_Voucher_register=SMODS.Voucher.register --this needs change
     function SMODS.Voucher:register()
         if SMODS._MOD_NAME=='Betmma Vouchers' then
             if not config[self.slug] then return false end
@@ -874,14 +880,14 @@ do
 
     local end_round_ref=end_round
     function end_round()
-
-        if G.GAME.used_vouchers[MOD_PREFIX..'v_target'] and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS[MOD_PREFIX..'v_target'].config.extra <= 0 then
+		local zero = TalismanCompat(0)
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_target'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(G.P_CENTERS[MOD_PREFIX..'v_target'].config.extra) <= zero then
             if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
                 local jokers_to_create = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                 randomly_create_joker(jokers_to_create,'target',localize("k_target_generate"))
             end
         end
-        if G.GAME.used_vouchers[MOD_PREFIX..'v_bulls_eye'] and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS[MOD_PREFIX..'v_bulls_eye'].config.extra <= 0 then
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_bulls_eye'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(G.P_CENTERS[MOD_PREFIX..'v_bulls_eye'].config.extra) <= zero then
             randomly_create_joker(1,'target',localize("k_bulls_eye_generate"),{edition={negative=true}})
         end
 
@@ -1329,14 +1335,16 @@ do
     this_v.key = MOD_PREFIX .. this_v.key
     this_v.atlas=this_v.key
     this_v.loc_vars = function(self, info_queue, center)
+        if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_big_blast_count or 0
         return {vars={center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1))}}
     end
     local v_big_blast=this_v
     local end_round_ref=end_round
     function end_round()
-
-        if G.GAME.used_vouchers[MOD_PREFIX..'v_overkill'] and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips*100 - G.GAME.blind.chips*G.P_CENTERS[MOD_PREFIX..'v_overkill'].config.extra >= 0 then
+		--compatibility fix for Talisman
+		local zero = TalismanCompat(0)
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_overkill'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips * TalismanCompat(100) - G.GAME.blind.chips * TalismanCompat(G.P_CENTERS[MOD_PREFIX..'v_overkill'].config.extra) >= zero then
             local temp_pool={}
             for k, v in pairs(G.jokers.cards) do
                 if v.ability.set == 'Joker' and (not v.edition) then
@@ -1356,7 +1364,7 @@ do
                 return true end }))
             end
         end
-        if G.GAME.used_vouchers[MOD_PREFIX..'v_big_blast'] and G.GAME.chips - G.GAME.blind.chips >= 0 and G.GAME.chips - G.GAME.blind.chips*v_big_blast:loc_def()[1] >= 0 then
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_big_blast'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips - G.GAME.blind.chips * TalismanCompat(v_big_blast:loc_vars().vars[1]) >= zero then
 
             G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
                     
@@ -1584,7 +1592,9 @@ do
                     end
                 end
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
-                if #unredeemed_vouchers==1 and only_need.name==center_table.name then
+                if #unredeemed_vouchers==1 and not only_need then
+                    print("This voucher key: "..unredeemed_vouchers[1].." is not in G.P_CENTERS!")
+                elseif #unredeemed_vouchers==1 and only_need.name==center_table.name then
                     table.insert(vouchers_to_get,v)
                     if not G.GAME.used_vouchers[MOD_PREFIX..'v_b1ginf'] then break end 
                 end
@@ -1677,19 +1687,20 @@ do
     this_v.key = MOD_PREFIX .. this_v.key
     this_v.atlas=this_v.key
     this_v.loc_vars = function(self, info_queue, center)
+        if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_connoisseur_count or 0
         local redeemed=G and G.GAME and G.GAME.vouchers_bought or 0
-        return {vars={center.ability.extra.base*center.ability.extra.multiplier^(count),
-        math.ceil(center.ability.extra.base/(redeemed+1)*center.ability.extra.multiplier^(count)),center.ability.extra.multiplier}}
+        local equation = center.ability.extra.base/TalismanCompat(redeemed+1)*center.ability.extra.multiplier^TalismanCompat(count)
+        return {vars={center.ability.extra.base*center.ability.extra.multiplier^TalismanCompat(count),
+        usingTalisman and equation or math.ceil(equation),center.ability.extra.multiplier}}
     end
     local v_connoisseur=this_v
-
 
     get_blind_amount_ref=get_blind_amount
     function get_blind_amount(ante)
         amount=get_blind_amount_ref(ante)
         if G.GAME.used_vouchers[MOD_PREFIX..'v_collector'] then
-            amount=amount*(1-G.P_CENTERS[MOD_PREFIX..'v_collector'].config.extra/100)^(G.GAME.vouchers_bought or 0)
+            amount=amount*TalismanCompat((1-G.P_CENTERS[MOD_PREFIX..'v_collector'].config.extra/100)^(G.GAME.vouchers_bought or 0))
         end
         return amount
     end
@@ -1702,7 +1713,7 @@ do
         }
         G.GAME.vouchers_bought=(G.GAME.vouchers_bought or 0)+1
         if center_table.name ~= 'Antimatter'then
-            if G.GAME.used_vouchers[MOD_PREFIX..'v_connoisseur'] and G.GAME.dollars>=v_connoisseur:loc_def()[2] then
+            if G.GAME.used_vouchers[MOD_PREFIX..'v_connoisseur'] and G.GAME.dollars>=v_connoisseur:loc_vars().vars[2] then
                 G.GAME.v_connoisseur_count= (G.GAME.v_connoisseur_count or 0)+1
                 G.E_MANAGER:add_event(Event({
                     trigger = 'before',
@@ -1710,7 +1721,7 @@ do
                     --blocking = false,
                     delay =  0,
                     func = function() 
-                        --ease_dollars(-v_connoisseur:loc_def()[1])
+                        --ease_dollars(-v_connoisseur:loc_vars().vars[1])
                         -- the description doesn't say you will pay that amount, so don't ease_dollars feels right lol
                         randomly_redeem_voucher("v_antimatter")
                         
@@ -3023,6 +3034,19 @@ do
         return new_round_ref()
     end
 
+    local copy_card_ref=copy_card
+    function copy_card(other, new_card, card_scale, playing_card, strip_edition)
+        new_card=copy_card_ref(other, new_card, card_scale, playing_card, strip_edition)
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_real_random'] and new_card.config.center.effect=='Lucky Card' then
+            print('triggered!!!!!!!jimbo')
+            local abilities=copy_table(other.ability.real_random_abilities)
+            new_card.ability.real_random_abilities=abilities
+            new_card.config.center.real_random_abilities=abilities
+            new_card.ability.set='Enhanced'
+        end
+        return new_card
+    end
+
     function log_random(lower, upper)
         -- Generate a uniform random number between 0 and 1
         local u = pseudorandom('real_random')
@@ -3567,7 +3591,7 @@ end -- real random
     --     },
     --     vouchers = {
     --         {id = MOD_PREFIX.. 'v_trash_picker'},
-    --         {id = MOD_PREFIX.. 'v_mirror'},
+    --         {id = MOD_PREFIX.. 'v_target'},
     --         {id = MOD_PREFIX.. 'v_3d_boosters'},
     --         {id = MOD_PREFIX.. 'v_4d_boosters'},
     --         --{id = 'v_bonus_plus'},
@@ -3577,7 +3601,7 @@ end -- real random
     --         -- {id = 'v_liquidation'},
     --         {id = MOD_PREFIX.. 'v_bulletproof'},
     --         -- {id = 'v_overshopping'},
-    --         {id = MOD_PREFIX.. 'v_art_gallery'},
+    --         {id = MOD_PREFIX.. 'v_big_blast'},
     --         {id = 'v_retcon'},
     --         -- {id = 'v_event_horizon'},
     --     },
