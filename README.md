@@ -18,8 +18,8 @@ A collection of mods made by me for Balatro.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
-- Gold Coin: Gain $20 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
-- Gold Bar: Gain $25 immediately. Big Blind gives no reward money.
+- Gold Coin: Gain $10 immediately. Small Blind gives no reward money. (Yes it literally does nothing bad after white stake)
+- Gold Bar: Gain $15 immediately. Big Blind gives no reward money.
 - Abstract Art: +1 Ante to win, +1 hand and discard per round.
 - Mondrian: +1 Ante to win, +1 joker slot.
 - Round Up: Chips always round up to nearest tens when calculating hands.

@@ -460,9 +460,9 @@ do
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_coin = SMODS.Voucher{
         name=name, key=id,
-        config={extra=20},
+        config={extra=10},
         pos={x=0,y=0}, loc_txt=gold_coin_loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true
+        cost=0, unlocked=true, discovered=true, available=true
     }
     v_gold_coin.key="v_gold_coin"
     SMODS.Atlas{key=v_gold_coin.key, path=v_gold_coin.key..".png", px=71, py=95}
@@ -488,9 +488,9 @@ do
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_bar = SMODS.Voucher{
         name=name, key=id,
-        config={extra=25},
+        config={extra=15},
         pos={x=0,y=0}, loc_txt=gold_bar_loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_coin'}
+        cost=0, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_coin'}
     }
     v_gold_bar.key = "v_gold_bar"
     SMODS.Atlas{key=v_gold_bar.key, path=v_gold_bar.key..".png", px=71, py=95}
