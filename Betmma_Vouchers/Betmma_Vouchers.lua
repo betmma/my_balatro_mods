@@ -45,6 +45,7 @@
 -- random voucher pack $8
 -- change b1g50 to half the price
 MOD_PREFIX='betm_vouchers_'
+MOD_PREFIX_LEN=string.len(MOD_PREFIX)
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     G.localization.misc.dictionary.k_event_horizon_generate = "Event Horizon!"
@@ -379,15 +380,16 @@ end --
     end
 
     local fusion_voucher_weight=4
-    local SMODS_Voucher_register=SMODS.Voucher.register --this needs change
-    function SMODS.Voucher:register()
-        if SMODS._MOD_NAME=='Betmma Vouchers' then
-            if not config[self.slug] then return false end
+    local SMODS_Center_inject=SMODS.Center.inject
+    SMODS.Center.inject =function (self)
+        -- print(SMODS.current_mod+"....."+self.set)
+        if self.key:find(MOD_PREFIX) and self.set=='Voucher'then
+            if not config[self.key:sub(MOD_PREFIX_LEN+1,-1)] then return false end
             if self.requires and #self.requires>1 then 
                 self.config.weight=fusion_voucher_weight
             end
         end
-        SMODS_Voucher_register(self)
+        SMODS_Center_inject(self)
     end
 
 do
