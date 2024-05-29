@@ -1494,7 +1494,9 @@ do
                     end
                 end
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
-                if #unredeemed_vouchers==1 and only_need.name==center_table.name then
+                if #unredeemed_vouchers==1 and not only_need then
+                    print("This voucher key: "..unredeemed_vouchers[1].." is not in G.P_CENTERS!")
+                elseif #unredeemed_vouchers==1 and only_need.name==center_table.name then
                     table.insert(vouchers_to_get,v)
                     if not G.GAME.used_vouchers.v_b1ginf then break end 
                 end
