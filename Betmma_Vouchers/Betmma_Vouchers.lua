@@ -406,9 +406,9 @@ do
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_coin = SMODS.Voucher:new(
         name, id,
-        {extra=20},
+        {extra=10},
         {x=0,y=0}, gold_coin_loc_txt,
-        10, true, true, true
+        0, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_coin.png", 71, 95, "asset_atli"):register();
     v_gold_coin:register()
@@ -430,9 +430,9 @@ do
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_bar = SMODS.Voucher:new(
         name, id,
-        {extra=25},
+        {extra=15},
         {x=0,y=0}, gold_bar_loc_txt,
-        10, true, true, true, {'v_gold_coin'}
+        0, true, true, true, {'v_gold_coin'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_bar.png", 71, 95, "asset_atli"):register();
     v_gold_bar:register()
