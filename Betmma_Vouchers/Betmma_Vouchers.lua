@@ -424,7 +424,7 @@ do
             name="Oversupply Plus", key="oversupply_plus",
             config={},
             pos={x=0,y=0}, loc_txt=oversupply_plus_loc_txt,
-            cost=10, unlocked=true,discovered=true, available=true, requires={'v_oversupply'}
+            cost=10, unlocked=true,discovered=true, available=true, requires={MOD_PREFIX..'v_oversupply'}
     }
     v_oversupply_plus.key="v_oversupply_plus"
     SMODS.Atlas{key=v_oversupply_plus.key, path=v_oversupply_plus.key..".png", px=71, py=95}
@@ -488,7 +488,7 @@ do
         name=name, key=id,
         config={extra=25},
         pos={x=0,y=0}, loc_txt=gold_bar_loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_gold_coin'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_coin'}
     }
     v_gold_bar.key = "v_gold_bar"
     SMODS.Atlas{key=v_gold_bar.key, path=v_gold_bar.key..".png", px=71, py=95}
@@ -563,7 +563,7 @@ do
         name=name, key=id,
         config={extra=1},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_abstract_art'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_abstract_art'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -674,7 +674,7 @@ do
         name=name, key=id,
         config={extra=5},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_round_up'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_round_up'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -687,14 +687,14 @@ do
     local mod_chips_ref=mod_chips
     function mod_chips(_chips)
         if G.GAME.used_vouchers[MOD_PREFIX..'v_round_up'] then
-          _chips = math.ceil(_chips/10)*10
+          _chips = usingTalisman and (_chips / Big:new(10)):ceil() * Big:new(10) or math.ceil(_chips/10)*10
         end
         return mod_chips_ref(_chips)
     end
     local mod_mult_ref=mod_mult
     function mod_mult(_mult)
         if G.GAME.used_vouchers[MOD_PREFIX..'v_round_up_plus'] then
-            _mult=math.ceil(_mult/10)*10
+            _mult= usingTalisman and (_mult / Big:new(10)):ceil() * Big:new(10) or math.ceil(_mult/10)*10
         end
         return mod_mult_ref(_mult)
     end
@@ -746,7 +746,7 @@ do
         name=name, key=id,
         config={extra=5},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_event_horizon'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_event_horizon'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -868,7 +868,7 @@ do
         name=name, key=id,
         config={extra=105},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_target'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_target'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -935,7 +935,7 @@ do
         config={extra=4},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=25, unlocked=true, discovered=true, available=true,
-        requires={'v_voucher_bundle'}
+        requires={MOD_PREFIX..'v_voucher_bundle'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1048,7 +1048,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_skip'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_skip'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1111,7 +1111,7 @@ do
         name=name, key=id,
         config={extra=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_scrawl'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_scrawl'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1183,7 +1183,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_reserve_area'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_reserve_area'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1328,7 +1328,7 @@ do
         name=name, key=id,
         config={extra={multiplier=5,increase=2}},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_overkill'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_overkill'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1433,7 +1433,7 @@ do
         name=name, key=id,
         config={extra=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_3d_boosters'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_3d_boosters'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1558,7 +1558,7 @@ do
         name=name, key=id,
         config={extra=10},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_b1g50'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_b1g50'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1680,7 +1680,7 @@ do
         name=name, key=id,
         config={extra={base=400,multiplier=5}},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_collector'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_collector'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1690,9 +1690,8 @@ do
         if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_connoisseur_count or 0
         local redeemed=G and G.GAME and G.GAME.vouchers_bought or 0
-        local equation = center.ability.extra.base/TalismanCompat(redeemed+1)*center.ability.extra.multiplier^TalismanCompat(count)
-        return {vars={center.ability.extra.base*center.ability.extra.multiplier^TalismanCompat(count),
-        usingTalisman and equation or math.ceil(equation),center.ability.extra.multiplier}}
+        return {vars={center.ability.extra.base*center.ability.extra.multiplier^(count),
+        math.ceil(center.ability.extra.base/(redeemed+1)*center.ability.extra.multiplier^(count)),center.ability.extra.multiplier}}
     end
     local v_connoisseur=this_v
 
@@ -1774,7 +1773,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_flipped_card'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_flipped_card'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -1956,7 +1955,7 @@ do
         name=name, key=id,
         config={extra=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_prologue'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_prologue'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2054,7 +2053,7 @@ do
         name=name, key=id,
         config={extra=8},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_bonus_plus'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_bonus_plus'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2130,7 +2129,7 @@ do
         name=name, key=id,
         config={extra={lose=0.1,lower_bound=1.5}},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_omnicard'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_omnicard'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2277,7 +2276,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_round_up','v_gold_coin'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_round_up',MOD_PREFIX..'v_gold_coin'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2316,7 +2315,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_overstock_norm','v_oversupply'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_overstock_norm',MOD_PREFIX..'v_oversupply'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2508,7 +2507,7 @@ do
                     }},
                     {n=G.UIT.R, config={align = "cm"}, nodes={
                         {n=G.UIT.T, config={text = '+'..localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                        {n=G.UIT.T, config={ref_table = G.P_CENTERS.v_vanish_magic.config, ref_value = 'extra',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                        {n=G.UIT.T, config={ref_table = G.P_CENTERS[MOD_PREFIX .. 'v_vanish_magic'].config, ref_value = 'extra',colour = G.C.WHITE, scale = 0.55, shadow = true}}
                     }}
                 }}
             }}
@@ -2585,7 +2584,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_planet_merchant','v_b1g50'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_planet_merchant',MOD_PREFIX..'v_b1g50'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2678,7 +2677,7 @@ do
         name=name, key=id,
         config={extra=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_seed_money','v_target'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_seed_money',MOD_PREFIX..'v_target'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2729,7 +2728,7 @@ do
         name=name, key=id,
         config={extra=1},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_hieroglyph','v_abstract_art'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_hieroglyph',MOD_PREFIX..'v_abstract_art'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2790,7 +2789,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_collector','v_b1g1'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_collector',MOD_PREFIX..'v_b1g1'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2817,7 +2816,7 @@ do
         name=name, key=id,
         config={extra=100},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_petroglyph','v_bonus_plus'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_petroglyph',MOD_PREFIX..'v_bonus_plus'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2914,7 +2913,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_gold_bar','v_bonus_plus'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_bar',MOD_PREFIX..'v_bonus_plus'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -2960,7 +2959,7 @@ do
         name=name, key=id,
         config={},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_flipped_card','v_omnicard'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_flipped_card',MOD_PREFIX..'v_omnicard'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
@@ -3013,7 +3012,7 @@ do
         name=name, key=id,
         config={extra={ability=3}},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={'v_crystal_ball','v_omnicard'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_crystal_ball',MOD_PREFIX..'v_omnicard'}
     }
     this_v.key='v_'..id
     SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
