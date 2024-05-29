@@ -2529,7 +2529,7 @@ do
     local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted 
     G.FUNCS.discard_cards_from_highlighted = function(e, hook)
         G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
-        if G.GAME.current_round.discards_left <= 0 then ease_hands_played(-1) end
+        if not hook and G.GAME.used_vouchers.v_trash_picker and G.GAME.current_round.discards_left <= 0 then ease_hands_played(-1) end
     end
 end -- trash picker
 do
@@ -2620,6 +2620,7 @@ do
     local end_round_ref = end_round
     function end_round()
         if G.GAME.used_vouchers.v_art_gallery and G.GAME.blind:get_type() == 'Boss' then
+            end_round_ref()
             local random_number=pseudorandom('v_art_gallery')
             local value=G.P_CENTERS.v_art_gallery.config.extra
             if random_number < 1/3 then
@@ -2633,7 +2634,7 @@ do
                 G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
                 G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante-value
             end
-            
+            return
         end
         end_round_ref()
     end
