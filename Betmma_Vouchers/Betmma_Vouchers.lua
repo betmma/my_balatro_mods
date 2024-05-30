@@ -381,7 +381,7 @@ end --
 
     local fusion_voucher_weight=4
     local SMODS_Center_inject=SMODS.Center.inject
-    SMODS.Center.inject =function (self)
+    SMODS.Center.inject =function(self)
         -- print(SMODS.current_mod+"....."+self.set)
         if self.key:find(MOD_PREFIX) and self.set=='Voucher'then
             if not config[self.key:sub(MOD_PREFIX_LEN+1,-1)] then return false end
@@ -460,9 +460,9 @@ do
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_coin = SMODS.Voucher{
         name=name, key=id,
-        config={extra=10},
+        config={extra=11},
         pos={x=0,y=0}, loc_txt=gold_coin_loc_txt,
-        cost=0, unlocked=true, discovered=true, available=true
+        cost=1, unlocked=true, discovered=true, available=true
     }
     v_gold_coin.key="v_gold_coin"
     SMODS.Atlas{key=v_gold_coin.key, path=v_gold_coin.key..".png", px=71, py=95}
@@ -488,9 +488,9 @@ do
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_bar = SMODS.Voucher{
         name=name, key=id,
-        config={extra=15},
+        config={extra=16},
         pos={x=0,y=0}, loc_txt=gold_bar_loc_txt,
-        cost=0, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_coin'}
+        cost=1, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_gold_coin'}
     }
     v_gold_bar.key = "v_gold_bar"
     SMODS.Atlas{key=v_gold_bar.key, path=v_gold_bar.key..".png", px=71, py=95}
@@ -3039,11 +3039,8 @@ do
     function copy_card(other, new_card, card_scale, playing_card, strip_edition)
         new_card=copy_card_ref(other, new_card, card_scale, playing_card, strip_edition)
         if G.GAME.used_vouchers[MOD_PREFIX..'v_real_random'] and new_card.config.center.effect=='Lucky Card' then
-            print('triggered!!!!!!!jimbo')
-            local abilities=copy_table(other.ability.real_random_abilities)
-            new_card.ability.real_random_abilities=abilities
-            new_card.config.center.real_random_abilities=abilities
-            new_card.ability.set='Enhanced'
+            new_card.config.center_key=other.config.center_key
+            --print(new_card.config.center_key)
         end
         return new_card
     end
@@ -3318,9 +3315,9 @@ do
             if _c.real_random_abilities and not(G.in_overlay_menu) then
                 for k,v in pairs(_c.real_random_abilities) do
                     local loc_vars=copy_table(real_random_loc_def(_c,v))
-                    --print(loc_vars[1])
+                    --print(loc_vars[1],v.key,_c.set)
                     table.insert(loc_vars,1,G.GAME.probabilities.normal)
-                    localize{type = 'descriptions', key = 'real_random_'..v.key, set = _c.set, nodes = main, vars = loc_vars}
+                    localize{type = 'descriptions', key = 'real_random_'..v.key, set ='Enhanced', nodes = main, vars = loc_vars}
                 end
             else
                 local strings={}
