@@ -406,9 +406,9 @@ do
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_coin = SMODS.Voucher:new(
         name, id,
-        {extra=10},
+        {extra=11},
         {x=0,y=0}, gold_coin_loc_txt,
-        0, true, true, true
+        1, true, true, true
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_coin.png", 71, 95, "asset_atli"):register();
     v_gold_coin:register()
@@ -430,9 +430,9 @@ do
     --function SMODS.Voucher:new(name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_gold_bar = SMODS.Voucher:new(
         name, id,
-        {extra=15},
+        {extra=16},
         {x=0,y=0}, gold_bar_loc_txt,
-        0, true, true, true, {'v_gold_coin'}
+        1, true, true, true, {'v_gold_coin'}
     )
     SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_bar.png", 71, 95, "asset_atli"):register();
     v_gold_bar:register()
@@ -2890,6 +2890,16 @@ do
         return new_round_ref()
     end
 
+    local copy_card_ref=copy_card
+    function copy_card(other, new_card, card_scale, playing_card, strip_edition)
+        new_card=copy_card_ref(other, new_card, card_scale, playing_card, strip_edition)
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_real_random'] and new_card.config.center.effect=='Lucky Card' then
+            new_card.config.center_key=other.config.center_key
+            --print(new_card.config.center_key)
+        end
+        return new_card
+    end
+    
     function log_random(lower, upper)
         -- Generate a uniform random number between 0 and 1
         local u = pseudorandom('real_random')
@@ -3162,7 +3172,7 @@ do
                     local loc_vars=copy_table(real_random_loc_def(_c,v))
                     --print(loc_vars[1])
                     table.insert(loc_vars,1,G.GAME.probabilities.normal)
-                    localize{type = 'descriptions', key = 'real_random_'..v.key, set = _c.set, nodes = main, vars = loc_vars}
+                    localize{type = 'descriptions', key = 'real_random_'..v.key, set = 'Enhanced', nodes = main, vars = loc_vars}
                 end
             else
                 local strings={}
