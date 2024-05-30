@@ -3,7 +3,7 @@
 --- MOD_ID: BetmmaVouchers
 --- PREFIX: betm_vouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 14 Fusion Vouchers! v2.0.0-alpha1
+--- MOD_DESCRIPTION: 36 More Vouchers and 15 Fusion Vouchers! v2.0.0-alpha2
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -47,6 +47,7 @@
 MOD_PREFIX='betm_vouchers_'
 MOD_PREFIX_LEN=string.len(MOD_PREFIX)
 function SMODS.current_mod.process_loc_text()
+    G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
     G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
     G.localization.misc.dictionary.k_event_horizon_generate = "Event Horizon!"
     G.localization.misc.dictionary.k_engulfer_generate = "Engulfer!"
@@ -117,7 +118,8 @@ local config = {
     v_slate=true,
     v_gilded_glider=true,
     v_mirror=true,
-    v_real_random=true
+    v_real_random=true,
+    v_4d_vouchers=true,
 }
 
 local usingTalisman = SMODS.Mods["Talisman"]
@@ -385,6 +387,7 @@ end --
         -- print(SMODS.current_mod+"....."+self.set)
         if self.key:find(MOD_PREFIX) and self.set=='Voucher'then
             if not config[self.key:sub(MOD_PREFIX_LEN+1,-1)] then return false end
+            self.mod_name='Betmma Vouchers'
             if self.requires and #self.requires>1 then 
                 self.config.weight=fusion_voucher_weight
             end
@@ -1472,7 +1475,7 @@ do
     end
     local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
     function G.FUNCS.reroll_shop(e)
-        G_FUNCS_reroll_shop_ref()
+        G_FUNCS_reroll_shop_ref(e)
         if G.GAME.used_vouchers[MOD_PREFIX..'v_4d_boosters'] then
             my_reroll_shop(get_booster_pack_max(),G.P_CENTERS[MOD_PREFIX..'v_4d_boosters'].config.extra)
         end
@@ -2243,7 +2246,6 @@ end -- omnicard
     -- ################
     -- fusion vouchers!
 do
-    G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
     if not G.ARGS.LOC_COLOURS then loc_colour() end
     if not G.ARGS.LOC_COLOURS["fusion"] then G.ARGS.LOC_COLOURS["fusion"] = HEX("F7D762") end
     local card_h_popupref = G.UIDEF.card_h_popup
@@ -3544,78 +3546,157 @@ do
     end
 
 end -- real random
-    -- -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 5000},
-    --         }
-    --     },
-    --     jokers = {
-    --         --{id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_dna'},
-    --         {id = 'betm_jokers_j_housing_choice'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_blueprint'},
-    --         -- {id = 'j_triboulet'},
-    --         -- {id = 'j_triboulet'},
-    --     },
-    --     consumeables = {
-    --         --{id = 'c_justice_cu'},
-    --         {id = 'c_cryptid'},
-    --         -- {id = 'c_heirophant_cu'},
-    --         -- {id = 'c_tower_cu'},
-    --         --{id = 'c_devil_cu'},
-    --         --{id = 'c_death'},
-    --     },
-    --     vouchers = {
-    --         {id = MOD_PREFIX.. 'v_trash_picker'},
-    --         {id = MOD_PREFIX.. 'v_target'},
-    --         {id = MOD_PREFIX.. 'v_3d_boosters'},
-    --         {id = MOD_PREFIX.. 'v_4d_boosters'},
-    --         --{id = 'v_bonus_plus'},
-    --         {id = MOD_PREFIX.. 'v_real_random'},
-    --         -- {id = 'v_connoisseur'},
-    --         {id = 'v_paint_brush'},
-    --         -- {id = 'v_liquidation'},
-    --         {id = MOD_PREFIX.. 'v_bulletproof'},
-    --         -- {id = 'v_overshopping'},
-    --         {id = MOD_PREFIX.. 'v_big_blast'},
-    --         {id = 'v_retcon'},
-    --         -- {id = 'v_event_horizon'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
+do
+    local name="4D Vouchers"
+    local id="4d_vouchers"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Rerolls apply to {C:attention}Vouchers{},",
+            "but rerolled Vouchers",
+            "cost {C:attention}$#1#{} more",
+            "{C:inactive}(4D Boosters + Oversupply){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_4d_boosters',MOD_PREFIX..'v_oversupply'}
+    }
+    this_v.key='v_'..id
+    SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
+    this_v.key = MOD_PREFIX .. this_v.key
+    this_v.atlas=this_v.key
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+
+    
+    function get_voucher_max()
+        local value=1
+        return value
+    end
+    
+    local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
+    function G.FUNCS.reroll_shop(e)
+        G_FUNCS_reroll_shop_ref(e)
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_4d_vouchers'] then
+            my_reroll_shop_voucher(G.P_CENTERS[MOD_PREFIX..'v_4d_vouchers'].config.extra)
+        end
+    end
+    function my_reroll_shop_voucher(price_mod)
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = function()
+                if not (G.shop_vouchers and G.shop_vouchers.cards) then
+                    return true
+                end
+                local num=get_voucher_max()
+                for i = #G.shop_vouchers.cards,1, -1 do
+                    local c = G.shop_vouchers:remove_card(G.shop_vouchers.cards[i])
+                    c:remove()
+                    c = nil
+                end
+        
+                --save_run()
+        
+                play_sound('coin2')
+                play_sound('other1')
+                
+                for i = 1, num - #G.shop_vouchers.cards do
+                    G.GAME.current_round.voucher=get_next_voucher_key()
+                    if G.GAME.current_round.voucher and G.P_CENTERS[G.GAME.current_round.voucher] then
+                        local card = Card(G.shop_vouchers.T.x + G.shop_vouchers.T.w/2,
+                        G.shop_vouchers.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.voucher],{bypass_discovery_center = true, bypass_discovery_ui = true})
+                        card.shop_voucher = true
+                        card.cost=card.cost+price_mod
+                        create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
+                        card:start_materialize()
+                        G.shop_vouchers:emplace(card)
+                    end
+                end
+            return true
+            end
+        }))
+        G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
+        
+    end
+
+
+end -- 4d vouchers
+    -- this challenge is only for test
+    table.insert(G.CHALLENGES,1,{
+        name = "TestVoucher",
+        id = 'c_mod_testvoucher',
+        rules = {
+            custom = {
+            },
+            modifiers = {
+                {id = 'dollars', value = 5000},
+            }
+        },
+        jokers = {
+            --{id = 'j_jjookkeerr'},
+            -- {id = 'j_ascension'},
+            -- {id = 'j_sock_and_buskin'},
+            -- {id = 'j_sock_and_buskin'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_oops'},
+            {id = 'j_dna'},
+            {id = 'betm_jokers_j_housing_choice'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_oops'},
+            -- {id = 'j_piggy_bank'},
+            -- {id = 'j_blueprint'},
+            -- {id = 'j_triboulet'},
+            -- {id = 'j_triboulet'},
+        },
+        consumeables = {
+            --{id = 'c_justice_cu'},
+            {id = 'c_cryptid'},
+            -- {id = 'c_heirophant_cu'},
+            -- {id = 'c_tower_cu'},
+            --{id = 'c_devil_cu'},
+            --{id = 'c_death'},
+        },
+        vouchers = {
+            {id = MOD_PREFIX.. 'v_trash_picker'},
+            {id = MOD_PREFIX.. 'v_4d_vouchers'},
+            {id = MOD_PREFIX.. 'v_3d_boosters'},
+            {id = MOD_PREFIX.. 'v_4d_boosters'},
+            --{id = 'v_bonus_plus'},
+            {id = MOD_PREFIX.. 'v_real_random'},
+            -- {id = 'v_connoisseur'},
+            {id = 'v_paint_brush'},
+            -- {id = 'v_liquidation'},
+            {id = MOD_PREFIX.. 'v_bulletproof'},
+            -- {id = 'v_overshopping'},
+            {id = MOD_PREFIX.. 'v_b1ginf'},
+            {id = 'v_retcon'},
+            -- {id = 'v_event_horizon'},
+        },
+        deck = {
+            type = 'Challenge Deck',
+            cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+        },
+        restrictions = {
+            banned_cards = {
+            },
+            banned_tags = {
+            },
+            banned_other = {
+            }
+        }
+    })
     init_localization()
 
 ----------------------------------------------

@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 
-# Betmma Vouchers: Adds 36 Vouchers and 14 fusion Vouchers.
+# Betmma Vouchers: Adds 36 Vouchers and 15 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -68,6 +68,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Gilded Glider (Gold Bar + Bonus+): When a Gold Card gives money, if the card to its right isn't enhanced, transfer the Gold Card enhancement from this card to that card.
 - Mirror (Flipped Card + Omnicard): When a Steel Card scores, the card to its right triggers one more time.
 - Real Random (Crystal Ball + Omnicard): Randomize all Lucky Card effects. Create a negative Magician when blind begins.
+- 4D Vouchers (4D Boosters + Oversupply): Rerolls apply to Vouchers, but rerolled Vouchers cost $2 more.
 
 # Betmma Voucher Pack: Adds a Booster Pack called Voucher Pack, allowing you to redeem 1 of 3 vouchers
 This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod, and I ported it into steamodded.
