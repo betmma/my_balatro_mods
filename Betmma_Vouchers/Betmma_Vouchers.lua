@@ -3,7 +3,7 @@
 --- MOD_ID: BetmmaVouchers
 --- PREFIX: betm_vouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 36 More Vouchers and 15 Fusion Vouchers! v2.0.0-alpha2
+--- MOD_DESCRIPTION: 36 More Vouchers and 16 Fusion Vouchers! v2.0.0-alpha3
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -39,11 +39,8 @@
 -- (upgraded of above) if probabilities in lucky card, that is written as A in B, satisfies A>B, this can trigger more than 1 time
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
--- Oversupply Plus and 4D Boosters: Rerolls in the shop also reroll the voucher (if it wasn't purchased).
--- Oversupply Plus and Overstock Plus: +1 voucher slot available at shop.
 -- you can discard the hand when opening a pack once
 -- random voucher pack $8
--- change b1g50 to half the price
 MOD_PREFIX='betm_vouchers_'
 MOD_PREFIX_LEN=string.len(MOD_PREFIX)
 function SMODS.current_mod.process_loc_text()
@@ -120,6 +117,7 @@ local config = {
     v_mirror=true,
     v_real_random=true,
     v_4d_vouchers=true,
+    v_recycle_area=true,
 }
 
 local usingTalisman = SMODS.Mods["Talisman"]
@@ -3250,7 +3248,7 @@ do
             weight=0.1,
             chance_range={3,25},
             base_value_function=function(chance)
-                return math.ceil(math.log(chance))-1
+                return math.max(math.ceil(math.log(chance))-1,1)
             end,
             text={
                 "{C:green}#1# in #3#{} chance",
@@ -3592,7 +3590,7 @@ do
                 if not (G.shop_vouchers and G.shop_vouchers.cards) then
                     return true
                 end
-                local num=get_voucher_max()
+                local num=math.max(get_voucher_max(),#G.shop_vouchers.cards)
                 for i = #G.shop_vouchers.cards,1, -1 do
                     local c = G.shop_vouchers:remove_card(G.shop_vouchers.cards[i])
                     c:remove()
@@ -3625,6 +3623,98 @@ do
 
 
 end -- 4d vouchers
+do
+    local name="Recycle Area"
+    local id="recycle_area"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You can {C:red}discard",
+            "your hand once when",
+            "opening a {C:tarot}Tarot Pack{}",
+            "or {C:spectral}Spectral Pack{}",
+            "{C:inactive}(Reserve Area + Wasteful){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX..'v_reserve_area','v_wasteful'}
+    }
+    this_v.key='v_'..id
+    SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
+    this_v.key = MOD_PREFIX .. this_v.key
+    this_v.atlas=this_v.key
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+
+    local create_UIBox_spectral_pack_ref=create_UIBox_spectral_pack
+    function create_UIBox_spectral_pack()
+        local t=create_UIBox_spectral_pack_ref()
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_recycle_area'] then
+            local new={n=G.UIT.C,config={align = "tm",padding = 0.2, minh = 1.2, minw = 1.8, r=0.15,colour = G.C.RED, one_press = true, button = 'uselessLOL discard_booster', hover = true,shadow = true, func = 'can_discard_booster'}, nodes = {
+                {n=G.UIT.T, config={text = localize('b_discard'), scale = 0.5, colour = G.C.WHITE, shadow = true, focus_args = {button = 'y', orientation = 'bm'}, func = 'set_button_pip'}}
+              }}
+            table.insert(t.nodes[1].nodes[3].nodes[3].nodes,2,new)
+        end
+        return t
+    end
+    local create_UIBox_arcana_pack_ref=create_UIBox_arcana_pack
+    function create_UIBox_arcana_pack()
+        local t=create_UIBox_spectral_pack_ref()
+        if G.GAME.used_vouchers[MOD_PREFIX..'v_recycle_area'] then
+            local new={n=G.UIT.C,config={align = "tm",padding = 0.2, minh = 1.2, minw = 1.8, r=0.15,colour = G.C.RED, one_press = true, button = 'uselessLOL discard_booster', hover = true,shadow = true, func = 'can_discard_booster'}, nodes = {
+                {n=G.UIT.T, config={text = localize('b_discard'), scale = 0.5, colour = G.C.WHITE, shadow = true, focus_args = {button = 'y', orientation = 'bm'}, func = 'set_button_pip'}}
+              }}
+            table.insert(t.nodes[1].nodes[3].nodes[3].nodes,2,new)
+        end
+        return t
+    end
+
+    G.FUNCS.discard_booster=function()
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay =  0,
+            func = function() 
+                G.FUNCS.draw_from_hand_to_discard()
+                return true
+            end}))  
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay =  0,
+            func = function() 
+                local hand_space = math.min(#G.deck.cards, #G.hand.cards)
+                
+                for i=1, hand_space do --draw cards from deckL
+                    draw_card(G.deck,G.hand, i*100/hand_space,'up',true)
+                end
+                return true
+            end}))  
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay =  0,
+            func = function() 
+                G.FUNCS.draw_from_discard_to_deck()
+                return true
+            end}))  
+        return true
+        
+    end
+
+    G.FUNCS.can_discard_booster=function(e)
+        if #G.hand.cards>0 then
+            e.config.colour = G.C.RED
+            e.config.button='discard_booster'
+        else
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        end
+    end
+
+
+end -- recycle area
     -- this challenge is only for test
     table.insert(G.CHALLENGES,1,{
         name = "TestVoucher",
@@ -3680,7 +3770,7 @@ end -- 4d vouchers
             -- {id = 'v_liquidation'},
             {id = MOD_PREFIX.. 'v_bulletproof'},
             -- {id = 'v_overshopping'},
-            {id = MOD_PREFIX.. 'v_b1ginf'},
+            {id = MOD_PREFIX.. 'v_recycle_area'},
             {id = 'v_retcon'},
             -- {id = 'v_event_horizon'},
         },
