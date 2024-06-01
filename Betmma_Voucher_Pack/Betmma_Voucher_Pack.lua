@@ -253,6 +253,15 @@
         return create_UIBox_celestial_pack_ref()
         end
     end
+
+    local G_FUNCS_can_skip_booster_ref=G.FUNCS.can_skip_booster
+    G.FUNCS.can_skip_booster=function(e)
+        G_FUNCS_can_skip_booster_ref(e)
+        if G.GAME.pack_size<1 then
+            e.config.colour = G.C.GREY
+            e.config.button = 'skip_booster'
+        end
+    end
         
     local generate_card_ui_ref=generate_card_ui
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
