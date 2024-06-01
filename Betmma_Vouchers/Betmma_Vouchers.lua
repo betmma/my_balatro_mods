@@ -24,7 +24,7 @@
 -- you can discard the hand when opening a pack once
 -- random voucher pack $8
 -- change b1g50 to half the price
-
+MOD_PREFIX=''
 -- Config: DISABLE UNWANTED MODS HERE
 local config = {
     -- normal vouchers
