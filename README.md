@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 
-# Betmma Vouchers: Adds 36 Vouchers and 15 fusion Vouchers.
+# Betmma Vouchers: Adds 38 Vouchers and 16 fusion Vouchers.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -52,6 +52,8 @@ A collection of mods made by me for Balatro.
 - Mult+: Permanently increases Mult Card bonus by +8 Mult.
 - Omnicard: Wild Cards can't be debuffed. Retrigger all Wild Cards.
 - Bulletproof: Glass Cards lose X0.1 instead of breaking. They break when they reach X1.5. (Warning: this voucher has incompatibility issue with mod content that changes glass cards base xMult. Game won't crash but the effect will be strange)
+- Cash Clutch: At end of each Round, earn extra $1 per remaining Hand.
+- Inflation: At end of each Round, earn extra $1 per remaining Hand. (the same as above)
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.
@@ -60,7 +62,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Vanish Magic (Magic Trick + Blank): You can make playing cards in the shop vanish and earn $3 for each.
 - Darkness (Glow Up + Antimatter): Negative cards appear 4X more often.
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
-- Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives $1 after rounds.
+- Trash Picker (Grabber + Wasteful): +1 hand and +1 discard per round. You can spend 1 hand to discard if you have no discards. Each discard gives the same money as each hand after rounds.
 - Money Target (Seed Money + Target): Earn double interest at end of round if your money is multiples of 5.
 - Art Gallery (Hieroglyph + Abstract Art): +1 Ante to win. When Boss Blind is defeated, randomly get one of the following: +1 hand, +1 discard or -1 Ante.
 - B1Ginf (Collector + B1G1): B1G1: When you redeem a Voucher, always redeem all higher tier Vouchers and pay their prices.
