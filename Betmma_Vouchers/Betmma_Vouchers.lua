@@ -1,10 +1,10 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
---- PREFIX: betm_vouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 16 Fusion Vouchers! v2.0.0-alpha3
---- VERSION: 2.0.0-alpha3(20240602)
+--- MOD_DESCRIPTION: 38 More Vouchers and 16 Fusion Vouchers! v2.0.0-beta1
+--- PREFIX: betm_vouchers
+--- VERSION: 2.0.0-beta1(20240604)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -40,14 +40,99 @@
 -- (upgraded of above) if probabilities in lucky card, that is written as A in B, satisfies A>B, this can trigger more than 1 time
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
--- you can discard the hand when opening a pack once
--- random voucher pack $8
--- Inflation: Earn +$1 per remaining Hand at end of round
--- Cashback: Earn +$1 more per remaining Hand
--- change trash picker to earn the same as each hand for each discard
-MOD_PREFIX='betm_vouchers_'
+-- enhancements can stack
+-- tier 2 voucher pack $15
+-- give $1 per 10 cards left when round ends
+-- Grand Finale: if no cards left when round ends, gives $10
+--[[
+Tier 1 Voucher: Bargain Aisle: One random item in the shop will be free per shop, persists between rerolls.
+
+Tier 2 Voucher: Clearance Aisle: 3 random items in the shop will be free per shop, persists between rerolls.
+
+Fusion Voucher: Giveaway Search (Reroll Glut + Clearance Aisle): Each shop reroll that you do will add +1 random free item to that shop. 
+]]
+IN_SMOD1=MODDED_VERSION>='1.0.0'
+MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
 MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
+
+-- example: if used_voucher('slate') then ... end
+local function used_voucher(raw_key)
+    return G.GAME.used_vouchers[MOD_PREFIX_V..raw_key]
+end
+-- example: get_voucher('slate').config.extra
+local function get_voucher(raw_key)
+    return G.P_CENTERS[MOD_PREFIX_V..raw_key]
+end
+-- example: handle_atlas('slate') loads 'v_slate.png' and assign it
+local function handle_atlas(raw_key,this_v)
+    if IN_SMOD1 then
+        local key='v_'..raw_key
+        SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
+        key = MOD_PREFIX .. key
+        this_v.atlas=key
+    else
+        local id=raw_key
+        SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register()
+    end
+end
+
+local function handle_register(this_v)
+    if not IN_SMOD1 then
+        this_v:register()
+    end
+end
+
+local fusion_voucher_weight=4
+if IN_SMOD1 then
+    local SMODS_Center_inject=SMODS.Center.inject
+    SMODS.Center.inject =function(self)
+        -- print(SMODS.current_mod+"....."+self.set)
+        if self.key:find(MOD_PREFIX_V) and self.set=='Voucher'then
+            if not config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
+            self.mod_name='Betmma Vouchers'
+            if self.requires and #self.requires>1 then 
+                self.config.weight=fusion_voucher_weight
+            end
+        end
+        SMODS_Center_inject(self)
+    end
+else
+    local SMODS_Voucher_register=SMODS.Voucher.register
+    function SMODS.Voucher:register()
+        if SMODS._MOD_NAME=='Betmma Vouchers' then
+            if not config[self.slug] then return false end
+            if self.loc_vars then
+                self.loc_def=function(self2)
+                    local loc_vars=self.loc_vars
+                    return self.loc_vars(self2,nil,{ability=self2.config}).vars
+                end
+            end
+            if self.requires and #self.requires>1 then 
+                self.config.weight=fusion_voucher_weight
+            end
+        end
+        SMODS_Voucher_register(self)
+    end
+end
+
+
+SMODS_Voucher_ref=SMODS.Voucher
+SMODS_Voucher_fake=function(table)
+    if IN_SMOD1 then
+        return SMODS_Voucher_ref(table)
+    else
+        local this_v= SMODS_Voucher_ref:new(table.name,table.key,
+        table.config,
+        table.pos,table.loc_txt,
+        table.cost,table.unlocked,table.discovered,table.available,
+        table.requires)
+        return this_v
+    end
+end
+
+real_random_data={}
+SMODS.current_mod=SMODS.current_mod or {}
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
     G.localization.misc.challenge_names.c_mod_testvoucher = "TestVoucher"
@@ -65,10 +150,9 @@ function SMODS.current_mod.process_loc_text()
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
     end
-
 end
 -- Config: DISABLE UNWANTED MODS HERE
-local config = {
+config = {
     -- normal vouchers
     v_oversupply=true,
     v_oversupply_plus=true,
@@ -127,7 +211,7 @@ local config = {
     v_recycle_area=true,
 }
 
-local usingTalisman = SMODS.Mods["Talisman"]
+local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
 
 local function TalismanCompat(num)
 	return usingTalisman and Big:new(num) or num
@@ -212,7 +296,7 @@ local function randomly_create_consumable(card_type,tag,message,extra)
                     if extra.perishable~=nil then
                         card.ability.perishable = extra.perishable
                         if tag=='v_epilogue' then
-                            card.ability.perish_tally=G.P_CENTERS[MOD_PREFIX_V..'epilogue'].config.extra
+                            card.ability.perish_tally=get_voucher('epilogue').config.extra
                         else card.ability.perish_tally = G.GAME.perishable_rounds
                         end
                     end
@@ -237,14 +321,6 @@ local function randomly_create_tarot(tag,message,extra)
 end
 local function randomly_create_planet(tag,message,extra)
     return randomly_create_consumable('Planet',tag,message,extra)
-end
--- example: if used_voucher('slate') then ... end
-local function used_voucher(raw_key)
-    return G.GAME.used_vouchers[MOD_PREFIX_V..raw_key]
-end
--- example: get_voucher('slate').config.extra
-local function get_voucher(raw_key)
-    return G.P_CENTERS[MOD_PREFIX_V..raw_key]
 end
 
 local function get_weight(v)
@@ -292,6 +368,7 @@ local function pseudorandom_element_weighted(_t, seed)
     return center,center_key
 end
 
+local function INIT()
 
 --- deal with enhances effect changes when saving & loading
 do
@@ -338,25 +415,25 @@ do
 
         local saveTable = args.savetext or nil
         if saveTable then -- without this, vouchers given at the start of the run (in challenge) will be calculated twice
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'bonus_plus'] then
-                G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS[MOD_PREFIX_V..'bonus_plus'].config.extra
+            if used_voucher('bonus_plus') then
+                G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
                 for k, v in pairs(G.playing_cards) do
                     if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
                 end
             end
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'mult_plus'] then
-                G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS[MOD_PREFIX_V..'mult_plus'].config.extra
+            if used_voucher('mult_plus') then
+                G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
                 for k, v in pairs(G.playing_cards) do
                     if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
                 end
             end
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'slate'] then
-                G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS[MOD_PREFIX_V..'slate'].config.extra
+            if used_voucher('slate') then
+                G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
                 for k, v in pairs(G.playing_cards) do
                     if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
                 end
             end
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'bulletproof'] then
+            if used_voucher('bulletproof') then
                 for k, v in pairs(G.playing_cards) do
                     if v.config.center_key == 'm_glass' and v.config.center.config.Xmult~=v.ability.x_mult then 
                         v.config.center=copy_table(v.config.center)
@@ -366,7 +443,7 @@ do
                 end
             end
             
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] then
+            if used_voucher('real_random') then
                 for k, v in pairs(G.playing_cards) do
                     if v.ability.real_random_abilities then 
                         v.config.center=copy_table(v.config.center)
@@ -394,20 +471,6 @@ end --
         return ret
     end
 
-    local fusion_voucher_weight=4
-    local SMODS_Center_inject=SMODS.Center.inject
-    SMODS.Center.inject =function(self)
-        -- print(SMODS.current_mod+"....."+self.set)
-        if self.key:find(MOD_PREFIX_V) and self.set=='Voucher'then
-            if not config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
-            self.mod_name='Betmma Vouchers'
-            if self.requires and #self.requires>1 then 
-                self.config.weight=fusion_voucher_weight
-            end
-        end
-        SMODS_Center_inject(self)
-    end
-
 
 do
     local oversupply_loc_txt = {
@@ -424,10 +487,13 @@ do
         pos={x=0,y=0}, loc_txt=oversupply_loc_txt,
         cost=10, unlocked=true,discovered=true, available=true,
     }
-    local key="v_oversupply"
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    v_oversupply.atlas=key
+    local id='oversupply'
+    local this_v=v_oversupply
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
     -- SMODS.Sprite:new("v_oversupply", SMODS.findModByID("BetmmaVouchers").path, "v_oversupply.png", 71, 95, "asset_atli"):register();
     -- v_oversupply:register()
     
@@ -445,16 +511,19 @@ do
             pos={x=0,y=0}, loc_txt=oversupply_plus_loc_txt,
             cost=10, unlocked=true,discovered=true, available=true, requires={MOD_PREFIX_V..'oversupply'}
     }
-    local key="v_oversupply_plus"
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX  .. key
-    v_oversupply_plus.atlas=key
+    local id='oversupply_plus'
+    local this_v=v_oversupply_plus
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
     -- SMODS.Sprite:new("v_oversupply_plus", SMODS.findModByID("BetmmaVouchers").path, "v_oversupply_plus.png", 71, 95, "asset_atli"):register();
     -- v_oversupply_plus:register()
     -- The v.redeem function mentioned in voucher.lua of steamodded 0.9.5 is bugged when the voucher is given at the beginning of the game (such as challenge or some decks), and also it's not capable of making not one-time effects.
     local end_round_ref = end_round
     function end_round()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'oversupply'] and G.GAME.blind:get_type() == 'Boss' or G.GAME.used_vouchers[MOD_PREFIX_V..'oversupply_plus'] then
+        if used_voucher('oversupply') and G.GAME.blind:get_type() == 'Boss' or used_voucher('oversupply_plus') then
             add_tag(Tag('tag_voucher'))
         end
         end_round_ref()
@@ -481,15 +550,14 @@ do
         pos={x=0,y=0}, loc_txt=gold_coin_loc_txt,
         cost=1, unlocked=true, discovered=true, available=true
     }
-    local key="v_gold_coin"
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    v_gold_coin.atlas=key
+    local this_v=v_gold_coin
+    handle_atlas(id,this_v)
     -- SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_coin.png", 71, 95, "asset_atli"):register();
     -- v_gold_coin:register()
     v_gold_coin.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Gold Bar"
@@ -509,15 +577,14 @@ do
         pos={x=0,y=0}, loc_txt=gold_bar_loc_txt,
         cost=1, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'gold_coin'}
     }
-    local key = "v_gold_bar"
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    v_gold_bar.atlas=key
+    local this_v=v_gold_bar
+    handle_atlas(id,this_v)
     -- SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_gold_bar.png", 71, 95, "asset_atli"):register();
     -- v_gold_bar:register()
     v_gold_bar.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -560,13 +627,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Mondrian"
@@ -584,13 +649,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'abstract_art'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -670,13 +733,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        return {vars=nil}
+        return {vars={}}
     end
+    handle_register(this_v)
 
     
     local name="Round Up Plus"
@@ -695,24 +756,22 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'round_up'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local mod_chips_ref=mod_chips
     function mod_chips(_chips)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'round_up'] then
+        if used_voucher('round_up') then
           _chips = usingTalisman and (_chips / Big:new(10)):ceil() * Big:new(10) or math.ceil(_chips/10)*10
         end
         return mod_chips_ref(_chips)
     end
     local mod_mult_ref=mod_mult
     function mod_mult(_mult)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'round_up_plus'] then
+        if used_voucher('round_up_plus') then
             _mult= usingTalisman and (_mult / Big:new(10)):ceil() * Big:new(10) or math.ceil(_mult/10)*10
         end
         return mod_mult_ref(_mult)
@@ -740,13 +799,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={""..(G.GAME and G.GAME.probabilities.normal or 1),center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Engulfer"
@@ -767,13 +824,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'event_horizon'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={""..(G.GAME and G.GAME.probabilities.normal or 1),center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local Card_apply_to_run_ref = Card.apply_to_run
@@ -804,8 +859,8 @@ do
 
     local Card_open_ref=Card.open
     function Card:open()
-        if self.ability.set == "Booster" and self.ability.name:find('Celestial') and G.GAME.used_vouchers[MOD_PREFIX_V..'event_horizon'] and
-        pseudorandom('event_horizon') < G.GAME.probabilities.normal/G.P_CENTERS[MOD_PREFIX_V..'event_horizon'].config.extra then
+        if self.ability.set == "Booster" and self.ability.name:find('Celestial') and used_voucher('event_horizon') and
+        pseudorandom('event_horizon') < G.GAME.probabilities.normal/get_voucher('event_horizon').config.extra then
             create_black_hole(localize("k_event_horizon_generate"))
         end
         return Card_open_ref(self)
@@ -815,7 +870,7 @@ do
     G.FUNCS.use_card =function(e, mute, nosave)
         local card = e.config.ref_table
         if card.ability.consumeable then
-            if (card.ability.set == 'Planet' or card.ability.set == "Planet_dx") and G.GAME.used_vouchers[MOD_PREFIX_V..'engulfer'] and pseudorandom('engulfer') < G.GAME.probabilities.normal/G.P_CENTERS[MOD_PREFIX_V..'engulfer'].config.extra then
+            if (card.ability.set == 'Planet' or card.ability.set == "Planet_dx") and used_voucher('engulfer') and pseudorandom('engulfer') < G.GAME.probabilities.normal/get_voucher('engulfer').config.extra then
                 create_black_hole(localize("k_engulfer_generate"))
             end
         end
@@ -862,13 +917,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Bull's Eye"
@@ -889,24 +942,22 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'target'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local end_round_ref=end_round
     function end_round()
 		local zero = TalismanCompat(0)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'target'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(G.P_CENTERS[MOD_PREFIX_V..'target'].config.extra) <= zero then
+        if used_voucher('target') and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(get_voucher('target').config.extra) <= zero then
             if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
                 local jokers_to_create = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                 randomly_create_joker(jokers_to_create,'target',localize("k_target_generate"))
             end
         end
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'bulls_eye'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(G.P_CENTERS[MOD_PREFIX_V..'bulls_eye'].config.extra) <= zero then
+        if used_voucher('bulls_eye') and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips*TalismanCompat(100) - G.GAME.blind.chips*TalismanCompat(get_voucher('bulls_eye').config.extra) <= zero then
             randomly_create_joker(1,'target',localize("k_bulls_eye_generate"),{edition={negative=true}})
         end
 
@@ -932,13 +983,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=15, unlocked=true, discovered=true, available=true,
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Voucher Bulk"
@@ -956,13 +1005,11 @@ do
         cost=25, unlocked=true, discovered=true, available=true,
         requires={MOD_PREFIX_V..'voucher_bundle'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
         
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -971,7 +1018,7 @@ do
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == 'Voucher Bundle' then
-            for i=1, G.P_CENTERS[MOD_PREFIX_V..'voucher_bundle'].config.extra do
+            for i=1, get_voucher('voucher_bundle').config.extra do
                 G.E_MANAGER:add_event(Event({
                     trigger = 'immediate',
                     delay =  0,
@@ -982,7 +1029,7 @@ do
             end
         end
         if center_table.name == 'Voucher Bulk' then
-            for i=1, G.P_CENTERS[MOD_PREFIX_V..'voucher_bulk'].config.extra do
+            for i=1, get_voucher('voucher_bulk').config.extra do
                 G.E_MANAGER:add_event(Event({
                     trigger = 'immediate',
                     delay =  0,
@@ -1002,7 +1049,7 @@ do
     --         extra = self.ability.extra
     --     }
     --     if center_table.name == 'Voucher Bundle' then
-    --         for i=1, G.P_CENTERS[MOD_PREFIX_V..'voucher_bundle'].config.extra do
+    --         for i=1, get_voucher('voucher_bundle').config.extra do
     --             G.E_MANAGER:add_event(Event({
     --                 trigger = 'before',
     --                 delay =  0,
@@ -1013,7 +1060,7 @@ do
     --         end
     --     end
     --     if center_table.name == 'Voucher Bulk' then
-    --         for i=1, G.P_CENTERS[MOD_PREFIX_V..'voucher_bulk'].config.extra do
+    --         for i=1, get_voucher('voucher_bulk').config.extra do
     --             G.E_MANAGER:add_event(Event({
     --                 trigger = 'before',
     --                 delay =  0,
@@ -1046,13 +1093,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Skipper"
@@ -1069,20 +1114,18 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'skip'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}--{center.ability.extra}
     end
+    handle_register(this_v)
 
     local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
     G.FUNCS.skip_blind=function(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'skip'] then
-            ease_dollars(G.P_CENTERS[MOD_PREFIX_V..'skip'].config.extra)
+        if used_voucher('skip') then
+            ease_dollars(get_voucher('skip').config.extra)
         end
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'skipper'] then
+        if used_voucher('skipper') then
             add_tag(Tag('tag_double'))
         end
         return G_FUNCS_skip_blind_ref(e)
@@ -1108,13 +1151,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Scribble"
@@ -1132,13 +1173,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'scrawl'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
     
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -1147,11 +1186,11 @@ do
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == 'Scrawl' then
-            ease_dollars(G.P_CENTERS[MOD_PREFIX_V..'scrawl'].config.extra*#G.jokers.cards)
+            ease_dollars(get_voucher('scrawl').config.extra*#G.jokers.cards)
             randomly_create_joker(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer),nil,nil)
         end
         if center_table.name == 'Scribble' then
-            for i=1, G.P_CENTERS[MOD_PREFIX_V..'scribble'].config.extra do
+            for i=1, get_voucher('scribble').config.extra do
                 randomly_create_spectral(nil,nil,{edition={negative=true}})
             end
         end
@@ -1178,13 +1217,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}--{center.ability.extra}
     end
+    handle_register(this_v)
 
     
     local name="Reserve Area Plus"
@@ -1204,13 +1241,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'reserve_area'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}--{center.ability.extra}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -1242,7 +1277,7 @@ do
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
     function G.UIDEF.use_and_sell_buttons(card)
         if (card.area == G.pack_cards and G.pack_cards) and card.ability.consumeable then --Add a use button
-            if G.STATE == G.STATES.TAROT_PACK and G.GAME.used_vouchers[MOD_PREFIX_V..'reserve_area'] or G.STATE == G.STATES.SPECTRAL_PACK and G.GAME.used_vouchers[MOD_PREFIX_V..'reserve_area_plus'] then
+            if G.STATE == G.STATES.TAROT_PACK and used_voucher('reserve_area') or G.STATE == G.STATES.SPECTRAL_PACK and used_voucher('reserve_area_plus') then
                 return {
                     n=G.UIT.ROOT, config = {padding = -0.1,  colour = G.C.CLEAR}, nodes={
                       {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.7*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
@@ -1320,13 +1355,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     local name="Big Blast"
@@ -1349,21 +1382,19 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'overkill'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_big_blast_count or 0
         return {vars={center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1))}}
     end
+    handle_register(this_v)
     local v_big_blast=this_v
     local end_round_ref=end_round
     function end_round()
 		--compatibility fix for Talisman
 		local zero = TalismanCompat(0)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'overkill'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips * TalismanCompat(100) - G.GAME.blind.chips * TalismanCompat(G.P_CENTERS[MOD_PREFIX_V..'overkill'].config.extra) >= zero then
+        if used_voucher('overkill') and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips * TalismanCompat(100) - G.GAME.blind.chips * TalismanCompat(get_voucher('overkill').config.extra) >= zero then
             local temp_pool={}
             for k, v in pairs(G.jokers.cards) do
                 if v.ability.set == 'Joker' and (not v.edition) then
@@ -1383,7 +1414,7 @@ do
                 return true end }))
             end
         end
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'big_blast'] and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips - G.GAME.blind.chips * TalismanCompat(v_big_blast:loc_vars().vars[1]) >= zero then
+        if used_voucher('big_blast') and G.GAME.chips - G.GAME.blind.chips >= zero and G.GAME.chips - G.GAME.blind.chips * TalismanCompat(v_big_blast:loc_vars().vars[1]) >= zero then
 
             G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
                     
@@ -1429,13 +1460,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}--{center.ability.extra}
     end
+    handle_register(this_v)
     
     local name="4D Boosters"
     local id="4d_boosters"
@@ -1454,22 +1483,20 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'3d_boosters'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
     function get_booster_pack_max()
         local value=2
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'3d_boosters'] then value=value+1 end
+        if used_voucher('3d_boosters') then value=value+1 end
         return value
     end
     local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
     G.FUNCS.cash_out=function (e)
         G_FUNCS_cash_out_ref(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'3d_boosters'] and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
+        if used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
             my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
@@ -1490,8 +1517,8 @@ do
     local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
     function G.FUNCS.reroll_shop(e)
         G_FUNCS_reroll_shop_ref(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'4d_boosters'] then
-            my_reroll_shop(get_booster_pack_max(),G.P_CENTERS[MOD_PREFIX_V..'4d_boosters'].config.extra)
+        if used_voucher('4d_boosters') then
+            my_reroll_shop(get_booster_pack_max(),get_voucher('4d_boosters').config.extra)
         end
     end
     function my_reroll_shop(num,price_mod)
@@ -1553,13 +1580,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra.chance}}
     end
+    handle_register(this_v)
 
     
     local name="B1G1"
@@ -1579,20 +1604,18 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'b1g50'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
         
     local Card_redeem_ref = Card.redeem
     function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
-        if not G.GAME.block_b1g1 and (G.GAME.used_vouchers[MOD_PREFIX_V..'b1g50'] and pseudorandom('b1g1')*100 < G.P_CENTERS[MOD_PREFIX_V..'b1g50'].config.extra.chance  or G.GAME.used_vouchers[MOD_PREFIX_V..'b1g1']) or G.GAME.used_vouchers[MOD_PREFIX_V..'b1ginf'] then
+        if not G.GAME.block_b1g1 and (used_voucher('b1g50') and pseudorandom('b1g1')*100 < get_voucher('b1g50').config.extra.chance  or used_voucher('b1g1')) or used_voucher('b1ginf') then
             local lose_percent=50
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'b1g1'] then 
+            if used_voucher('b1g1') then 
                 lose_percent=100
             end
             -- lose=math.max(1, math.floor((lose+0.5)*(100-G.GAME.discount_percent)/100)) -- liquidation
@@ -1615,7 +1638,7 @@ do
                     print("This voucher key: "..unredeemed_vouchers[1].." is not in G.P_CENTERS!")
                 elseif #unredeemed_vouchers==1 and only_need.name==center_table.name then
                     table.insert(vouchers_to_get,v)
-                    if not G.GAME.used_vouchers[MOD_PREFIX_V..'b1ginf'] then break end 
+                    if not used_voucher('b1ginf') then break end 
                 end
             end
             if #vouchers_to_get>0 then
@@ -1630,7 +1653,7 @@ do
                     card.shop_voucher=false -- this doesn't help keeping current_round_voucher i guess
                     local current_round_voucher=G.GAME.current_round.voucher
                     
-                    if not G.GAME.used_vouchers[MOD_PREFIX_V..'b1ginf'] then 
+                    if not used_voucher('b1ginf') then 
                         G.GAME.block_b1g1=true -- can only get 1 extra
                     end 
                     card:redeem()
@@ -1674,13 +1697,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
     
     local name="Connoisseur"
     local id="connoisseur"
@@ -1701,10 +1722,6 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
     this_v.loc_vars = function(self, info_queue, center)
         if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_connoisseur_count or 0
@@ -1712,13 +1729,15 @@ do
         return {vars={center.ability.extra.base*center.ability.extra.multiplier^(count),
         math.ceil(center.ability.extra.base/(redeemed+1)*center.ability.extra.multiplier^(count)),center.ability.extra.multiplier}}
     end
+    handle_atlas(id,this_v)
+    handle_register(this_v)
     local v_connoisseur=this_v
 
     get_blind_amount_ref=get_blind_amount
     function get_blind_amount(ante)
         amount=get_blind_amount_ref(ante)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'collector'] then
-            amount=amount*TalismanCompat((1-G.P_CENTERS[MOD_PREFIX_V..'collector'].config.extra/100)^(G.GAME.vouchers_bought or 0))
+        if used_voucher('collector') then
+            amount=amount*TalismanCompat((1-get_voucher('collector').config.extra/100)^(G.GAME.vouchers_bought or 0))
         end
         return amount
     end
@@ -1731,7 +1750,7 @@ do
         }
         G.GAME.vouchers_bought=(G.GAME.vouchers_bought or 0)+1
         if center_table.name ~= 'Antimatter'then
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'connoisseur'] and G.GAME.dollars>=v_connoisseur:loc_vars().vars[2] then
+            if used_voucher('connoisseur') and G.GAME.dollars>=v_connoisseur:loc_vars().vars[2] then
                 G.GAME.v_connoisseur_count= (G.GAME.v_connoisseur_count or 0)+1
                 G.E_MANAGER:add_event(Event({
                     trigger = 'before',
@@ -1770,13 +1789,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
     
     local name="Double Flipped Card"
     local id="double_flipped_card"
@@ -1794,20 +1811,18 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'flipped_card'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
     
     local create_UIBox_buttons_ref=create_UIBox_buttons
     function create_UIBox_buttons()
         local ret=create_UIBox_buttons_ref()
         local text_scale=0.45
         local button_height=1.3
-        if (G.GAME.used_vouchers[MOD_PREFIX_V..'flipped_card'] or G.GAME.used_vouchers[MOD_PREFIX_V..'double_flipped_card']) then
+        if (used_voucher('flipped_card') or used_voucher('double_flipped_card')) then
             local flip_button={n=G.UIT.C, config={id = 'flip_button', align = "tm", minw = 2.5, padding = 0.3, r = 0.1, hover = true, colour = G.C.PURPLE, button = "this is another useless parameter", one_press = true, shadow = true, func = 'can_flip'}, nodes={
                 {n=G.UIT.R, config={align = "bcm", padding = 0}, nodes={
                 {n=G.UIT.T, config={text = localize('b_flip_hand'), scale = text_scale, colour = G.C.UI.TEXT_LIGHT, focus_args = {button = 'x', orientation = 'bm'}, func = 'set_button_pip'}}
@@ -1836,7 +1851,7 @@ do
     end
 
     G.FUNCS.can_flip=function(e)
-        if #G.hand.highlighted <= 0 or #G.hand.highlighted > G.P_CENTERS[MOD_PREFIX_V..'flipped_card'].config.extra or G.GAME.current_round.flips_left <= 0 then 
+        if #G.hand.highlighted <= 0 or #G.hand.highlighted > get_voucher('flipped_card').config.extra or G.GAME.current_round.flips_left <= 0 then 
             e.config.colour = G.C.UI.BACKGROUND_INACTIVE
             e.config.button = nil
         else
@@ -1858,7 +1873,7 @@ do
 
     local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
     G.FUNCS.draw_from_play_to_discard = function(e)
-        if (G.GAME.used_vouchers[MOD_PREFIX_V..'flipped_card'] and not G.GAME.used_vouchers[MOD_PREFIX_V..'double_flipped_card']) then
+        if (used_voucher('flipped_card') and not used_voucher('double_flipped_card')) then
             local play_count = #G.play.cards --G.GAME.scoring_hand --G.GAME.scoring_hand is stored in eval_hand by me
             local it = 1
             local flag=false
@@ -1884,7 +1899,7 @@ do
     function eval_card(card, context) -- debuffed card won't call this
         local ret = eval_card_ref(card,context)
         G.GAME.scoring_hand=context.scoring_hand
-        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers[MOD_PREFIX_V..'double_flipped_card'] and card.facing_ref=='back' then
+        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and used_voucher('double_flipped_card') and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
                 draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
                 card.facing_ref=card.facing
@@ -1949,13 +1964,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local name="Epilogue"
     local id="epilogue"
@@ -1976,13 +1989,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'prologue'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -1998,7 +2009,7 @@ do
 
     local new_round_ref=new_round
     function new_round()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'prologue'] then
+        if used_voucher('prologue') then
             for i=1,#G.consumeables.cards do
                 if G.consumeables.cards[i].ability.v_prologue then
                     G.consumeables.cards[i]:start_dissolve(nil,nil)
@@ -2019,7 +2030,7 @@ do
                 G.consumeables.cards[i]:start_dissolve(nil,nil)
             end
         end
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'epilogue'] then
+        if used_voucher('epilogue') then
             
             G.E_MANAGER:add_event(Event({
                 trigger = 'after',
@@ -2049,13 +2060,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra,center.ability.extra+30}}
     end
+    handle_register(this_v)
 
     local name="Mult+"
     local id="mult_plus"
@@ -2074,13 +2083,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'bonus_plus'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra,center.ability.extra+4}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -2089,14 +2096,14 @@ do
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == 'Bonus+' then
-            G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+G.P_CENTERS[MOD_PREFIX_V..'bonus_plus'].config.extra
+            G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
             for k, v in pairs(G.playing_cards) do
                 if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
             end
         
         end
         if center_table.name == 'Mult+' then
-            G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+G.P_CENTERS[MOD_PREFIX_V..'mult_plus'].config.extra
+            G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
             for k, v in pairs(G.playing_cards) do
                 if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
             end
@@ -2123,13 +2130,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local name="Bulletproof"
     local id="bulletproof"
@@ -2150,17 +2155,15 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'omnicard'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra.lose,center.ability.extra.lower_bound}}
     end
+    handle_register(this_v)
 
     local Card_set_debuff=Card.set_debuff
     function Card:set_debuff(should_debuff)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'omnicard'] and self.config and self.config.center_key=='m_wild' then
+        if used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
             should_debuff=false
             if self.params.debuff_by_curse then -- DX tarots mod curses that still debuff when should_debuff is false
                 self.params.debuff_by_curse=false
@@ -2172,7 +2175,7 @@ do
     local Card_calculate_seal_ref=Card.calculate_seal
     function Card:calculate_seal(context)
         local ret=Card_calculate_seal_ref(self,context)
-        if context.repetition and G.GAME.used_vouchers[MOD_PREFIX_V..'omnicard'] and self.config and self.config.center_key=='m_wild' then
+        if context.repetition and used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
             if ret then
                 ret.repetitions=ret.repetitions+1
             else
@@ -2188,16 +2191,16 @@ do
 
     local Card_shatter_ref=Card.shatter
     function Card:shatter()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'bulletproof'] and self.ability.name == 'Glass Card' and G.P_CENTERS.m_glass.config.Xmult-G.P_CENTERS[MOD_PREFIX_V..'bulletproof'].config.extra.lose*(self.ability.breaking_count or 0)+1>G.P_CENTERS[MOD_PREFIX_V..'bulletproof'].config.extra.lower_bound then
+        if used_voucher('bulletproof') and self.ability.name == 'Glass Card' and G.P_CENTERS.m_glass.config.Xmult-get_voucher('bulletproof').config.extra.lose*(self.ability.breaking_count or 0)+1>get_voucher('bulletproof').config.extra.lower_bound then
             self.ability.breaking_count=(self.ability.breaking_count or 0)+1
-            self.ability.x_mult=G.P_CENTERS.m_glass.config.Xmult-G.P_CENTERS[MOD_PREFIX_V..'bulletproof'].config.extra.lose*self.ability.breaking_count
+            self.ability.x_mult=G.P_CENTERS.m_glass.config.Xmult-get_voucher('bulletproof').config.extra.lose*self.ability.breaking_count
             --print(G.P_CENTERS.m_glass.config.Xmult,self.ability.x_mult)
             self.config.center=copy_table(self.config.center) -- prevent modifying value of G.P_CENTERS.m_glass
-            self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-G.P_CENTERS[MOD_PREFIX_V..'bulletproof'].config.extra.lose
+            self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-get_voucher('bulletproof').config.extra.lose
             self.shattered=false
             self.destroyed=false
             card_eval_status_text(self,'extra',nil,nil,nil,{message=localize('k_bulletproof')})
-            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize{type='variable',key='a_xmult_minus',vars={G.P_CENTERS[MOD_PREFIX_V..'bulletproof'].config.extra.lose}},colour=G.C.RED})
+            card_eval_status_text(self,'extra',nil,nil,nil,{message=localize{type='variable',key='a_xmult_minus',vars={get_voucher('bulletproof').config.extra.lose}},colour=G.C.RED})
             Card_shatter_not_remove(self)
             return
         end
@@ -2272,13 +2275,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra,center.ability.extra+30}}
     end
+    handle_register(this_v)
 
     local name="Inflation"
     local id="inflation"
@@ -2296,13 +2297,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'cash_clutch'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra,center.ability.extra+4}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -2362,16 +2361,14 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'round_up',MOD_PREFIX_V..'gold_coin'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
     local ease_dollars_ref = ease_dollars
     function ease_dollars(mod, instant)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'gold_round_up'] then
+        if used_voucher('gold_round_up') then
             local original=G.GAME.dollars+mod
             local new=math.ceil(original)
             if new % 2 == 1 then
@@ -2401,18 +2398,16 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_overstock_norm',MOD_PREFIX_V..'oversupply'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
     
     local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
     G.FUNCS.skip_blind = function(e)
         G_FUNCS_skip_blind_ref(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'overshopping'] then
+        if used_voucher('overshopping') then
             --stop_use()
             -- from G.FUNCS.select_blind
             G.blind_select:remove()
@@ -2429,7 +2424,7 @@ do
             G.GAME.current_round.free_rerolls = #chaos
             calculate_reroll_cost(true)
             
-            if G.GAME.used_vouchers[MOD_PREFIX_V..'3d_boosters'] then
+            if used_voucher('3d_boosters') then
                 my_reroll_shop(get_booster_pack_max()-2,0)
             end
             G:update_shop(dt)
@@ -2455,20 +2450,18 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_directors_cut','v_reroll_surplus'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local G_FUNC_reroll_boss_ref =  G.FUNCS.reroll_boss
     G.FUNCS.reroll_boss = function(e) 
         if G.STATE~=G.STATES.BLIND_SELECT then return end
         G_FUNC_reroll_boss_ref(e)
         
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'reroll_cut'] then -- adding a pack tag when in a pack causes double pack and will crash
+        if used_voucher('reroll_cut') then -- adding a pack tag when in a pack causes double pack and will crash
             stop_use()
             if G.GAME.round_resets.blind_states.Small ~= 'Defeated' then 
                 G.GAME.round_resets.blind_tags.Small = get_next_tag_key()
@@ -2526,18 +2519,16 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_magic_trick','v_blank'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     G.FUNCS.vanish_card = function(e)
         local card = e.config.ref_table
         card:start_dissolve(nil,nil)
-        ease_dollars(G.P_CENTERS[MOD_PREFIX_V..'vanish_magic'].config.extra)
+        ease_dollars(get_voucher('vanish_magic').config.extra)
     end
     
     G.FUNCS.can_vanish_card = function(e)
@@ -2547,7 +2538,7 @@ do
 
     local Card_highlight_ref=Card.highlight
     function Card:highlight(is_higlighted)
-        if self.area and self.area.config.type == 'shop' and (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G.GAME.used_vouchers[MOD_PREFIX_V..'vanish_magic'] then
+        if self.area and self.area.config.type == 'shop' and (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and used_voucher('vanish_magic') then
             -- if self.children.use_button then
             -- self.children.use_button:remove()
             -- self.children.use_button = nil
@@ -2575,7 +2566,7 @@ do
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
     function G.UIDEF.use_and_sell_buttons(card)
         local retval = G_UIDEF_use_and_sell_buttons_ref(card)
-        if card.area and card.area.config.type == 'shop' and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and G.GAME.used_vouchers[MOD_PREFIX_V..'vanish_magic'] then
+        if card.area and card.area.config.type == 'shop' and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and used_voucher('vanish_magic') then
             local buy={
             n=G.UIT.R, config = {ref_table = card, minw = 1.1, maxw = 1.3, padding = 0.1, align = 'bm', colour = G.C.GOLD, shadow = true, r = 0.08, minh = 0.94, func = 'can_buy', one_press = true, button = 'buy_from_shop', hover = true}, nodes={
                 {n=G.UIT.T, config={text = localize('b_buy'),colour = G.C.WHITE, scale = 0.5}}
@@ -2631,19 +2622,17 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_glow_up','v_antimatter'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local poll_edition_ref=poll_edition
     function poll_edition(_key, _mod, _no_neg, _guaranteed)
         _mod=_mod or 1
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'darkness'] then
-            local ret=poll_edition_ref(_key, _mod*(G.P_CENTERS[MOD_PREFIX_V..'darkness'].config.extra-1), _no_neg, _guaranteed)
+        if used_voucher('darkness') then
+            local ret=poll_edition_ref(_key, _mod*(get_voucher('darkness').config.extra-1), _no_neg, _guaranteed)
             if ret and ret.negative then
                 return ret
             end
@@ -2670,19 +2659,17 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_planet_merchant',MOD_PREFIX_V..'b1g50'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local G_FUNCS_buy_from_shop_ref=G.FUNCS.buy_from_shop
     G.FUNCS.buy_from_shop = function(e)
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
-        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and G.GAME.used_vouchers[MOD_PREFIX_V..'double_planet'] and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, +1 is because buy_from_shop adds a card in an event that is executed after this code
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, +1 is because buy_from_shop adds a card in an event that is executed after this code
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
@@ -2695,8 +2682,8 @@ do
         text = {
             "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round.",
             "You can spend 1 hand to discard if",
-            "no discards left. Each discard gives",
-            "the same {C:money}money{} as each hand after rounds",
+            "no discards left. Discards {C:money}earn{}",
+            "as much as Hands after rounds",
             "{C:inactive}(Grabber + Wasteful)"
         }
     }
@@ -2706,13 +2693,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_grabber','v_wasteful'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -2733,7 +2718,7 @@ do
     local G_FUNCS_can_discard_ref=G.FUNCS.can_discard
     G.FUNCS.can_discard = function(e)
         G_FUNCS_can_discard_ref(e)
-        if G.GAME.current_round.discards_left <= 0 and #G.hand.highlighted > 0 and G.GAME.used_vouchers[MOD_PREFIX_V..'trash_picker'] and G.GAME.current_round.hands_left>1 then
+        if G.GAME.current_round.discards_left <= 0 and #G.hand.highlighted > 0 and used_voucher('trash_picker') and G.GAME.current_round.hands_left>1 then
             e.config.colour = G.C.RED
             e.config.button = 'discard_cards_from_highlighted'
         end
@@ -2742,7 +2727,7 @@ do
     local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted 
     G.FUNCS.discard_cards_from_highlighted = function(e, hook)
         G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
-        if not hook and G.GAME.used_vouchers[MOD_PREFIX_V..'trash_picker'] and G.GAME.current_round.discards_left <= 0 then ease_hands_played(-1) end
+        if not hook and used_voucher('trash_picker') and G.GAME.current_round.discards_left <= 0 then ease_hands_played(-1) end
     end
 end -- trash picker
 do
@@ -2763,22 +2748,20 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_seed_money',MOD_PREFIX_V..'target'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local G_FUNCS_evaluate_round_ref=G.FUNCS.evaluate_round
     G.FUNCS.evaluate_round = function()
         G.GAME.interest_amount_ref=G.GAME.interest_amount
         --print("interest_ref",G.GAME.interest_amount_ref)
         G.GAME.v_money_target_triggered=false
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'money_target'] and G.GAME.dollars%5==0 then
+        if used_voucher('money_target') and G.GAME.dollars%5==0 then
             G.GAME.v_money_target_triggered=true
-            G.GAME.interest_amount=G.GAME.interest_amount*G.P_CENTERS[MOD_PREFIX_V..'money_target'].config.extra
+            G.GAME.interest_amount=G.GAME.interest_amount*get_voucher('money_target').config.extra
         end
         --print("interest",G.GAME.interest_amount)
         G_FUNCS_evaluate_round_ref()
@@ -2787,8 +2770,8 @@ do
     
     local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
     G.FUNCS.cash_out=function (e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'money_target'] and G.GAME.v_money_target_triggered then
-            local delta= G.GAME.interest_amount-G.GAME.interest_amount_ref*G.P_CENTERS[MOD_PREFIX_V..'money_target'].config.extra -- if delta ~= 0 then jokers adding amount were sold between evaluate_round and cash_out
+        if used_voucher('money_target') and G.GAME.v_money_target_triggered then
+            local delta= G.GAME.interest_amount-G.GAME.interest_amount_ref*get_voucher('money_target').config.extra -- if delta ~= 0 then jokers adding amount were sold between evaluate_round and cash_out
             --print("delta",delta)
             G.GAME.interest_amount=G.GAME.interest_amount_ref+delta
         end
@@ -2814,13 +2797,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_hieroglyph',MOD_PREFIX_V..'abstract_art'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -2836,10 +2817,10 @@ do
 
     local end_round_ref = end_round
     function end_round()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'art_gallery'] and G.GAME.blind:get_type() == 'Boss' then
+        if used_voucher('art_gallery') and G.GAME.blind:get_type() == 'Boss' then
             end_round_ref()
             local random_number=pseudorandom('v_art_gallery')
-            local value=G.P_CENTERS[MOD_PREFIX_V..'art_gallery'].config.extra
+            local value=get_voucher('art_gallery').config.extra
             if random_number < 1/3 then
                 G.GAME.round_resets.hands = G.GAME.round_resets.hands + value
                 ease_hands_played(value)
@@ -2875,13 +2856,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector',MOD_PREFIX_V..'b1g1'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
-    end -- the effect is written in b1g50 code
+    end
+    handle_register(this_v) -- the effect is written in b1g50 code
 end -- b1ginf
 do
     local name="Slate"
@@ -2902,13 +2881,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_petroglyph',MOD_PREFIX_V..'bonus_plus'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
@@ -2917,7 +2894,7 @@ do
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == 'Slate' then
-            G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+G.P_CENTERS[MOD_PREFIX_V..'slate'].config.extra
+            G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
             for k, v in pairs(G.playing_cards) do
                 if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
             end
@@ -2928,7 +2905,7 @@ do
     local G_FUNCS_can_play_ref=G.FUNCS.can_play
     G.FUNCS.can_play = function(e)
         G_FUNCS_can_play_ref(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'slate'] then
+        if used_voucher('slate') then
             local stone=0
             for k, val in ipairs(G.hand.highlighted) do
                 if val.ability.name == 'Stone Card' then stone=stone + 1 end
@@ -2942,7 +2919,7 @@ do
 
     local CardArea_add_to_highlighted_ref=CardArea.add_to_highlighted
     function CardArea:add_to_highlighted(card, silent)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'slate'] and self.config.type ~='shop' and self.config.type ~='joker' and self.config.type ~='consumeable' then
+        if used_voucher('slate') and self.config.type ~='shop' and self.config.type ~='joker' and self.config.type ~='consumeable' then
             local stone=0
             for k, val in ipairs(self.highlighted) do
                 if val.ability.name == 'Stone Card' then stone=stone + 1 end
@@ -2962,7 +2939,7 @@ do
     -- G.FUNCS.draw_from_deck_to_hand = function(e) -- failed :(
         
     --     G_FUNCS_draw_from_deck_to_hand_ref(e)
-    --     if G.GAME.used_vouchers[MOD_PREFIX_V..'slate'] then
+    --     if used_voucher('slate') then
     --         delay(1.51)
     --         local stone=0
     --         for k, val in ipairs(G.hand.cards) do
@@ -2999,18 +2976,16 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'gold_bar',MOD_PREFIX_V..'bonus_plus'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local Card_get_end_of_round_effect_ref=Card.get_end_of_round_effect
     function Card:get_end_of_round_effect(context)
         local ret=Card_get_end_of_round_effect_ref(self,context)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'gilded_glider'] and self.config.center_key=='m_gold' then
+        if used_voucher('gilded_glider') and self.config.center_key=='m_gold' then
             local index=1
             while G.hand.cards[index]~=self and index<=#G.hand.cards do
                 index=index+1
@@ -3045,18 +3020,16 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'flipped_card',MOD_PREFIX_V..'omnicard'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local eval_card_ref=eval_card
     function eval_card(card, context)
         local ret=eval_card_ref(card, context)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'mirror'] and not context.repetition_only and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
+        if used_voucher('mirror') and not context.repetition_only and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
             local index=1
             while G.play.cards[index]~=card and index<=#G.play.cards do
                 index=index+1
@@ -3098,17 +3071,15 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_crystal_ball',MOD_PREFIX_V..'omnicard'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
     
     local new_round_ref=new_round
     function new_round()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] then
+        if used_voucher('real_random') then
             G.E_MANAGER:add_event(Event({
                 trigger = 'after',
                 func = (function() randomly_create_tarot('v_prologue',nil,{forced_key='c_magician',edition={negative=true}}) return true end)
@@ -3120,7 +3091,7 @@ do
     local copy_card_ref=copy_card
     function copy_card(other, new_card, card_scale, playing_card, strip_edition)
         new_card=copy_card_ref(other, new_card, card_scale, playing_card, strip_edition)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and new_card.config.center.effect=='Lucky Card' then
+        if used_voucher('real_random') and new_card.config.center.effect=='Lucky Card' then
             new_card.config.center_key=other.config.center_key
             --print(new_card.config.center_key)
         end
@@ -3172,7 +3143,7 @@ do
     function real_random_add_abilities_to_card(v,times)
         -- v:card
         local abilities=v.config.center.real_random_abilities or {}
-        for i=1,(times or G.P_CENTERS[MOD_PREFIX_V..'real_random'].config.extra.ability) do
+        for i=1,(times or get_voucher('real_random').config.extra.ability) do
             ability=real_random_get_random_ability()
             table.insert(abilities,ability)
         end
@@ -3199,7 +3170,7 @@ do
     local Card_set_ability_ref=Card.set_ability
     function Card:set_ability(center, initial, delay_sprites)
         Card_set_ability_ref(self,center,initial,delay_sprites)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and center==G.P_CENTERS['m_lucky'] and not self.config.center.real_random_abilities then
+        if used_voucher('real_random') and center==G.P_CENTERS['m_lucky'] and not self.config.center.real_random_abilities then
             real_random_add_abilities_to_card(self)
         end
     end
@@ -3385,7 +3356,7 @@ do
     local generate_card_ui_ref=generate_card_ui
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
         local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        if G and G.GAME and G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and (_c.effect == 'Lucky Card' or _c.real_random_abilities) and specific_vars then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
+        if G and G.GAME and used_voucher('real_random') and (_c.effect == 'Lucky Card' or _c.real_random_abilities) and specific_vars then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
             local main=full_UI_table.main
             local main_last=main[#main]
             if _c.effect == 'Lucky Card' then
@@ -3425,7 +3396,7 @@ do
     local get_chip_bonus_ref=Card.get_chip_bonus
     function Card:get_chip_bonus()
         local ret=get_chip_bonus_ref(self)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and not self.debuff and self.config.center.real_random_abilities then
+        if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
                 if v.key=='chip' and pseudorandom('lucky_chip') < G.GAME.probabilities.normal/loc_vars[2] then
@@ -3440,7 +3411,7 @@ do
     local get_chip_mult_ref=Card.get_chip_mult
     function Card:get_chip_mult()
         local ret=get_chip_mult_ref(self)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and not self.debuff and self.config.center.real_random_abilities then
+        if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             if self.ability.effect == 'Lucky Card' then ret=0 end -- to override the original lucky card mult
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
@@ -3456,7 +3427,7 @@ do
     local get_chip_x_mult_ref=Card.get_chip_x_mult
     function Card:get_chip_x_mult(context)
         local ret=get_chip_x_mult_ref(self)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and not self.debuff and self.config.center.real_random_abilities then
+        if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             if ret==0 then ret=1 end
             for k,v in pairs(self.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(self.config.center,v)
@@ -3472,7 +3443,7 @@ do
 
     local get_p_dollars_ref=Card.get_p_dollars
     function Card:get_p_dollars(context) -- vanilla function modify dollar_buffer so I just don't execute vanilla function (though I don't clearly know what dollar_buffer does)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and not self.debuff and self.config.center.real_random_abilities then
+        if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             local ret=0
             if self.seal == 'Gold' then
                 ret = ret +  3
@@ -3500,7 +3471,7 @@ do
     local eval_card_ref=eval_card
     function eval_card(card, context) --other abilities
         local ret=eval_card_ref(card,context)
-        if context.cardarea == G.play and not context.repetition_only and G.GAME.used_vouchers[MOD_PREFIX_V..'real_random'] and not card.debuff and card.config.center.real_random_abilities then
+        if context.cardarea == G.play and not context.repetition_only and used_voucher('real_random') and not card.debuff and card.config.center.real_random_abilities then
             local abilities_ref=copy_table(card.config.center.real_random_abilities)
             for k,v in pairs(card.config.center.real_random_abilities) do
                 local loc_vars=real_random_loc_def(card.config.center,v)
@@ -3603,7 +3574,7 @@ do
 
     local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
     G.FUNCS.draw_from_discard_to_deck = function(e)
-        if (G.GAME.used_vouchers[MOD_PREFIX_V..'real_random']) then
+        if (used_voucher('real_random')) then
             for k, v in ipairs(G.discard.cards) do
                 if v.ability.set=='Voucher' then
                     -- print(k,'addad')
@@ -3643,13 +3614,11 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'4d_boosters',MOD_PREFIX_V..'oversupply'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={center.ability.extra}}
     end
+    handle_register(this_v)
 
     
     function get_voucher_max()
@@ -3660,8 +3629,8 @@ do
     local G_FUNCS_reroll_shop_ref=G.FUNCS.reroll_shop
     function G.FUNCS.reroll_shop(e)
         G_FUNCS_reroll_shop_ref(e)
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'4d_vouchers'] then
-            my_reroll_shop_voucher(G.P_CENTERS[MOD_PREFIX_V..'4d_vouchers'].config.extra)
+        if used_voucher('4d_vouchers') then
+            my_reroll_shop_voucher(get_voucher('4d_vouchers').config.extra)
         end
     end
     function my_reroll_shop_voucher(price_mod)
@@ -3723,18 +3692,16 @@ do
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'reserve_area','v_wasteful'}
     }
-    local key='v_'..id
-    SMODS.Atlas{key=key, path=key..".png", px=71, py=95}
-    key = MOD_PREFIX .. key
-    this_v.atlas=key
+    handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         return {vars={}}
     end
+    handle_register(this_v)
 
     local create_UIBox_spectral_pack_ref=create_UIBox_spectral_pack
     function create_UIBox_spectral_pack()
         local t=create_UIBox_spectral_pack_ref()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'recycle_area'] then
+        if used_voucher('recycle_area') then
             local new={n=G.UIT.C,config={align = "tm",padding = 0.2, minh = 1.2, minw = 1.8, r=0.15,colour = G.C.RED, one_press = true, button = 'uselessLOL discard_booster', hover = true,shadow = true, func = 'can_discard_booster'}, nodes = {
                 {n=G.UIT.T, config={text = localize('b_discard'), scale = 0.5, colour = G.C.WHITE, shadow = true, focus_args = {button = 'y', orientation = 'bm'}, func = 'set_button_pip'}}
               }}
@@ -3745,7 +3712,7 @@ do
     local create_UIBox_arcana_pack_ref=create_UIBox_arcana_pack
     function create_UIBox_arcana_pack()
         local t=create_UIBox_arcana_pack_ref()
-        if G.GAME.used_vouchers[MOD_PREFIX_V..'recycle_area'] then
+        if used_voucher('recycle_area') then
             local new={n=G.UIT.C,config={align = "tm",padding = 0.2, minh = 1.2, minw = 1.8, r=0.15,colour = G.C.RED, one_press = true, button = 'uselessLOL discard_booster', hover = true,shadow = true, func = 'can_discard_booster'}, nodes = {
                 {n=G.UIT.T, config={text = localize('b_discard'), scale = 0.5, colour = G.C.WHITE, shadow = true, focus_args = {button = 'y', orientation = 'bm'}, func = 'set_button_pip'}}
               }}
@@ -3819,7 +3786,7 @@ end -- recycle area
             {id = 'j_oops'},
             {id = 'j_oops'},
             {id = 'j_dna'},
-            {id = 'betm_jokers_j_housing_choice'},
+            -- {id = 'betm_jokers_j_housing_choice'},
             -- {id = 'j_oops'},
             -- {id = 'j_oops'},
             -- {id = 'j_oops'},
@@ -3869,6 +3836,18 @@ end -- recycle area
         }
     })
     init_localization()
-
+end
+if IN_SMOD1 then
+    INIT()
+else
+    SMODS['INIT']=SMODS['INIT'] or {}
+    SMODS['INIT']['BetmmaVouchers']=function()
+        SMODS.Voucher=SMODS_Voucher_fake
+        INIT()
+        SMODS.Voucher=SMODS_Voucher_ref
+        SMODS.current_mod.process_loc_text()
+    end
+    
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------

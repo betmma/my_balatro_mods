@@ -4,11 +4,37 @@
 --- PREFIX: betm_jokers
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 5 More Jokers!
+--- PREFIX: betm_jokers
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+
+IN_SMOD1=MODDED_VERSION>='1.0.0'
+SMODS_Joker_ref=SMODS.Joker
+SMODS_Joker_fake=function(table)
+    if IN_SMOD1 then
+        return SMODS_Joker_ref(table)
+    else
+        local this_j= SMODS_Joker_ref:new(table.name,table.key,
+        table.config,
+        table.pos,table.loc_txt,table.rarity,
+        table.cost,table.unlocked,table.discovered,
+        table.blueprint_compat, table.eternal_compat)
+        this_j.loc_vars=table.loc_vars
+        if this_j.loc_vars then
+            this_j.loc_def=function(self2)
+                return this_j.loc_vars(self2,nil,{ability=this_j.config}).vars
+            end
+        end
+        this_j.calculate=table.calculate
+        return this_j
+    end
+end
+
 local MOD_PREFIX="betm_jokers_"
+SMODS.current_mod=SMODS.current_mod or {}
+
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_errorr = "Rank Changed!"
     G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
@@ -71,8 +97,10 @@ jokerBlacklists={}
                 "Get a random {C:attention}Voucher{}",
                 "if played hand contains",
                 "a {C:attention}Full House{}. This can",
-                "only trigger #1# times",
-                "{C:inactive}({C:attention}#2#{C:inactive} left)"
+
+                "only trigger 1 time per ante",
+                "{C:inactive}(#1#)"
+
                 -- dollar in it adds to its sold price
             }
         }
@@ -86,6 +114,7 @@ jokerBlacklists={}
     )
     ]]
 
+local function INIT()
     local jokers = {
         jjookkeerr = SMODS.Joker{
             name="JJookkeerr", key="jjookkeerr",
@@ -155,40 +184,26 @@ jokerBlacklists={}
         },
         housing_choice = SMODS.Joker{
             name="Housing Choice", key="housing_choice",
-            config={extra={value=8,remaining=8}},
+
+            config={extra={triggered=false}},
             spritePos={x=0,y=0}, 
             loc_txt="",
-            rarity=3, 
-            cost=8, 
+            rarity=2, 
+            cost=6, 
+
             unlocked=true, 
             discovered=true, 
             blueprint_compat=false, 
             eternal_compat=false,
             loc_vars=function(self,info_queue,center)
-                return {vars={center.ability.extra.value,center.ability.extra.remaining}}
+
+                return {vars={center.ability.extra.triggered and "inactive" or "active"}}
             end,
             calculate=function(self,card,context)
-                if context.cardarea==G.jokers and context.before and not context.blueprint and next(context.poker_hands["Full House"])then
-                    card.ability.extra.remaining=card.ability.extra.remaining-1
+                if context.cardarea==G.jokers and context.before and not context.blueprint and next(context.poker_hands["Full House"]) and not card.ability.extra.triggered then
+                    card.ability.extra.triggered=true
                     randomly_redeem_voucher()
-                    if card.ability.extra.remaining<=0 then 
-                        G.E_MANAGER:add_event(Event({
-                            func = function()
-                                play_sound('tarot1')
-                                card.T.r = -0.2
-                                card:juice_up(0.3, 0.4)
-                                card.states.drag.is = true
-                                card.children.center.pinch.x = true
-                                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.3, blockable = false,
-                                    func = function()
-                                            G.jokers:remove_card(card)
-                                            card:remove()
-                                            card = nil
-                                        return true; end})) 
-                                return true
-                            end
-                        })) 
-                    end
+
                 end
             end
         },
@@ -240,13 +255,23 @@ jokerBlacklists={}
     -- Add Jokers to center
     for k, v in pairs(jokers) do
         if not jokerBlacklists[k] then
-            v.loc_txt = localization[k]
-            --v.spritePos = { x = 0, y = 0 }
-            --v:register()
-            v.key = "j_" .. k
-            SMODS.Atlas{key=v.key, path=v.key..".png", px=71, py=95}
-            v.key = MOD_PREFIX .. v.key
-            v.atlas=v.key
+
+            if IN_SMOD1 then
+                v.loc_txt = localization[k]
+                --v.spritePos = { x = 0, y = 0 }
+                --v:register()
+                v.key = "j_" .. k
+                SMODS.Atlas{key=v.key, path=v.key..".png", px=71, py=95}
+                v.key = MOD_PREFIX .. v.key
+                v.atlas=v.key
+            else
+                v.slug = "j_" .. k
+                v.loc_txt = localization[k]
+                v.spritePos = { x = 0, y = 0 }
+                v:register()
+                SMODS.Sprite:new(v.slug, SMODS.findModByID("BetmmaJokers").path, v.slug..".png", 71, 95, "asset_atli"):register()
+            end
+
         end
     end
 
@@ -298,6 +323,7 @@ jokerBlacklists={}
     end
 
     
+
 
 
 local poker_hand_list = {
@@ -374,6 +400,17 @@ function ease_dollars(mod, instant)
 end
 
 
+local ease_ante_ref=ease_ante
+function ease_ante(mod)
+    ease_ante_ref(mod)
+    local jokers = find_joker('Housing Choice')
+    for k,joker in pairs(jokers) do
+        joker.ability.extra.triggered=false
+    end
+end
+
+
+
 
 function SMODS.end_calculate_context(c)
     if not c.after and not c.before and not c.other_joker and not c.repetition and not c.individual and
@@ -431,5 +468,20 @@ local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
             return true end)
           }))
     end
+
+
+    if IN_SMOD1 then
+        INIT()
+    else
+        SMODS['INIT']=SMODS['INIT'] or {}
+        SMODS['INIT']['BetmmaJokers']=function()
+            SMODS.Joker=SMODS_Joker_fake
+            INIT()
+            SMODS.Joker=SMODS_Joker_ref
+            SMODS.current_mod.process_loc_text()
+        end
+        
+    end
+
 ----------------------------------------------
 ------------MOD CODE END----------------------
