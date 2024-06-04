@@ -6,8 +6,10 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 SMODS.current_mod=SMODS.current_mod or {}
+
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.challenge_names.c_mod_destroyer = "Destroyer"
     G.localization.misc.v_text.ch_c_faster_scaling = {
@@ -22,7 +24,9 @@ function SMODS.current_mod.process_loc_text()
         "All {C:attention}Boss Blinds{} halve your {C:blue}base chips{} and {C:red}multi{}"
     }
 end
+
 local function INIT()
+
     -- the challenge table is in challenges.lua
     table.insert(G.CHALLENGES,1,{
         name = "Destroyer",
@@ -214,9 +218,11 @@ local function INIT()
             }
         }
     })
+
         -- update localization
         init_localization()
 end
+
 
 
 --[[ how to inject into a function:

@@ -1,19 +1,23 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Betmma Voucher Pack
 --- MOD_ID: BetmmaVoucherPack
+--- PREFIX: betmma_voucher_pack
 --- MOD_AUTHOR: [Betmma, nicholassam6425]
 --- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod made by nicholassam6425.
 --- PREFIX: betmma_voucher_pack
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 
     local MOD_PREFIX="betmma_voucher_pack_"
     local loc_table={}
     -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua
     -- Beware that while opening voucher pack G.STATE == G.STATES.PLANET_PACK.
+
     SMODS.current_mod=SMODS.current_mod or {}
+
     function SMODS.current_mod.process_loc_text()
         for k,v in pairs(loc_table) do
             G.localization.descriptions.Other[k]=v
@@ -94,6 +98,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
 
         --add sprite to sprite atlas
         if sprite_name and sprite_path then
+
             if IN_SMOD1 then
                 local atlas=SMODS.Atlas{key=id, path=sprite_name, px=71, py=95, atlas = 'ASSET_ATLAS'}
                 G.P_CENTERS[id].atlas = atlas.key
@@ -106,6 +111,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
                 end
             end
             
+
         else
             sendDebugMessage("Sprite not defined or incorrectly defined for "..tostring(id))
         end
@@ -418,6 +424,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
         return ret
     end
 
+
     if IN_SMOD1 then
         INIT()
     else
@@ -428,5 +435,6 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
         end
         
     end
+
 ----------------------------------------------
 ------------MOD CODE END----------------------
