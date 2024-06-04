@@ -80,4 +80,4 @@ This mod's code is based on [Coupon Book mod](https://github.com/nicholassam6425
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
-The mods are written and tested on Steamodded 1.0.0. 
+The mods are written and tested on both Steamodded 1.0.0 and 0.9.8, but I suggest using 1.0.0.
