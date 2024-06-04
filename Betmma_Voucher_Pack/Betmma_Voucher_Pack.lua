@@ -3,13 +3,29 @@
 --- MOD_ID: BetmmaVoucherPack
 --- MOD_AUTHOR: [Betmma, nicholassam6425]
 --- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod made by nicholassam6425.
+--- PREFIX: betmma_voucher_pack
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-function SMODS.INIT.BetmmaVoucherPack()
+IN_SMOD1=MODDED_VERSION>='1.0.0'
 
+    local MOD_PREFIX="betmma_voucher_pack_"
+    local loc_table={}
     -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua
     -- Beware that while opening voucher pack G.STATE == G.STATES.PLANET_PACK.
+    SMODS.current_mod=SMODS.current_mod or {}
+    function SMODS.current_mod.process_loc_text()
+        for k,v in pairs(loc_table) do
+            G.localization.descriptions.Other[k]=v
+        end
+        G.localization.misc.dictionary.k_voucher_pack = "Voucher Pack"
+        -- G.localization.descriptions.Booster=G.localization.descriptions.Booster or {}
+        -- G.localization.descriptions.Booster['p_voucher_pack'] = {
+        --     name='Voucher Pack???',
+        --     text={"11"}
+        -- }--newBoosterText
+    end
+
     function addBooster(id, name, order, discovered, weight, kind, cost, pos, config, desc, alerted, sprite_path, sprite_name, sprite_size, selection_state)
         id = id or "p_placeholder" .. #G.P_CENTER_POOLS["Booster"] + 1
         name = name or "Placeholder Pack"
@@ -68,17 +84,28 @@ function SMODS.INIT.BetmmaVoucherPack()
         for _, line in ipairs(type(newBoosterText.name) == 'table' and newBoosterText.name or {newBooster.name}) do
             newBoosterText.name_parsed[#newBoosterText.name_parsed+1] = loc_parse_string(line)
         end
+        loc_table[id]=newBoosterText
         G.localization.descriptions.Other[id] = newBoosterText
+        -- G.localization.descriptions.Booster=G.localization.descriptions.Booster or {}
+        -- G.localization.descriptions.Booster[id] = {
+        --     name=name,
+        --     text=desc
+        -- }--newBoosterText MOD_PREFIX..
 
         --add sprite to sprite atlas
         if sprite_name and sprite_path then
-            
-            SMODS.Sprite:new(id, SMODS.findModByID("BetmmaVoucherPack").path, sprite_name, 71, 95, "asset_atli"):register();
-            for _i, sprite in ipairs(SMODS.Sprites) do
-                if sprite.name == G.P_CENTERS[id].key then
-                    G.P_CENTERS[id].atlas = sprite.name
+            if IN_SMOD1 then
+                local atlas=SMODS.Atlas{key=id, path=sprite_name, px=71, py=95, atlas = 'ASSET_ATLAS'}
+                G.P_CENTERS[id].atlas = atlas.key
+            else
+                SMODS.Sprite:new(id, SMODS.findModByID("BetmmaVoucherPack").path, sprite_name, 71, 95, "asset_atli"):register();
+                for _i, sprite in ipairs(SMODS.Sprites) do
+                    if sprite.name == G.P_CENTERS[id].key then
+                        G.P_CENTERS[id].atlas = sprite.name
+                    end
                 end
             end
+            
         else
             sendDebugMessage("Sprite not defined or incorrectly defined for "..tostring(id))
         end
@@ -86,6 +113,8 @@ function SMODS.INIT.BetmmaVoucherPack()
 
         return newBooster, newBoosterText
     end
+
+    local function INIT()
     
     addBooster(
                 "p_voucher_pack",   --id
@@ -98,13 +127,15 @@ function SMODS.INIT.BetmmaVoucherPack()
                 12,                         --cost
                 {x=0,y=0},                  --pos
                 {extra = 3, choose = 1},    --config
-                {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Vouchers to be", "redeemed immediately"},
+                {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Vouchers to be", "redeemed immediately"}, --desc
                 true,                       --alerted
                 "assets",                   --sprite path
                 "p_voucher_pack.png",          --sprite name
                 --{px=71, py=95},             --sprite size
                 G.STATES.PLANET_PACK        --selection_state
             )
+
+    end
     -- G.STATES.VOUCHER_PACK=1337
     local Card_open_ref= Card.open
     function Card:open()
@@ -239,9 +270,18 @@ function SMODS.INIT.BetmmaVoucherPack()
         return create_UIBox_celestial_pack_ref()
         end
     end
+
+    local G_FUNCS_can_skip_booster_ref=G.FUNCS.can_skip_booster
+    G.FUNCS.can_skip_booster=function(e)
+        G_FUNCS_can_skip_booster_ref(e)
+        if G.GAME.pack_size<1 then
+            e.config.colour = G.C.GREY
+            e.config.button = 'skip_booster'
+        end
+    end
         
     local generate_card_ui_ref=generate_card_ui
-    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
+    function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
         -- to give voucher pack correct description
         if _c.set == 'Booster' then 
             if _c.name == 'Voucher Pack' then 
@@ -332,7 +372,7 @@ function SMODS.INIT.BetmmaVoucherPack()
             end
         end
         
-        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
+        return generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
     end
 
     local G_FUNCS_end_consumeable_ref=G.FUNCS.end_consumeable
@@ -341,13 +381,31 @@ function SMODS.INIT.BetmmaVoucherPack()
         return G_FUNCS_end_consumeable_ref(e,delayfac)
     end
 
+    local G_FUNCS_can_continue_ref=G.FUNCS.can_continue
+    G.FUNCS.can_continue = function(e)
+        if e.config.func then
+            local _can_continue = nil
+            local savefile = love.filesystem.getInfo(G.SETTINGS.profile..'/'..'save.jkr')
+            if savefile then
+              if not G.SAVED_GAME then 
+                local saved_game=get_compressed(G.SETTINGS.profile..'/'..'save.jkr')
+                if saved_game and STR_UNPACK(saved_game)==nil then
+                    e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+                    e.config.button = nil
+                    return nil
+                end
+              end
+            end
+        end
+        return G_FUNCS_can_continue_ref(e)
+    end
+
     local ease_dollars_ref = ease_dollars
     function ease_dollars(mod, instant)
         if mod==0 and G.STATE == G.STATES.PLANET_PACK then return true end
         -- to disable the +$0 effect when redeeming vouchers in a pack
         ease_dollars_ref(mod, instant)
     end
-    G.localization.misc.dictionary.k_voucher_pack = "Voucher Pack"
     init_localization()
 
     local Card_redeem_ref=Card.redeem
@@ -359,6 +417,16 @@ function SMODS.INIT.BetmmaVoucherPack()
         end
         return ret
     end
-end
+
+    if IN_SMOD1 then
+        INIT()
+    else
+        SMODS['INIT']=SMODS['INIT'] or {}
+        SMODS['INIT']['BetmmaVoucherPack']=function()
+            INIT()
+            SMODS.current_mod.process_loc_text()
+        end
+        
+    end
 ----------------------------------------------
 ------------MOD CODE END----------------------

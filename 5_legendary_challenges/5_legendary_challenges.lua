@@ -6,10 +6,23 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-
-
-function SMODS.INIT.legendaryChallenges () 
-	
+IN_SMOD1=MODDED_VERSION>='1.0.0'
+SMODS.current_mod=SMODS.current_mod or {}
+function SMODS.current_mod.process_loc_text()
+    G.localization.misc.challenge_names.c_mod_destroyer = "Destroyer"
+    G.localization.misc.v_text.ch_c_faster_scaling = {
+        "Required score scales extremely faster for each {C:attention}Ante"
+    }
+    G.localization.misc.challenge_names.c_mod_gottagofast = "Gotta Go Fast"
+    G.localization.misc.challenge_names.c_mod_bankrupt = "Bankrupt"
+    G.localization.misc.challenge_names.c_mod_antiMedusa = "Anti-Medusa"
+    G.localization.misc.challenge_names.c_mod_overpoweredboss = "Overpowered Boss"
+    -- ".misc.v_text" comes from the structure in en-us.lua
+    G.localization.misc.v_text.ch_c_all_bosses_have_flint_ability = {
+        "All {C:attention}Boss Blinds{} halve your {C:blue}base chips{} and {C:red}multi{}"
+    }
+end
+local function INIT()
     -- the challenge table is in challenges.lua
     table.insert(G.CHALLENGES,1,{
         name = "Destroyer",
@@ -49,7 +62,6 @@ function SMODS.INIT.legendaryChallenges ()
             }
         }
     })
-    G.localization.misc.challenge_names.c_mod_destroyer = "Destroyer"
 
 
     table.insert(G.CHALLENGES,2,{
@@ -82,10 +94,6 @@ function SMODS.INIT.legendaryChallenges ()
             }
         }
     })
-    G.localization.misc.v_text.ch_c_faster_scaling = {
-        "Required score scales extremely faster for each {C:attention}Ante"
-    }
-    G.localization.misc.challenge_names.c_mod_gottagofast = "Gotta Go Fast"
 
     table.insert(G.CHALLENGES,3,{
         name = "Bankrupt",
@@ -117,7 +125,6 @@ function SMODS.INIT.legendaryChallenges ()
             }
         }
     })
-    G.localization.misc.challenge_names.c_mod_bankrupt = "Bankrupt"
 
 
     table.insert(G.CHALLENGES,4,{
@@ -156,7 +163,6 @@ function SMODS.INIT.legendaryChallenges ()
         }
     })
 
-    G.localization.misc.challenge_names.c_mod_antiMedusa = "Anti-Medusa"
 
     
     table.insert(G.CHALLENGES,5,{
@@ -208,13 +214,8 @@ function SMODS.INIT.legendaryChallenges ()
             }
         }
     })
-    G.localization.misc.challenge_names.c_mod_overpoweredboss = "Overpowered Boss"
-    -- ".misc.v_text" comes from the structure in en-us.lua
-    G.localization.misc.v_text.ch_c_all_bosses_have_flint_ability = {
-        "All {C:attention}Boss Blinds{} halve your {C:blue}base chips{} and {C:red}multi{}"
-    }
-    -- update localization
-    init_localization()
+        -- update localization
+        init_localization()
 end
 
 
@@ -255,7 +256,12 @@ function Blind:modify_hand(cards, poker_hands, text, mult, hand_chips)
   end
   return Blind_modify_hand_ref(self, cards, poker_hands, text, mult, hand_chips) -- notice the "self" parameter, it's a must because Blind:modify_hand is a class method, while Blind_modify_hand_ref is not
 end
-
-
+INIT()
+SMODS.current_mod.process_loc_text()
+if IN_SMOD1 then
+    
+else
+    
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------
