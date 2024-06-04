@@ -1,14 +1,12 @@
 --- STEAMODDED HEADER
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
---- PREFIX: betm_jokers
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 5 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-
 
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 SMODS_Joker_ref=SMODS.Joker
@@ -34,7 +32,6 @@ end
 
 local MOD_PREFIX="betm_jokers_"
 SMODS.current_mod=SMODS.current_mod or {}
-
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_errorr = "Rank Changed!"
     G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
@@ -97,10 +94,8 @@ jokerBlacklists={}
                 "Get a random {C:attention}Voucher{}",
                 "if played hand contains",
                 "a {C:attention}Full House{}. This can",
-
                 "only trigger 1 time per ante",
                 "{C:inactive}(#1#)"
-
                 -- dollar in it adds to its sold price
             }
         }
@@ -184,26 +179,22 @@ local function INIT()
         },
         housing_choice = SMODS.Joker{
             name="Housing Choice", key="housing_choice",
-
             config={extra={triggered=false}},
             spritePos={x=0,y=0}, 
             loc_txt="",
             rarity=2, 
             cost=6, 
-
             unlocked=true, 
             discovered=true, 
             blueprint_compat=false, 
             eternal_compat=false,
             loc_vars=function(self,info_queue,center)
-
                 return {vars={center.ability.extra.triggered and "inactive" or "active"}}
             end,
             calculate=function(self,card,context)
                 if context.cardarea==G.jokers and context.before and not context.blueprint and next(context.poker_hands["Full House"]) and not card.ability.extra.triggered then
                     card.ability.extra.triggered=true
                     randomly_redeem_voucher()
-
                 end
             end
         },
@@ -255,7 +246,6 @@ local function INIT()
     -- Add Jokers to center
     for k, v in pairs(jokers) do
         if not jokerBlacklists[k] then
-
             if IN_SMOD1 then
                 v.loc_txt = localization[k]
                 --v.spritePos = { x = 0, y = 0 }
@@ -271,7 +261,6 @@ local function INIT()
                 v:register()
                 SMODS.Sprite:new(v.slug, SMODS.findModByID("BetmmaJokers").path, v.slug..".png", 71, 95, "asset_atli"):register()
             end
-
         end
     end
 
@@ -323,7 +312,7 @@ local function INIT()
     end
 
     
-
+end
 
 
 local poker_hand_list = {
@@ -399,7 +388,6 @@ function ease_dollars(mod, instant)
 
 end
 
-
 local ease_ante_ref=ease_ante
 function ease_ante(mod)
     ease_ante_ref(mod)
@@ -408,7 +396,6 @@ function ease_ante(mod)
         joker.ability.extra.triggered=false
     end
 end
-
 
 
 
@@ -469,7 +456,6 @@ local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
           }))
     end
 
-
     if IN_SMOD1 then
         INIT()
     else
@@ -482,6 +468,5 @@ local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
         end
         
     end
-
 ----------------------------------------------
 ------------MOD CODE END----------------------
