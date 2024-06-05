@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 16 Fusion Vouchers! v2.0.0-beta1
+--- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.0.0-beta1
 --- PREFIX: betm_vouchers
---- VERSION: 2.0.0-beta1(20240604)
+--- VERSION: 2.0.0-beta1(20240605)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -44,6 +44,7 @@
 -- tier 2 voucher pack $15
 -- give $1 per 10 cards left when round ends
 -- Grand Finale: if no cards left when round ends, gives $10
+-- money grabber + gold coin :
 --[[
 Tier 1 Voucher: Bargain Aisle: One random item in the shop will be free per shop, persists between rerolls.
 
@@ -209,6 +210,7 @@ config = {
     v_real_random=true,
     v_4d_vouchers=true,
     v_recycle_area=true,
+    v_chaos=true,
 }
 
 local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
@@ -368,6 +370,23 @@ local function pseudorandom_element_weighted(_t, seed)
     return center,center_key
 end
 
+local ability_names={'mult','h_mult','h_x_mult','h_dollars','p_dollars','t_mult','t_chips','h_size','d_size','bonus'}
+-- for cards whose ability is changed, load ability values to config.center so that these can be displayed in hover ui. Note that after doing this config.center is no longer the same in G.P_CENTERS so this function should be used as little as possible
+local function load_ability_to_center(card)
+    card.config.center=copy_table(card.config.center)
+    for k,v in pairs(ability_names) do
+        card.config.center.config[v]=card.ability[v]
+    end
+    card.config.center.config.Xmult=card.ability.x_mult
+    if used_voucher('real_random')then
+        card.config.center.real_random_abilities=card.ability.real_random_abilities
+    end
+end
+local function safe_add(a,b,default_value)
+    return (a or default_value)+(b or default_value)
+end
+
+
 local function INIT()
 
 --- deal with enhances effect changes when saving & loading
@@ -449,6 +468,14 @@ do
                         v.config.center=copy_table(v.config.center)
                         v.config.center.real_random_abilities=v.ability.real_random_abilities
                         -- restore random abilities from v.ability (lucky card or got random ability from lucky card)
+                    end
+                end
+            end
+
+            if used_voucher('chaos') then
+                for k,v in pairs(G.playing_cards) do
+                    if v.ability.set=='Enhanced'then
+                        load_ability_to_center(v)
                     end
                 end
             end
@@ -2191,9 +2218,9 @@ do
 
     local Card_shatter_ref=Card.shatter
     function Card:shatter()
-        if used_voucher('bulletproof') and self.ability.name == 'Glass Card' and G.P_CENTERS.m_glass.config.Xmult-get_voucher('bulletproof').config.extra.lose*(self.ability.breaking_count or 0)+1>get_voucher('bulletproof').config.extra.lower_bound then
+        if used_voucher('bulletproof') and self.ability.name == 'Glass Card' and self.ability.x_mult-get_voucher('bulletproof').config.extra.lose>get_voucher('bulletproof').config.extra.lower_bound then
             self.ability.breaking_count=(self.ability.breaking_count or 0)+1
-            self.ability.x_mult=G.P_CENTERS.m_glass.config.Xmult-get_voucher('bulletproof').config.extra.lose*self.ability.breaking_count
+            self.ability.x_mult=self.ability.x_mult-get_voucher('bulletproof').config.extra.lose
             --print(G.P_CENTERS.m_glass.config.Xmult,self.ability.x_mult)
             self.config.center=copy_table(self.config.center) -- prevent modifying value of G.P_CENTERS.m_glass
             self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-get_voucher('bulletproof').config.extra.lose
@@ -3353,18 +3380,36 @@ do
         return ret
     end
 
+    local localize_ref=localize
+    function localize(args, misc_cat)
+        if args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.type == 'descriptions' and not args.loc_vars and args~=G.P_CENTERS.m_lucky then return end
+        return localize_ref(args,misc_cat)
+    end
+
     local generate_card_ui_ref=generate_card_ui
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
-        if G and G.GAME and used_voucher('real_random') and (_c.effect == 'Lucky Card' or _c.real_random_abilities) and specific_vars then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
-            local main=full_UI_table.main
-            local main_last=main[#main]
-            if _c.effect == 'Lucky Card' then
-                for i=1,4 do
-                    table.remove(main,#main)-- the description of vanilla lucky card is 4 lines
-                end
+        if G and G.GAME and used_voucher('real_random') and (_c.effect == 'Lucky Card' or _c.real_random_abilities) then --_c is card.config.center. "and specific_vars" is to exclude side tooltip of lucky card
+            local using_info=false
+            if full_UI_table and full_UI_table.name then using_info=true
             end
-            if _c.real_random_abilities and not(G.in_overlay_menu) then
+            local _c_effect_ref=_c.effect
+            if _c.effect=='Lucky Card' then 
+                _c.effect='Lucky Card???'
+            end
+            local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
+            _c.effect=_c_effect_ref
+            local main=(not using_info and full_UI_table.main) or full_UI_table.info
+            if using_info then
+                --full_UI_table.info[#full_UI_table.info+1] = {} this is to replace the empty info tab so don't add a new tab
+                main = full_UI_table.info[#full_UI_table.info]
+            end
+            --local main_last=main[#main]
+            -- if _c.effect == 'Lucky Card' then
+            --     for i=1,4 do
+            --         table.remove(main,#main)-- the description of vanilla lucky card is 4 lines but if there is extra line under them this causes problem
+            --     end
+            -- end
+            if _c.real_random_abilities and not(G.in_overlay_menu) and not using_info then
                 for k,v in pairs(_c.real_random_abilities) do
                     local loc_vars=copy_table(real_random_loc_def(_c,v))
                     --print(loc_vars[1],v.key,_c.set)
@@ -3389,7 +3434,9 @@ do
                 }
                 main[#main+1]=main_start
             end
+            return full_UI_table
         end
+        local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
         return full_UI_table
     end
 
@@ -3763,78 +3810,134 @@ do
 
 
 end -- recycle area
-    -- this challenge is only for test
-    table.insert(G.CHALLENGES,1,{
-        name = "TestVoucher",
-        id = 'c_mod_testvoucher',
-        rules = {
-            custom = {
-            },
-            modifiers = {
-                {id = 'dollars', value = 5000},
-            }
-        },
-        jokers = {
-            --{id = 'j_jjookkeerr'},
-            -- {id = 'j_ascension'},
-            -- {id = 'j_sock_and_buskin'},
-            -- {id = 'j_sock_and_buskin'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_oops'},
-            {id = 'j_dna'},
-            -- {id = 'betm_jokers_j_housing_choice'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_oops'},
-            -- {id = 'j_piggy_bank'},
-            -- {id = 'j_blueprint'},
-            -- {id = 'j_triboulet'},
-            -- {id = 'j_triboulet'},
-        },
-        consumeables = {
-            --{id = 'c_justice_cu'},
-            {id = 'c_cryptid'},
-            -- {id = 'c_heirophant_cu'},
-            -- {id = 'c_tower_cu'},
-            --{id = 'c_devil_cu'},
-            --{id = 'c_death'},
-        },
-        vouchers = {
-            {id = MOD_PREFIX_V.. 'trash_picker'},
-            {id = MOD_PREFIX_V.. 'cash_clutch'},
-            {id = MOD_PREFIX_V.. '3d_boosters'},
-            {id = MOD_PREFIX_V.. '4d_boosters'},
-            --{id = 'v_bonus_plus'},
-            {id = MOD_PREFIX_V.. 'real_random'},
-            -- {id = 'v_connoisseur'},
-            {id = 'v_paint_brush'},
-            -- {id = 'v_liquidation'},
-            {id = MOD_PREFIX_V.. 'bulletproof'},
-            -- {id = 'v_overshopping'},
-            {id = MOD_PREFIX_V.. 'recycle_area'},
-            {id = 'v_retcon'},
-            -- {id = 'v_event_horizon'},
-        },
-        deck = {
-            type = 'Challenge Deck',
-            cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
-        },
-        restrictions = {
-            banned_cards = {
-            },
-            banned_tags = {
-            },
-            banned_other = {
-            }
+do
+    local name="Chaos"
+    local id="chaos"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Enhancements{} and",
+            "{C:attention}Editions{} can stack",
+            "{C:inactive}(Collector + Abstract Art){}"
         }
-    })
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector',MOD_PREFIX_V..'abstract_art'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    local function add_center_to_ability(card,name,center,default_value)
+        card.ability[name]=safe_add(card.ability[name],center.config[name],default_value)
+    end
+
+    local Card_set_ability_ref=Card.set_ability
+    function Card:set_ability(center, initial, delay_sprites)
+        local old_center = self.config.center
+        --if(self.ability)then print(used_voucher('chaos')) end
+        if used_voucher('chaos')and self.ability and self.ability.name==center.name and self.ability.set=='Enhanced' and old_center then
+            Card_set_ability_ref(self,center,initial,delay_sprites)
+            for k,v in pairs(ability_names) do
+                add_center_to_ability(self,v,old_center,0)
+            end
+            self.ability.x_mult=(self.ability.x_mult or 1)*(old_center.config.Xmult or 1)or 1
+            if used_voucher('real_random')then
+                self.ability.real_random_abilities=self.ability.real_random_abilities or {}
+                local abilities=old_center.real_random_abilities or {}
+                for i=1,#abilities do
+                    self.ability.real_random_abilities[#self.ability.real_random_abilities+1]=abilities[i]
+                end
+            end
+            load_ability_to_center(self)
+            --print(self.ability.bonus)
+            return
+        end
+        Card_set_ability_ref(self,center,initial,delay_sprites)
+    end
+
+
+end -- chaos
+    -- -- this challenge is only for test
+    -- table.insert(G.CHALLENGES,1,{
+    --     name = "TestVoucher",
+    --     id = 'c_mod_testvoucher',
+    --     rules = {
+    --         custom = {
+    --         },
+    --         modifiers = {
+    --             {id = 'dollars', value = 5000},
+    --         }
+    --     },
+    --     jokers = {
+    --         --{id = 'j_jjookkeerr'},
+    --         -- {id = 'j_ascension'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         -- {id = 'j_sock_and_buskin'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_oops'},
+    --         {id = 'j_hiker'},
+    --         -- {id = 'betm_jokers_j_housing_choice'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_piggy_bank'},
+    --         -- {id = 'j_blueprint'},
+    --         -- {id = 'j_triboulet'},
+    --         -- {id = 'j_triboulet'},
+    --     },
+    --     consumeables = {
+    --         {id = 'c_cryptid'},
+    --         {id = 'c_justice'},
+    --         {id = 'c_justice'},
+    --         {id = 'c_heirophant'},
+    --         {id = 'c_heirophant'},
+    --         {id = 'c_chariot'},
+    --         {id = 'c_chariot'},
+    --         --{id = 'c_devil_cu'},
+    --         --{id = 'c_death'},
+    --     },
+    --     vouchers = {
+    --         {id = MOD_PREFIX_V.. 'trash_picker'},
+    --         {id = MOD_PREFIX_V.. 'cash_clutch'},
+    --         {id = MOD_PREFIX_V.. '3d_boosters'},
+    --         {id = MOD_PREFIX_V.. '4d_boosters'},
+    --         --{id = 'v_bonus_plus'},
+    --         {id = MOD_PREFIX_V.. 'real_random'},
+    --         -- {id = 'v_connoisseur'},
+    --         {id = 'v_paint_brush'},
+    --         -- {id = 'v_liquidation'},
+    --         {id = MOD_PREFIX_V.. 'bulletproof'},
+    --         -- {id = 'v_overshopping'},
+    --         {id = MOD_PREFIX_V.. 'chaos'},
+    --         {id = 'v_retcon'},
+    --         -- {id = 'v_event_horizon'},
+    --     },
+    --     deck = {
+    --         type = 'Challenge Deck',
+    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --     },
+    --     restrictions = {
+    --         banned_cards = {
+    --         },
+    --         banned_tags = {
+    --         },
+    --         banned_other = {
+    --         }
+    --     }
+    -- })
     init_localization()
 end
 if IN_SMOD1 then
