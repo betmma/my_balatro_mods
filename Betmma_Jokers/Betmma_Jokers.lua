@@ -10,6 +10,7 @@
 
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 SMODS_Joker_ref=SMODS.Joker
+Jokers={}
 SMODS_Joker_fake=function(table)
     if IN_SMOD1 then
         return SMODS_Joker_ref(table)
@@ -26,6 +27,7 @@ SMODS_Joker_fake=function(table)
             end
         end
         this_j.calculate=table.calculate
+        Jokers[#Jokers+1]=this_j
         return this_j
     end
 end
@@ -465,8 +467,16 @@ local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
             INIT()
             SMODS.Joker=SMODS_Joker_ref
             SMODS.current_mod.process_loc_text()
+            for k,v in pairs(Jokers) do
+                
+                if type(v.calculate)=='function' then
+                    v.calculate_ref=v.calculate
+                    v.calculate=function(card, context)
+                        return v.calculate_ref(card,card,context)
+                    end
+                end
+            end
         end
-        
     end
 ----------------------------------------------
 ------------MOD CODE END----------------------
