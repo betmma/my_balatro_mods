@@ -10,7 +10,7 @@
 
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 SMODS_Joker_ref=SMODS.Joker
-Jokers={}
+local Jokers={}
 SMODS_Joker_fake=function(table)
     if IN_SMOD1 then
         return SMODS_Joker_ref(table)
