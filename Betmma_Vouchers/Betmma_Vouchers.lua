@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.0.0-beta1
+--- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.0.0-beta1(20240605)
+--- VERSION: 2.1.0(20240606)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -32,6 +32,7 @@
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund (someone's joker has done it)
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
+-- suspended process: if this ability is on, round won't end until you run out of hands
 -- sold jokers become a tag that replaces the next joker appearing in shop (also an ability)
 -- complete a quest to get a soul
 -- fusion vouchers:
@@ -53,6 +54,7 @@ Tier 2 Voucher: Clearance Aisle: 3 random items in the shop will be free per sho
 Fusion Voucher: Giveaway Search (Reroll Glut + Clearance Aisle): Each shop reroll that you do will add +1 random free item to that shop. 
 ]]
 IN_SMOD1=MODDED_VERSION>='1.0.0'
+local JOKER_MOD_PREFIX=IN_SMOD1 and "betm_jokers_"or ''
 MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
 MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
@@ -128,6 +130,7 @@ SMODS_Voucher_fake=function(table)
         table.pos,table.loc_txt,
         table.cost,table.unlocked,table.discovered,table.available,
         table.requires)
+        this_v.rarity=table.rarity
         return this_v
     end
 end
@@ -486,6 +489,36 @@ end --
 
 
     setup_consumables()
+    RARITY_VOUCHER_PROBABILITY={1,2,4,20}
+    local get_current_pool_ref=get_current_pool
+    function get_current_pool(_type, _rarity, _legendary, _append)
+        local ret={get_current_pool_ref(_type, _rarity, _legendary, _append)}
+        if _type=='Voucher' then
+            local pool=ret[1]
+            local new_pool={}
+            local _pool_size=0
+            for k,v in pairs(pool) do
+                if v~='UNAVAILABLE' then
+                    local card= G.P_CENTERS[v]
+                    local rarity=card.config and card.config.rarity or 1
+                    print(rarity,v,pseudorandom(v),1/RARITY_VOUCHER_PROBABILITY[rarity])
+                    if (pseudorandom(v) < 1/RARITY_VOUCHER_PROBABILITY[rarity]) then
+                        new_pool[#new_pool+1]=v
+                        _pool_size=_pool_size+1
+                    end
+                else
+                    new_pool[#new_pool+1]=v
+                end
+            end
+            if _pool_size == 0 then
+                new_pool = EMPTY(G.ARGS.TEMP_POOL)
+                new_pool[#new_pool + 1] = "v_blank"
+            end
+            ret[1]=new_pool
+            return unpack(ret)
+        end
+        return unpack(ret)
+    end
 
     local get_next_voucher_key_ref=get_next_voucher_key
     function get_next_voucher_key(_from_tag)
@@ -672,7 +705,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=1},
+        config={extra=1,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'abstract_art'}
     }
@@ -847,7 +880,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=5},
+        config={extra=5,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'event_horizon'}
     }
@@ -1006,9 +1039,9 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=2},
+        config={extra=2,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=15, unlocked=true, discovered=true, available=true,
+        cost=15, unlocked=true, discovered=true, available=true
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
@@ -1027,7 +1060,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=4},
+        config={extra=4,rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=25, unlocked=true, discovered=true, available=true,
         requires={MOD_PREFIX_V..'voucher_bundle'}
@@ -1380,7 +1413,7 @@ do
         name=name, key=id,
         config={extra=300},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true
+        cost=10, unlocked=true, discovered=true, available=true,rarity=2
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
@@ -1405,7 +1438,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra={multiplier=5,increase=2}},
+        config={extra={multiplier=5,increase=2},rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'overkill'}
     }
@@ -1506,7 +1539,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=3},
+        config={extra=3,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'3d_boosters'}
     }
@@ -1627,7 +1660,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=10},
+        config={extra=10,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'b1g50'}
     }
@@ -1745,7 +1778,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra={base=400,multiplier=5}},
+        config={extra={base=400,multiplier=5},rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector'}
     }
@@ -1812,7 +1845,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=3},
+        config={extra=3,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
@@ -1834,7 +1867,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'flipped_card'}
     }
@@ -2178,7 +2211,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra={lose=0.1,lower_bound=1.5}},
+        config={extra={lose=0.1,lower_bound=1.5},rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'omnicard'}
     }
@@ -2366,10 +2399,16 @@ do
             retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes[1].nodes[1].nodes[2].config.object:remove()
             retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes[1] = create_badge(localize('k_fusion_voucher'), loc_colour("fusion", nil), nil, 1.2)
         end
+        if card.ability.set=='Voucher' then
+            local index=card.config and card.config.center and card.config.center.config and card.config.center.config.rarity or 1
+            index=math.min(math.max(math.ceil(index),1),4)
+            local card_type=({localize('k_common'), localize('k_uncommon'), localize('k_rare'), localize('k_legendary')})[index]
+            table.insert(retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
+        end
 
         return retval
     end
-end -- prepare for fusions
+end -- add Fusion Voucher badge for fusions and rarity badge for all vouchers
 
 do 
     local name="Gold Round Up"
@@ -2384,7 +2423,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'round_up',MOD_PREFIX_V..'gold_coin'}
     }
@@ -2421,7 +2460,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_overstock_norm',MOD_PREFIX_V..'oversupply'}
     }
@@ -2682,7 +2721,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_planet_merchant',MOD_PREFIX_V..'b1g50'}
     }
@@ -2709,8 +2748,8 @@ do
         text = {
             "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round.",
             "You can spend 1 hand to discard if",
-            "no discards left. Discards {C:money}earn{}",
-            "as much as Hands after rounds",
+            "no discards left. {C:red}Discards{} {C:money}earn{}",
+            "as much as {C:blue}Hands{} after rounds",
             "{C:inactive}(Grabber + Wasteful)"
         }
     }
@@ -2879,7 +2918,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector',MOD_PREFIX_V..'b1g1'}
     }
@@ -3043,7 +3082,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'flipped_card',MOD_PREFIX_V..'omnicard'}
     }
@@ -3094,7 +3133,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra={ability=3}},
+        config={extra={ability=3},rarity=4},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={'v_crystal_ball',MOD_PREFIX_V..'omnicard'}
     }
@@ -3657,7 +3696,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=2},
+        config={extra=2,rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'4d_boosters',MOD_PREFIX_V..'oversupply'}
     }
@@ -3823,7 +3862,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={},
+        config={rarity=4},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'collector',MOD_PREFIX_V..'abstract_art'}
     }

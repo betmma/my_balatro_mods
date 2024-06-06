@@ -15,6 +15,7 @@ A collection of mods made by me for Balatro.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 
 # Betmma Vouchers: Adds 38 Vouchers and 17 fusion Vouchers.
+Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
