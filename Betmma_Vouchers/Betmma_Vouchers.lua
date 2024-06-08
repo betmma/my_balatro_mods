@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.0(20240606)
+--- VERSION: 2.1.0(20240608)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -66,6 +66,11 @@ end
 -- example: get_voucher('slate').config.extra
 local function get_voucher(raw_key)
     return G.P_CENTERS[MOD_PREFIX_V..raw_key]
+end
+
+local function get_rarity(raw_key)
+    local card= G.P_CENTERS[raw_key]
+    return card and card.config and card.config.rarity or 1
 end
 -- example: handle_atlas('slate') loads 'v_slate.png' and assign it
 local function handle_atlas(raw_key,this_v)
@@ -154,6 +159,8 @@ function SMODS.current_mod.process_loc_text()
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
     end
+    G.localization.descriptions.Enhanced.ellipsis={text={'{C:inactive}(#1# abilities omitted)'}}
+    G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
 end
 -- Config: DISABLE UNWANTED MODS HERE
 config = {
@@ -385,6 +392,17 @@ local function load_ability_to_center(card)
         card.config.center.real_random_abilities=card.ability.real_random_abilities
     end
 end
+-- the reverse verion of the function above
+local function load_center_to_ability(card)
+    card.config.center=copy_table(card.config.center)
+    for k,v in pairs(ability_names) do
+        card.ability[v]=card.config.center.config[v]
+    end
+    card.ability.x_mult=card.config.center.config.Xmult
+    if used_voucher('real_random')then
+        card.ability.real_random_abilities=card.config.center.real_random_abilities
+    end
+end
 local function safe_add(a,b,default_value)
     return (a or default_value)+(b or default_value)
 end
@@ -492,6 +510,7 @@ end --
     RARITY_VOUCHER_PROBABILITY={1,2,4,20}
     local get_current_pool_ref=get_current_pool
     function get_current_pool(_type, _rarity, _legendary, _append)
+        if _type=='Voucher'then _append='lol' end
         local ret={get_current_pool_ref(_type, _rarity, _legendary, _append)}
         if _type=='Voucher' then
             local pool=ret[1]
@@ -501,7 +520,6 @@ end --
                 if v~='UNAVAILABLE' then
                     local card= G.P_CENTERS[v]
                     local rarity=card.config and card.config.rarity or 1
-                    print(rarity,v,pseudorandom(v),1/RARITY_VOUCHER_PROBABILITY[rarity])
                     if (pseudorandom(v) < 1/RARITY_VOUCHER_PROBABILITY[rarity]) then
                         new_pool[#new_pool+1]=v
                         _pool_size=_pool_size+1
@@ -1631,7 +1649,8 @@ do
             "have {C:green}#1#%{} chance to redeem",
             "a {C:attention}higher tier{} Voucher",
             "and pay half the price",
-            "{C:inactive}(This chance can't be doubled){}"
+            "{C:inactive}(This chance can't be doubled){}",
+            "{C:inactive}(B1G series can't give legendaries){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1696,7 +1715,7 @@ do
                 local only_need=G.P_CENTERS[unredeemed_vouchers[1]]
                 if #unredeemed_vouchers==1 and not only_need then
                     print("This voucher key: "..unredeemed_vouchers[1].." is not in G.P_CENTERS!")
-                elseif #unredeemed_vouchers==1 and only_need.name==center_table.name then
+                elseif #unredeemed_vouchers==1 and only_need.name==center_table.name and get_rarity(v)~=4 then
                     table.insert(vouchers_to_get,v)
                     if not used_voucher('b1ginf') then break end 
                 end
@@ -3142,6 +3161,36 @@ do
         return {vars={}}
     end
     handle_register(this_v)
+
+    REAL_RANDOM_COLLAPSE_AMOUNT=10
+    --[[
+        card.ability.real_random_abilities is a table, whose elements are 
+        {
+            num=*number of abilities*
+            values={
+                chip={
+                    num=*number of chips abilities*
+                    values={
+                        if less than 10 (REAL_RANDOM_COLLAPSE_AMOUNT) abilities, this maybe a table of loc_vars if the chance of this type of ability is fixed when generating. loc_vars is like {*value*,*chance*}. Other wise values is empty
+                    }
+                },
+                mult={
+                    ...
+                },
+                ...
+            chip, mult are keys in real_random_data
+            }
+        }
+        if more or equal than 10, values of abilities aren't stored so same type of abilities are collapsed into a number:
+        {
+            num=...,
+            values={
+                chip={num=*number*,values=*meaningless*},
+                mult={num=*number*,values=*meaningless*},
+                ...
+            }
+        }
+    ]]
     
     local new_round_ref=new_round
     function new_round()
@@ -3161,6 +3210,9 @@ do
             new_card.config.center_key=other.config.center_key
             --print(new_card.config.center_key)
         end
+        if used_voucher('chaos') then -- copy_card calls Card:set_ability and after this copy_card overrides card.ability which causes ability not equal to config.center. so load center to ability
+            load_center_to_ability(new_card)
+        end
         return new_card
     end
 
@@ -3174,14 +3226,21 @@ do
         return v
     end
 
-    function real_random_loc_def(center,ability)
+    function real_random_loc_def(center,key,loc_vars)
         -- center: card.config.center
-        -- ability: a table containing key (from real_random_data)
-        local key=ability.key
+        -- key: like chip in real_random_data
+        -- loc_vars: optional
+
         local ability_data=real_random_data[key]
         if ability_data.chance_range then --chance has been randomly chosen so just return the existing value
-            return ability.loc_vars
-        else --chance is a function that should be calculated real-time. taking in this card and returning a value
+            if ability_data.chance_range[1]==ability_data.chance_range[2] then
+                return {
+                    ability_data.base_value_function(ability_data.chance_range[1]),
+                    ability_data.chance_range[1] --chance is actually fixed
+                }
+            end
+            return loc_vars
+        else --chance is a function that should be calculated real-time taking in this card and returning a value
             local chance=ability_data.chance_function(center)   
             return{
                 ability_data.base_value_function(chance),
@@ -3192,31 +3251,77 @@ do
     end
 
     function real_random_get_random_ability()
+        -- return {key=*key*, maybe loc_vars={value,chance} for chance-fixed type of abilities}
         local _,random_ability_key=pseudorandom_element_weighted(real_random_data,pseudoseed('real_random'))
         local ability_data=real_random_data[random_ability_key]
         local ability={key=random_ability_key}
-        if ability_data.chance_range then --chance is randomly chosen between ranges that won't change
+        if ability_data.chance_range and ability_data.chance_range[1]~=ability_data.chance_range[2] then --chance is randomly chosen between ranges that won't change
             local chance_range=ability_data.chance_range
             local chance=log_random(chance_range[1],chance_range[2])
             ability.loc_vars={
                     ability_data.base_value_function(chance),
                     math.ceil(chance)
                 }
-        end --chance is a function taking in this card and returning a value
+        end --chance is a function taking in this card and returning a value or the random range upper bound equals lower bound so is fixed and no need to store.
         return ability
+    end
+
+    function real_random_add_ability_to_card(card,ability)
+        --ability must be in the same form as generated from real_random_get_random_ability (key=, [loc_vars=])
+        local abilities=card.config.center.real_random_abilities or real_random_empty_abilities_table()
+        abilities.num=abilities.num+1
+        local key=ability.key
+        local target=abilities.values[key]
+        target.num=target.num+1
+        if ability.loc_vars and target.num<REAL_RANDOM_COLLAPSE_AMOUNT then
+            target.values[#target.values+1]=ability.loc_vars
+        end
+        
+    end
+
+    function real_random_empty_abilities_table()
+        local ret={num=0,values={}}
+        for k,v in pairs(real_random_data) do
+            ret.values[k]={num=0,values={}}
+        end
+        return ret
     end
 
     function real_random_add_abilities_to_card(v,times)
         -- v:card
-        local abilities=v.config.center.real_random_abilities or {}
-        for i=1,(times or get_voucher('real_random').config.extra.ability) do
-            ability=real_random_get_random_ability()
-            table.insert(abilities,ability)
-        end
         v.config.center=copy_table(v.config.center)
-        v.config.center.real_random_abilities=abilities
-        v.ability.real_random_abilities=abilities
+        if not v.config.center.real_random_abilities then
+            v.config.center.real_random_abilities=real_random_empty_abilities_table()
+        end
+        for i=1,(times or get_voucher('real_random').config.extra.ability) do
+            local ability=real_random_get_random_ability()
+            real_random_add_ability_to_card(v,ability)
+        end
+        
+        v.ability.real_random_abilities=v.config.center.real_random_abilities
     end
+
+    function real_random_merge_two_abilities(abilitiesA,abilitiesB)
+        -- add all abilities in abilities to cardA
+        local abiB=abilitiesB
+        if not abiB then return abilitiesA end
+        if not abilitiesA then
+            abilitiesA=real_random_empty_abilities_table()
+        end
+        local abiA=abilitiesA
+        for key,v in pairs(abiB.values) do
+            abiA.num=abiA.num+v.num
+            abiA.values[key].num=abiA.values[key].num+v.num
+            if v.num<=REAL_RANDOM_COLLAPSE_AMOUNT and #v.values>0 then
+                local ability=abiA.values[key].values
+                for kk,vv in pairs(v.values) do
+                    ability[#ability+1]=vv
+                end
+            end
+        end
+        return abiA
+    end
+
     local Card_apply_to_run_ref = Card.apply_to_run
     function Card:apply_to_run(center)
         local center_table = {
@@ -3238,6 +3343,55 @@ do
         Card_set_ability_ref(self,center,initial,delay_sprites)
         if used_voucher('real_random') and center==G.P_CENTERS['m_lucky'] and not self.config.center.real_random_abilities then
             real_random_add_abilities_to_card(self)
+        end
+    end
+
+    local function get_real_random_ability_average(center,key)
+        -- center: card.config.center
+        local data=real_random_data[key]
+        if not data then return 0 end
+        local chance=0
+        if data.chance_range then
+            local lower=data.chance_range[1]
+            local upper=data.chance_range[2]
+            chance=lower * math.exp(0.5 * math.log(upper / lower))
+        else
+            chance=data.chance_function(center)
+        end
+        if key=='x_mult' then
+            return math.exp(math.log(data.base_value_function(chance))*math.min(1,G.GAME.probabilities.normal/chance))
+        end
+        return data.base_value_function(chance)*math.min(1,G.GAME.probabilities.normal/chance)
+    end
+
+    local function calc_function_template(card,key,func)
+        --[[func: a function that takes in card and number of ability triggered. e.g. 
+            func(card,times) 
+                if times<REAL_RANDOM_COLLAPSE_AMOUNT then 
+                    for i=1,times do randomly_redeem_voucher() end
+                else 
+                    randomly_redeem_voucher_large_number(times)
+                end
+            ]]
+        local loc_vars=real_random_loc_def(card.config.center,key)
+        local dynamic_chance=loc_vars==nil
+        local ability=card.config.center.real_random_abilities.values[key]
+        if ability.num<REAL_RANDOM_COLLAPSE_AMOUNT then
+            for i = 1,ability.num do
+                if dynamic_chance then
+                    loc_vars=real_random_loc_def(card.config.center,key,ability.values[i])
+                end
+                if pseudorandom(key) < G.GAME.probabilities.normal/loc_vars[2] then
+                    card.lucky_trigger = true
+                    func(card,loc_vars[1])
+                end
+            end
+        else
+            local ret=math.floor(get_real_random_ability_average(card.config.center,key))
+            if ret>0 then
+                card.lucky_trigger = true
+                func(card,ret)
+            end
         end
     end
 
@@ -3291,7 +3445,18 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for {C:attention}+#2#{} Joker slot"
-            }
+            },
+            calc_function=function(card)
+                local key='joker_slot'
+                local function func(card,times)
+                    G.E_MANAGER:add_event(Event({func = function()
+                        if G.jokers then 
+                            G.jokers.config.card_limit = G.jokers.config.card_limit + times
+                        end
+                    return true end }))
+                end
+                calc_function_template(card,key,func)
+            end
         },
         consumable_slot={
             weight=0.15,
@@ -3302,7 +3467,18 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for {C:attention}+#2#{} Consumable slot"
-            }
+            },
+            calc_function=function(card)
+                local key='consumable_slot'
+                local function func(card,times)
+                    G.E_MANAGER:add_event(Event({func = function()
+                        if G.consumeables then 
+                            G.consumeables.config.card_limit = G.consumeables.config.card_limit + times
+                        end
+                    return true end }))
+                end
+                calc_function_template(card,key,func)
+            end
         },
         random_voucher={
             weight=0.15,
@@ -3313,7 +3489,16 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for a random {C:attention}Voucher{}"
-            }
+            },
+            calc_function=function(card)
+                local key='random_voucher'
+                local function func(card,times)
+                    for i=1,times do
+                        randomly_redeem_voucher()
+                    end
+                end
+                calc_function_template(card,key,func)
+            end
         },
         random_negative_joker={
             weight=0.15,
@@ -3324,12 +3509,22 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for a random {C:dark_edition}negative{} {C:attention}Joker{}"
-            }
+            },
+            calc_function=function(card)
+                local key='random_negative_joker'
+                local function func(card,times)
+                    for i=1,times do
+                        randomly_create_joker(times,'random_negative_joker',nil,{edition={negative=true}})
+                    end
+                end
+                calc_function_template(card,key,func)
+            end
         },
         new_ability={
             weight=0.15,
             chance_function=function(center)
-                return (#center.real_random_abilities-1)^3
+                local abilities=center.real_random_abilities
+                return math.max((center.real_random_abilities.num-1)^2,8)
             end,
             base_value_function=function(chance)
                 return 1
@@ -3337,7 +3532,14 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for a new ability"
-            }
+            },
+            calc_function=function(card)
+                local key='new_ability'
+                local function func(card,times)
+                    real_random_add_abilities_to_card(card,times)
+                end
+                calc_function_template(card,key,func)
+            end
         },
         double_probability={
             weight=0.1,
@@ -3350,7 +3552,16 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "to double all probabilities"
-            }
+            },
+            calc_function=function(card)
+                local key='double_probability'
+                local function func(card,times)
+                    for k, v in pairs(G.GAME.probabilities) do -- are there really other probabilities?
+                        G.GAME.probabilities[k] = v*2^times
+                    end
+                end
+                calc_function_template(card,key,func)
+            end
         },
         random_tag={
             weight=0.25,
@@ -3361,7 +3572,23 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "for a random {C:attention}tag{}"
-            }
+            },
+            calc_function=function(card)
+                local key='random_tag'
+                local function func(card,times)
+                    local random_tag_key = get_next_tag_key()
+                    local random_tag=Tag(random_tag_key,false,'Small')
+                    
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        func = function()
+                            for i=1,times do
+                                add_tag(random_tag)
+                            end
+                    return true end }))
+                end
+                calc_function_template(card,key,func)
+            end
         },
         retrigger_next={
             weight=0.1,
@@ -3373,7 +3600,21 @@ do
                 "{C:green}#1# in #3#{} chance",
                 "to retrigger the card",
                 "to its right {C:attention}#2#{} times"
-            }
+            },
+            calc_function=function(card)
+                local key='retrigger_next'
+                local function func(card,times)
+                    local index=1
+                    while G.play.cards[index]~=card and index<=#G.play.cards do
+                        index=index+1
+                    end
+                    if index<#G.play.cards then
+                        local right_card=G.play.cards[index+1]
+                        right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+times
+                    end
+                end
+                calc_function_template(card,key,func)
+            end
         },
         hand_size={
             weight=0.15,
@@ -3386,7 +3627,14 @@ do
             text={
                 "{C:green}#1# in #3#{} chance",
                 "to {C:attention}+#2#{} hand size"
-            }
+            },
+            calc_function=function(card)
+                local key='hand_size'
+                local function func(card,times)
+                    G.hand:change_size(times)
+                end
+                calc_function_template(card,key,func)
+            end
         },
         transfer_ability={
             weight=0.05,
@@ -3396,10 +3644,24 @@ do
             end,
             text={
                 "{C:green}#1# in #3#{} chance",
-                "to {C:attention}transfer{} a random",
-                "{C:attention}ability{} of this card",
+                "to add an ability",
                 "to the card to its right"
-            }
+            },
+            calc_function=function(card)
+                local key='transfer_ability'
+                local function func(card,times)
+                    --if times<REAL_RANDOM_COLLAPSE_AMOUNT then
+                    local index=1
+                    while G.play.cards[index]~=card and index<=#G.play.cards do
+                        index=index+1
+                    end
+                    if index<#G.play.cards then
+                        local right_card=G.play.cards[index+1]
+                        real_random_add_abilities_to_card(right_card,times)
+                    end
+                end
+                calc_function_template(card,key,func)
+            end
         }
     }
     -- for k,v in pairs(real_random_data) do
@@ -3433,7 +3695,7 @@ do
             end
             local _c_effect_ref=_c.effect
             if _c.effect=='Lucky Card' then 
-                _c.effect='Lucky Card???'
+                _c.effect='Lucky Card???' -- to make loc_vars sent to localize become empty thus removing the original lucky card description with overridden localize function above
             end
             local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
             _c.effect=_c_effect_ref
@@ -3449,17 +3711,47 @@ do
             --     end
             -- end
             if _c.real_random_abilities and not(G.in_overlay_menu) and not using_info then
-                for k,v in pairs(_c.real_random_abilities) do
-                    local loc_vars=copy_table(real_random_loc_def(_c,v))
-                    --print(loc_vars[1],v.key,_c.set)
-                    table.insert(loc_vars,1,G.GAME.probabilities.normal)
-                    localize{type = 'descriptions', key = 'real_random_'..v.key, set ='Enhanced', nodes = main, vars = loc_vars}
-                end
-            else
+                local abilities=_c.real_random_abilities
+                local ability_num=abilities.num
+                -- if ability_num<20 then
+                    -- local flag=false
+                    for key,v in pairs(abilities.values) do
+                        -- if k>6 then 
+                        --     flag=true    
+                        --     break
+                        -- end
+                        if #v.values==0 and v.num>0 then
+                            -- #v.values==0 means it's calculated realtime so every ability for this card is same, so it can be displayed as (Xn)
+                            local loc_vars=copy_table(real_random_loc_def(_c,key))
+                            --print(loc_vars[1],v.key,_c.set)
+                            table.insert(loc_vars,1,G.GAME.probabilities.normal)
+                            localize{type = 'descriptions', key = 'real_random_'..key, set ='Enhanced', nodes = main, vars = loc_vars}
+                            if v.num>1 then
+                                localize{type = 'descriptions', key = 'multiples', set ='Enhanced', nodes = main, vars = {v.num}}
+                            end
+                        elseif v.num>0 then
+                            for i=1,math.min(2+(v.num==3 and 1 or 0),v.num) do
+                                local loc_vars=copy_table(real_random_loc_def(_c,key,v.values[i]))
+                                --print(loc_vars[1],v.key,_c.set)
+                                table.insert(loc_vars,1,G.GAME.probabilities.normal)
+                                localize{type = 'descriptions', key = 'real_random_'..key, set ='Enhanced', nodes = main, vars = loc_vars}
+                            end
+                            if v.num>3 then
+                                localize{type = 'descriptions', key = 'ellipsis', set ='Enhanced', nodes = main, vars = {v.num-2}}
+                            end
+                        end
+                        
+                    end
+                    -- if flag then
+                    --     localize{type = 'descriptions', key = 'ellipsis', set ='Enhanced', nodes = main, vars = {ability_num-6}}
+                    -- end
+                -- end
+                
+            else --misprint effect
                 local strings={}
                 for i=1,20 do
                     local ability=real_random_get_random_ability()
-                    local loc_vars=copy_table(real_random_loc_def({real_random_abilities={ability,ability,ability}},ability))
+                    local loc_vars=copy_table(real_random_loc_def({real_random_abilities={num=3,values={chip={num=1,values={ability.loc_vars}}}}},ability.key,ability.loc_vars))
                     table.insert(loc_vars,1,G.GAME.probabilities.normal)
                     localize{type = 'descriptions', key = 'real_random_'..ability.key, set = 'Enhanced', nodes = strings, vars = loc_vars}
                 end
@@ -3483,13 +3775,21 @@ do
     function Card:get_chip_bonus()
         local ret=get_chip_bonus_ref(self)
         if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
-            for k,v in pairs(self.config.center.real_random_abilities) do
-                local loc_vars=real_random_loc_def(self.config.center,v)
-                if v.key=='chip' and pseudorandom('lucky_chip') < G.GAME.probabilities.normal/loc_vars[2] then
-                    self.lucky_trigger = true
-                    ret=ret+loc_vars[1]
+            local key='chip'
+            local num= self.config.center.real_random_abilities.values[key].num
+            if num<REAL_RANDOM_COLLAPSE_AMOUNT then
+                for k,v in pairs(self.config.center.real_random_abilities.values[key].values) do
+                    local loc_vars=real_random_loc_def(self.config.center,key,v)
+                    if pseudorandom('lucky_'..key) < G.GAME.probabilities.normal/loc_vars[2] then
+                        self.lucky_trigger = true
+                        ret=ret+loc_vars[1]
+                    end
                 end
+            else
+                self.lucky_trigger = true
+                ret=ret+get_real_random_ability_average(self.config.center,key)*num
             end
+            
         end
         return ret
     end
@@ -3499,12 +3799,19 @@ do
         local ret=get_chip_mult_ref(self)
         if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             if self.ability.effect == 'Lucky Card' then ret=0 end -- to override the original lucky card mult
-            for k,v in pairs(self.config.center.real_random_abilities) do
-                local loc_vars=real_random_loc_def(self.config.center,v)
-                if v.key=='mult' and pseudorandom('lucky_mult') < G.GAME.probabilities.normal/loc_vars[2] then
-                    self.lucky_trigger = true
-                    ret=ret+loc_vars[1]
+            local key='mult'
+            local num= self.config.center.real_random_abilities.values[key].num
+            if num<REAL_RANDOM_COLLAPSE_AMOUNT then
+                for k,v in pairs(self.config.center.real_random_abilities.values[key].values) do
+                    local loc_vars=real_random_loc_def(self.config.center,key,v)
+                    if pseudorandom('lucky_'..key) < G.GAME.probabilities.normal/loc_vars[2] then
+                        self.lucky_trigger = true
+                        ret=ret+loc_vars[1]
+                    end
                 end
+            else
+                self.lucky_trigger = true
+                ret=ret+get_real_random_ability_average(self.config.center,key)*num
             end
         end
         return ret
@@ -3515,12 +3822,19 @@ do
         local ret=get_chip_x_mult_ref(self)
         if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
             if ret==0 then ret=1 end
-            for k,v in pairs(self.config.center.real_random_abilities) do
-                local loc_vars=real_random_loc_def(self.config.center,v)
-                if v.key=='x_mult' and pseudorandom('lucky_x_mult') < G.GAME.probabilities.normal/loc_vars[2] then
-                    self.lucky_trigger = true
-                    ret=ret*loc_vars[1]
+            local key='x_mult'
+            local num= self.config.center.real_random_abilities.values[key].num
+            if num<REAL_RANDOM_COLLAPSE_AMOUNT then
+                for k,v in pairs(self.config.center.real_random_abilities.values[key].values) do
+                    local loc_vars=real_random_loc_def(self.config.center,key,v)
+                    if pseudorandom('lucky_'..key) < G.GAME.probabilities.normal/loc_vars[2] then
+                        self.lucky_trigger = true
+                        ret=ret*loc_vars[1]
+                    end
                 end
+            else
+                self.lucky_trigger = true
+                ret=ret*get_real_random_ability_average(self.config.center,key)^num
             end
             if ret==1 then ret=0 end
         end
@@ -3535,13 +3849,19 @@ do
                 ret = ret +  3
             end
             
-
-            for k,v in pairs(self.config.center.real_random_abilities) do
-                local loc_vars=real_random_loc_def(self.config.center,v)
-                if v.key=='dollars' and pseudorandom('lucky_dollars') < G.GAME.probabilities.normal/loc_vars[2] then
-                    self.lucky_trigger = true
-                    ret=ret+loc_vars[1]
+            local key='dollars'
+            local num= self.config.center.real_random_abilities.values[key].num
+            if num<REAL_RANDOM_COLLAPSE_AMOUNT then
+                for k,v in pairs(self.config.center.real_random_abilities.values[key].values) do
+                    local loc_vars=real_random_loc_def(self.config.center,key,v)
+                    if pseudorandom('lucky_'..key) < G.GAME.probabilities.normal/loc_vars[2] then
+                        self.lucky_trigger = true
+                        ret=ret+loc_vars[1]
+                    end
                 end
+            else
+                self.lucky_trigger = true
+                ret=ret+get_real_random_ability_average(self.config.center,key)*num
             end
             
             if ret > 0 then 
@@ -3558,101 +3878,12 @@ do
     function eval_card(card, context) --other abilities
         local ret=eval_card_ref(card,context)
         if context.cardarea == G.play and not context.repetition_only and used_voucher('real_random') and not card.debuff and card.config.center.real_random_abilities then
-            local abilities_ref=copy_table(card.config.center.real_random_abilities)
-            for k,v in pairs(card.config.center.real_random_abilities) do
-                local loc_vars=real_random_loc_def(card.config.center,v)
-                if v.key=='joker_slot' and pseudorandom('joker_slot') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    G.E_MANAGER:add_event(Event({func = function()
-                        if G.jokers then 
-                            G.jokers.config.card_limit = G.jokers.config.card_limit + loc_vars[1]
-                        end
-                        return true end }))
-                elseif v.key=='consumable_slot' and pseudorandom('consumable_slot') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    G.E_MANAGER:add_event(Event({func = function()
-                        if G.consumeables then 
-                            G.consumeables.config.card_limit = G.consumeables.config.card_limit + loc_vars[1]
-                        end
-                        return true end }))
-                elseif v.key=='random_voucher' and pseudorandom('random_voucher') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'after',
-                        func = function()
-                            for i=1,loc_vars[1] do
-                                randomly_redeem_voucher()
-                            end
-                        return true end }))
-                elseif v.key=='random_negative_joker' and pseudorandom('random_negative_joker') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                        randomly_create_joker(loc_vars[1],'random_negative_joker',nil,{edition={negative=true}})
-                elseif v.key=='new_ability' and pseudorandom('new_ability') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    real_random_add_abilities_to_card(card,loc_vars[1])
-                elseif v.key=='double_probability' and pseudorandom('double_probability') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    for k, v in pairs(G.GAME.probabilities) do -- are there really other probabilities?
-                        G.GAME.probabilities[k] = v*2^loc_vars[1]
-                    end
-                elseif v.key=='random_tag' and pseudorandom('random_tag') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    
-                    local random_tag_key = get_next_tag_key()
-                    local random_tag=Tag(random_tag_key,false,'Small')
-                    
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'after',
-                        func = function()
-                            for i=1,loc_vars[1] do
-                                add_tag(random_tag)
-                            end
-                        return true end }))
-                elseif v.key=='retrigger_next' and pseudorandom('retrigger_next') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    local index=1
-                    while G.play.cards[index]~=card and index<=#G.play.cards do
-                        index=index+1
-                    end
-                    if index<#G.play.cards then
-                        local right_card=G.play.cards[index+1]
-                        right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+loc_vars[1]
-                    end
-                elseif v.key=='hand_size' and pseudorandom('hand_size') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    G.hand:change_size(loc_vars[1])
-                elseif v.key=='transfer_ability' and pseudorandom('transfer_ability') < G.GAME.probabilities.normal/loc_vars[2] then
-                    card.lucky_trigger = true
-                    local index=1
-                    while G.play.cards[index]~=card and index<=#G.play.cards do
-                        index=index+1
-                    end
-                    if index<#G.play.cards then
-                        local right_card=G.play.cards[index+1]
-                        right_card.config.center=copy_table(right_card.config.center)
-                        right_card.config.center.real_random_abilities=right_card.config.center.real_random_abilities or {}
-                        local non_transfer_indexes={}
-                        for k,v in pairs(abilities_ref) do
-                            if v.key~='transfer_ability' then
-                                table.insert(non_transfer_indexes,k)
-                                --print(k)
-                            end
-                        end
-                        
-                        if #non_transfer_indexes>0 then
-                            local index=non_transfer_indexes[math.ceil(pseudorandom('transfer_ability')*#non_transfer_indexes)]
-                            local ability=abilities_ref[index]
-                            table.insert(right_card.config.center.real_random_abilities,ability)
-                            right_card.ability.real_random_abilities=right_card.config.center.real_random_abilities
-                            table.remove(abilities_ref,index)
-                            card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('k_transfer_ability')})
-                        end
-                    end
-            
+            -- local abilities=card.config.center.real_random_abilities
+            -- local abilities_ref=copy_table(card.config.center.real_random_abilities)
+            for key,value in pairs(real_random_data) do
+                if value.calc_function then
+                    value.calc_function(card)
                 end
-            card.config.center.real_random_abilities=abilities_ref
-            card.ability.real_random_abilities=abilities_ref
-                
             end
         end
         return ret
@@ -3886,12 +4117,8 @@ do
                 add_center_to_ability(self,v,old_center,0)
             end
             self.ability.x_mult=(self.ability.x_mult or 1)*(old_center.config.Xmult or 1)or 1
-            if used_voucher('real_random')then
-                self.ability.real_random_abilities=self.ability.real_random_abilities or {}
-                local abilities=old_center.real_random_abilities or {}
-                for i=1,#abilities do
-                    self.ability.real_random_abilities[#self.ability.real_random_abilities+1]=abilities[i]
-                end
+            if used_voucher('real_random') and old_center.real_random_abilities then
+                self.ability.real_random_abilities=real_random_merge_two_abilities(self.ability.real_random_abilities,old_center.real_random_abilities)
             end
             load_ability_to_center(self)
             --print(self.ability.bonus)
@@ -3925,7 +4152,7 @@ end -- chaos
     --         {id = 'j_oops'},
     --         {id = 'j_oops'},
     --         {id = 'j_hiker'},
-    --         {id = 'betm_jokers_j_jjookkeerr'},
+    --         {id = JOKER_MOD_PREFIX..'j_jjookkeerr'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
@@ -3940,7 +4167,14 @@ end -- chaos
     --     consumeables = {
     --         {id = 'c_cryptid'},
     --         --{id = 'c_devil_cu'},
-    --         --{id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_death'},
+    --         {id = 'c_justice'},
+    --         {id = 'c_justice'},
     --     },
     --     vouchers = {
     --         {id = MOD_PREFIX_V.. 'trash_picker'},

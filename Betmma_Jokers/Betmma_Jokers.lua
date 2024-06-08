@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 5 More Jokers!
+--- MOD_DESCRIPTION: 6 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
@@ -269,7 +269,7 @@ local function INIT()
     --- Joker abilities ---
     jokers.jjookkeerr.calculate = function(self, card, context)
         if context.other_joker and context.other_joker ~= card and not context.other_joker.debuff then
-            if string.match(context.other_joker.ability.name, "Joker") then
+            if context.other_joker.ability.name and string.match(context.other_joker.ability.name, "Joker") then
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         context.other_joker:juice_up(0.5, 0.5)

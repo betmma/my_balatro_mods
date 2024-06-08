@@ -41,7 +41,7 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Big Blast: If chips scored are above X5 of required chips at end of round, add Negative edition to a random Joker, and increase the target amount.
 - 3D Boosters: +1 Booster Pack available in shop.
 - 4D Boosters: Rerolls apply to Booster Packs, but rerolled packs cost $3 more.
-- B1G50%: When you redeem a Voucher, have 50% chance to redeem a higher tier Voucher and pay half the price.
+- B1G50%: When you redeem a Voucher, have 50% chance to redeem a higher tier Voucher and pay half the price. B1G series can't create Legendary vouchers.
 - B1G1: When you redeem a Voucher, always redeem a higher tier Voucher and pay the price.
 - Collector: Each Voucher redeemed reduces Blind requirement by 4%. (multiplicative)
 - Connoisseur: If you have more than $400/(Vouchers Redeemed + 1),  redeeming a voucher gives Antimatter and lets the money requirement X5.
