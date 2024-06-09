@@ -506,12 +506,26 @@ do
     end
 end --
 
+    local Card_use_consumable_ref=Card.use_consumeable
+    function Card:use_consumeable(area, copier)
+        local joker_number = #find_joker('joker name')
+        if self.ability.consumeable.hand_type then
+            for i=1,joker_number do
+                Card_use_consumable_ref(area, copier)
+            end
+        end
+        Card_use_consumable_ref(area, copier)
+    end
 
     setup_consumables()
     RARITY_VOUCHER_PROBABILITY={1,2,4,20}
+    local function normalize_rarity(rarity)
+        if not rarity then return 1 end
+        return math.max(1,math.min(math.ceil(rarity),#RARITY_VOUCHER_PROBABILITY))
+    end
     local get_current_pool_ref=get_current_pool
     function get_current_pool(_type, _rarity, _legendary, _append)
-        if _type=='Voucher'then _append='lol' end
+        if _type=='Voucher'then _append='lol' end -- MathIsFun will do something to prevent crash with Deck of Equilibrium when _append has value
         local ret={get_current_pool_ref(_type, _rarity, _legendary, _append)}
         if _type=='Voucher' then
             local pool=ret[1]
@@ -520,7 +534,7 @@ end --
             for k,v in pairs(pool) do
                 if v~='UNAVAILABLE' then
                     local card= G.P_CENTERS[v]
-                    local rarity=card.config and card.config.rarity or 1
+                    local rarity=card.config and normalize_rarity(card.config.rarity)
                     if (pseudorandom(v) < 1/RARITY_VOUCHER_PROBABILITY[rarity]) then
                         new_pool[#new_pool+1]=v
                         _pool_size=_pool_size+1
@@ -539,13 +553,89 @@ end --
         return unpack(ret)
     end
 
+    local get_current_pool_copy=get_current_pool -- this is because when the following function is called get_current_pool has been replaced to itself
+    local function get_specific_rarity_vouchers_pool(rarity)
+        local pool,pool_key=get_current_pool_ref('Voucher')
+        local new_pool={}
+        local _pool_size=0
+        for k,v in pairs(pool) do
+            if v~='UNAVAILABLE' then
+                local card= G.P_CENTERS[v]
+                local card_rarity=card.config and normalize_rarity(card.config.rarity)
+                if card_rarity==rarity then
+                    new_pool[#new_pool+1]=v
+                    _pool_size=_pool_size+1
+                end
+            end
+        end
+        if _pool_size == 0 then
+            return get_current_pool_copy('Voucher')
+        end
+        return new_pool,pool_key
+    end
+
+    local function get_voucher_pool_with_filter_and_reqs(func)
+        -- func should take in G.P_CENTERS[key] and return a boolean
+        local pool,pool_key=get_current_pool_ref('Voucher')
+        local new_pool={}
+        local _pool_size=0
+        for k,v in pairs(pool) do
+            if v~='UNAVAILABLE' then
+                local card= G.P_CENTERS[v]
+                if func(card) then
+                    new_pool[#new_pool+1]=v
+                    _pool_size=_pool_size+1
+                end
+            end
+        end
+        if _pool_size == 0 then
+            return get_current_pool_copy('Voucher')
+        end
+        return new_pool,pool_key
+    end
+
+    local function get_voucher_pool_with_filter(func)
+        -- func should take in G.P_CENTERS[key] and return a boolean
+        local _starting_pool, _pool_key = G.P_CENTER_POOLS['Voucher'], 'Voucher'
+        local _pool=EMPTY(G.ARGS.TEMP_POOL)
+        local _pool_size=0
+        for k, v in ipairs(_starting_pool) do
+            if func(v) and not G.GAME.banned_keys[v.key] then 
+                -- don't check for requires
+                _pool[#_pool + 1] = v.key
+                _pool_size = _pool_size + 1
+            end
+        end
+        if _pool_size == 0 then
+            return get_current_pool_copy('Voucher')
+        end
+        return _pool,_pool_key
+    end
+
     local get_next_voucher_key_ref=get_next_voucher_key
     function get_next_voucher_key(_from_tag)
         -- local _pool, _pool_key = get_current_pool('Voucher')
         -- this pool contains strings
         local pseudorandom_element_ref=pseudorandom_element
         pseudorandom_element=pseudorandom_element_weighted
-        local ret= get_next_voucher_key_ref(_from_tag)
+        local get_current_pool_ref=get_current_pool
+        local ret
+        if G.GAME.voucher_pack_name and G.GAME.voucher_pack_name:find('Uncommon') then
+            get_current_pool=function(key)
+                return get_specific_rarity_vouchers_pool(2)
+            end
+        elseif G.GAME.voucher_pack_name and G.GAME.voucher_pack_name=='Fusion Voucher Pack' then
+            get_current_pool= function(key)
+                return get_voucher_pool_with_filter_and_reqs(
+                    function(card)
+                        return card and card.requires and #card.requires>1
+                    end
+                )
+            end
+        end
+        ret= get_next_voucher_key_ref(_from_tag)
+        
+        get_current_pool=get_current_pool_ref
         pseudorandom_element=pseudorandom_element_ref
         return ret
     end
@@ -702,7 +792,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=1},
+        config={extra=1,rarity=2},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
@@ -2420,7 +2510,7 @@ do
         end
         if card.ability.set=='Voucher' then
             local index=card.config and card.config.center and card.config.center.config and card.config.center.config.rarity or 1
-            index=math.min(math.max(math.ceil(index),1),4)
+            index=normalize_rarity(index)
             local card_type=({localize('k_common'), localize('k_uncommon'), localize('k_rare'), localize('k_legendary')})[index]
             table.insert(retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
         end

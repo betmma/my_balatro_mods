@@ -4,6 +4,7 @@
 --- MOD_AUTHOR: [Betmma, nicholassam6425]
 --- MOD_DESCRIPTION: Adds voucher pack that allows you to redeem 1 of 3 vouchers. The code is based on Coupon Book mod made by nicholassam6425.
 --- PREFIX: betmma_voucher_pack
+--- DEPENDENCIES: [BetmmaVouchers]
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -11,12 +12,16 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
 
     local MOD_PREFIX="betmma_voucher_pack_"
     local loc_table={}
+    local dict_loc_table={}
     -- thanks to https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua
     -- Beware that while opening voucher pack G.STATE == G.STATES.PLANET_PACK.
     SMODS.current_mod=SMODS.current_mod or {}
     function SMODS.current_mod.process_loc_text()
         for k,v in pairs(loc_table) do
             G.localization.descriptions.Other[k]=v
+        end
+        for k,v in pairs(dict_loc_table) do
+            G.localization.misc.dictionary['k_'..k]=v
         end
         G.localization.misc.dictionary.k_voucher_pack = "Voucher Pack"
         -- G.localization.descriptions.Booster=G.localization.descriptions.Booster or {}
@@ -26,7 +31,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
         -- }--newBoosterText
     end
 
-    function addBooster(id, name, order, discovered, weight, kind, cost, pos, config, desc, alerted, sprite_path, sprite_name, sprite_size, selection_state)
+    function addBooster(id, name, order, discovered, weight, kind, cost, pos, config, desc, alerted, sprite_path, sprite_name, selection_state, color)
         id = id or "p_placeholder" .. #G.P_CENTER_POOLS["Booster"] + 1
         name = name or "Placeholder Pack"
         -- pack_contents = pack_contents or function(_) end
@@ -46,6 +51,13 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
         if selection_state ~= G.STATES.TAROT_PACK and selection_state ~= G.STATES.PLANET_PACK and selection_state ~= G.STATES.SPECTRAL_PACK and selection_state ~= G.STATES.STANDARD_PACK and selection_state ~= G.STATES.BUFFOON_PACK then
             sendDebugMessage(id..": selection_state incorrectly defined")
         end
+        color=color or {
+            color=mix_colours(G.C.SECONDARY_SET.Voucher, G.C.BLACK, 0.9),
+            background_color=G.C.BLACK
+        }
+        G.C.VOUCHER_PACK_COLORS=G.C.VOUCHER_PACK_COLORS or {}
+        G.C.VOUCHER_PACK_COLORS[id]=color
+        --print(#G.C.VOUCHER_PACK_COLORS[id],#color,id)
 
         local modded_sprite = nil
         if sprite_path and sprite_name then
@@ -85,6 +97,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
             newBoosterText.name_parsed[#newBoosterText.name_parsed+1] = loc_parse_string(line)
         end
         loc_table[id]=newBoosterText
+        dict_loc_table[id]=name
         G.localization.descriptions.Other[id] = newBoosterText
         -- G.localization.descriptions.Booster=G.localization.descriptions.Booster or {}
         -- G.localization.descriptions.Booster[id] = {
@@ -116,31 +129,86 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
 
     local function INIT()
     
-    addBooster(
-                "p_voucher_pack",   --id
-                "Voucher Pack",              --name
-                -- pack_contents,              --pack contents
-                nil,                        --order
-                true,                       --discovered
-                2,                          --weight
-                "Standard",                 --kind
-                12,                         --cost
-                {x=0,y=0},                  --pos
-                {extra = 3, choose = 1},    --config
-                {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Vouchers to be", "redeemed immediately"}, --desc
-                true,                       --alerted
-                "assets",                   --sprite path
-                "p_voucher_pack.png",          --sprite name
-                --{px=71, py=95},             --sprite size
-                G.STATES.PLANET_PACK        --selection_state
-            )
+        addBooster(
+            "p_voucher_pack",   --id
+            "Voucher Pack",              --name
+            -- pack_contents,              --pack contents
+            nil,                        --order
+            true,                       --discovered
+            11.4,                          --weight
+            "Standard",                 --kind
+            12,                         --cost
+            {x=0,y=0},                  --pos
+            {extra = 3, choose = 1},    --config
+            {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Vouchers", "to be redeemed"}, --desc
+            true,                       --alerted
+            "assets",                   --sprite path
+            "p_voucher_pack.png",          --sprite name
+            --{px=71, py=95},             --sprite size
+            G.STATES.PLANET_PACK,        --selection_state
+            {color=HEX('a6009b'),background_color=HEX('b849b0')} --color
+        )
 
+        addBooster(
+            "p_uncommon_voucher_pack",   --id
+            "Uncommon Voucher Pack",              --name
+            -- pack_contents,              --pack contents
+            nil,                        --order
+            true,                       --discovered
+            10.6,                          --weight
+            "Standard",                 --kind
+            12,                         --cost
+            {x=0,y=0},                  --pos
+            {extra = 3, choose = 1},    --config
+            {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Uncommon Vouchers", "to be redeemed"}, --desc
+            true,                       --alerted
+            "assets",                   --sprite path
+            "p_uncommon_voucher_pack.png",          --sprite name
+            --{px=71, py=95},             --sprite size
+            G.STATES.PLANET_PACK,        --selection_state
+            {color=HEX('009116'),background_color=HEX('61d473')} --color
+        )
+        addBooster(
+            "p_fusion_voucher_pack",   --id
+            "Fusion Voucher Pack",              --name
+            -- pack_contents,              --pack contents
+            nil,                        --order
+            true,                       --discovered
+            10.3,                          --weight
+            "Standard",                 --kind
+            18,                         --cost
+            {x=0,y=0},                  --pos
+            {extra = 3, choose = 1},    --config
+            {"Choose {C:attention}#1#{} of up to","{C:attention}#2#{} Fusion Vouchers", "to be redeemed"}, --desc
+            true,                       --alerted
+            "assets",                   --sprite path
+            "p_fusion_voucher_pack.png",          --sprite name
+            --{px=71, py=95},             --sprite size
+            G.STATES.PLANET_PACK,        --selection_state
+            {color=HEX('d11966'),background_color=HEX('f5a2a4')} --color
+        )
     end
     -- G.STATES.VOUCHER_PACK=1337
+    local ease_background_colour_blind_ref=ease_background_colour_blind
+    function ease_background_colour_blind(state, blind_override)
+        if G.InBetmmaVoucherPack then
+            print(G.GAME.BetmmaVoucherPackKey)
+            print(#G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey])
+            print(G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].color)
+            print(G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].background_color)
+            ease_colour(G.C.DYN_UI.MAIN, G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].color)
+            ease_background_colour{new_colour = G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].background_color, contrast = 3}
+            return
+        end
+        ease_background_colour_blind_ref(state, blind_override)
+    end
+
+
     local Card_open_ref= Card.open
     function Card:open()
         if self.ability.set == "Booster" and self.ability.name:find('Voucher')then
             G.InBetmmaVoucherPack=true
+            G.GAME.BetmmaVoucherPackKey=self.config.center.key
             stop_use()
             G.STATE_COMPLETE = false 
             self.opening = true
@@ -173,8 +241,9 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
                     for i = 1, _size do
                         -- local card = nil
                         -- card = create_card("Voucher", G.pack_cards, nil, nil, true, true, nil, 'voucher_pack')
-                        
+                        G.GAME.voucher_pack_name=self.ability.name -- this is to tell get_next_voucher_key_ref in Betmma_Vouchers to change how to get pool
                         local voucher_key = get_next_voucher_key(true)
+                        G.GAME.voucher_pack_name=nil
                         local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
                     G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
                         card.from_voucher_pack_flag=true
@@ -246,7 +315,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
                     {n=G.UIT.C, config={align = "cm", padding = 0.05, minw = 4}, nodes={
                       {n=G.UIT.R,config={align = "bm", padding = 0.05}, nodes={
                         -- only this part is modified
-                        {n=G.UIT.O, config={object = DynaText({string = localize('k_voucher_pack'), colours = {G.C.WHITE},shadow = true, rotate = true, bump = true, spacing =2, scale = 0.7, maxw = 4, pop_in = 0.5})}}
+                        {n=G.UIT.O, config={object = DynaText({string = localize('k_'..G.GAME.BetmmaVoucherPackKey), colours = {G.C.WHITE},shadow = true, rotate = true, bump = true, spacing =2, scale = 0.7, maxw = 4, pop_in = 0.5})}}
                         --
                       }},
                       {n=G.UIT.R,config={align = "bm", padding = 0.05}, nodes={
@@ -289,7 +358,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
         -- to give voucher pack correct description
         if _c.set == 'Booster' then 
-            if _c.name == 'Voucher Pack' then 
+            if _c.name:find('Voucher Pack') then 
                 local first_pass = nil
                 if not full_UI_table then 
                     first_pass = true
@@ -333,7 +402,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
                     full_UI_table.card_type = card_type or _c.set
                 end 
                 -- Actually only this part of code is added
-                desc_override = 'p_voucher_pack'; loc_vars = {_c.config.choose, _c.config.extra}
+                desc_override = _c.key; loc_vars = {_c.config.choose, _c.config.extra}
                 name_override = desc_override
                 full_UI_table.name = localize{type = 'name', set = 'Other', key = name_override, nodes = full_UI_table.name} 
                 localize{type = 'other', key = desc_override, nodes = desc_nodes, vars = loc_vars}
