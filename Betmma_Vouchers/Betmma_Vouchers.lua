@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.0(20240608)
+--- VERSION: 2.1.0(20240609)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -156,6 +156,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.b_flip_hand = "Flip"
     G.localization.misc.dictionary.k_bulletproof = "Bulletproof!"
     G.localization.misc.dictionary.b_vanish = "VANISH"
+    G.localization.misc.dictionary.over_retriggered = "Over-retriggered: "
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
     end
@@ -225,7 +226,7 @@ config = {
 
 local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
 
-local function TalismanCompat(num)
+function TalismanCompat(num)
 	return usingTalisman and Big:new(num) or num
 end
 
@@ -971,7 +972,6 @@ do
                     return true
                     end)}))
     end
-
 
 end -- event horizon
 do 
@@ -3111,6 +3111,8 @@ do
     end
     handle_register(this_v)
 
+    OVER_RETRIGGER_LIMIT=50
+
     local eval_card_ref=eval_card
     function eval_card(card, context)
         local ret=eval_card_ref(card, context)
@@ -3125,12 +3127,18 @@ do
             end
         end
         if context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
+            card.ability.over_retriggered_ratio=1
             if not ret.seals then ret.seals={
                 message = localize('k_again_ex'),
                 repetitions = card.ability.temp_repetition,
                 card = card
             }
             else ret.seals.repetitions=ret.seals.repetitions+card.ability.temp_repetition
+            end
+            if ret.seals.repetitions>OVER_RETRIGGER_LIMIT then
+                card.ability.over_retriggered_ratio=ret.seals.repetitions/OVER_RETRIGGER_LIMIT
+                ret.seals.repetitions=OVER_RETRIGGER_LIMIT
+                card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('over_retriggered')..tostring(card.ability.over_retriggered_ratio)})
             end
             card.ability.temp_repetition=0
         end
@@ -3376,6 +3384,7 @@ do
         local loc_vars=real_random_loc_def(card.config.center,key)
         local dynamic_chance=loc_vars==nil
         local ability=card.config.center.real_random_abilities.values[key]
+        local over_retriggered=card.ability.over_retriggered_ratio and card.ability.over_retriggered_ratio>1 and card.ability.over_retriggered_ratio or 1
         if ability.num<REAL_RANDOM_COLLAPSE_AMOUNT then
             for i = 1,ability.num do
                 if dynamic_chance then
@@ -3383,11 +3392,11 @@ do
                 end
                 if pseudorandom(key) < G.GAME.probabilities.normal/loc_vars[2] then
                     card.lucky_trigger = true
-                    func(card,loc_vars[1])
+                    func(card,loc_vars[1]*over_retriggered)
                 end
             end
         else
-            local ret=math.floor(get_real_random_ability_average(card.config.center,key))
+            local ret=math.floor(get_real_random_ability_average(card.config.center,key)*over_retriggered)
             if ret>0 then
                 card.lucky_trigger = true
                 func(card,ret)
@@ -3791,6 +3800,9 @@ do
             end
             
         end
+        if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
+            ret=ret*self.ability.over_retriggered_ratio
+        end
         return ret
     end
     
@@ -3813,6 +3825,9 @@ do
                 self.lucky_trigger = true
                 ret=ret+get_real_random_ability_average(self.config.center,key)*num
             end
+        end
+        if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
+            ret=ret*self.ability.over_retriggered_ratio
         end
         return ret
     end
@@ -3837,6 +3852,9 @@ do
                 ret=ret*get_real_random_ability_average(self.config.center,key)^num
             end
             if ret==1 then ret=0 end
+        end
+        if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
+            ret=TalismanCompat(ret)^TalismanCompat(self.ability.over_retriggered_ratio)
         end
         return ret
     end
@@ -3868,9 +3886,15 @@ do
                 G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + ret
                 G.E_MANAGER:add_event(Event({func = (function() G.GAME.dollar_buffer = 0; return true end)}))
             end
+            if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
+                ret=ret*self.ability.over_retriggered_ratio
+            end
             return ret
         end
         local ret=get_p_dollars_ref(self)
+        if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
+            ret=ret*self.ability.over_retriggered_ratio
+        end
         return ret
     end
 
@@ -4175,6 +4199,9 @@ end -- chaos
     --         {id = 'c_death'},
     --         {id = 'c_justice'},
     --         {id = 'c_justice'},
+    --         {id = 'c_magician'},
+    --         {id = 'c_magician'},
+    --         {id = 'c_magician'},
     --     },
     --     vouchers = {
     --         {id = MOD_PREFIX_V.. 'trash_picker'},

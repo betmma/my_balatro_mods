@@ -1,0 +1,69 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# change all " 0 " in eval_card to " TalismanCompat(0) "
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if chips > 0 then"
+position = "at"
+payload = "if TalismanCompat(chips) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if x_mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(x_mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if p_dollars > 0 then"
+position = "at"
+payload = "if TalismanCompat(p_dollars) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if h_mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(h_mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if h_x_mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(h_x_mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if amt > 0 or amt < 0 then"
+position = "at"
+payload = "if TalismanCompat(amt) > TalismanCompat(0) or TalismanCompat(amt) < TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "assembled_string = assembled_string..(type(subpart) == 'string' and subpart or args.vars[tonumber(subpart[1])])"
+position = "at"
+payload = "assembled_string = assembled_string..(type(subpart) == 'string' and subpart or tostring(args.vars[tonumber(subpart[1])]))"
+match_indent = true
