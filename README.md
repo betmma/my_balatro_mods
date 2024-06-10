@@ -73,12 +73,13 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Real Random (Crystal Ball + Omnicard): Randomize all Lucky Card effects. Create a negative Magician when blind begins.
 - 4D Vouchers (4D Boosters + Oversupply): Rerolls apply to Vouchers, but rerolled Vouchers cost $2 more.
 - Recycle Area (Reserve Area + Wasteful): You can discard your hand once when opening a Tarot Pack or Spectral Pack.
-- Chaos (Collector + Abstract Art): Same kind of Enhancements can stack
+- Chaos (Collector + Abstract Art): Same kind of Enhancements can stack.
 
 # Betmma Voucher Pack: Adds 3 Voucher Packs.
 - Voucher Pack: redeem 1 of 3 vouchers.
 - Uncommon Voucher Pack: redeem 1 of 3 uncommon vouchers.
 - Fusion Voucher Pack: redeem 1 of 3 fusion vouchers.
+
 Note that if there aren't enough uncommon or fusion vouchers satisfying their requirements, random normal voucher will fill in.
 
 This structure code is based on [Coupon Book mod](https://github.com/nicholassam6425/balatro-mods/blob/main/balamod/mods/p_coupon_book.lua) which is for Balamod. I ported it into steamodded and added lots of content.

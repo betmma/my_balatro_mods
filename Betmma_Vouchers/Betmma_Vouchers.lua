@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.0(20240609)
+--- VERSION: 2.1.0.1(20240610)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -2505,14 +2505,16 @@ do
         (not card.config.center.discovered and ((card.area ~= G.jokers and card.area ~= G.consumeables and card.area) or not card.area)) -- undiscovered card
         then return retval end
         if card.ability.set=='Voucher' and card.config.center.mod_name=='Betmma Vouchers' and card.config.center.requires and #card.config.center.requires>1 then
-            retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes[1].nodes[1].nodes[2].config.object:remove()
-            retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes[1] = create_badge(localize('k_fusion_voucher'), loc_colour("fusion", nil), nil, 1.2)
+            local ret=retval.nodes[1].nodes[1].nodes[1].nodes
+            ret[#ret].nodes[1].nodes[1].nodes[2].config.object:remove()
+            ret[#ret].nodes[1] = create_badge(localize('k_fusion_voucher'), loc_colour("fusion", nil), nil, 1.2)
         end
         if card.ability.set=='Voucher' then
             local index=card.config and card.config.center and card.config.center.config and card.config.center.config.rarity or 1
             index=normalize_rarity(index)
             local card_type=({localize('k_common'), localize('k_uncommon'), localize('k_rare'), localize('k_legendary')})[index]
-            table.insert(retval.nodes[1].nodes[1].nodes[1].nodes[3].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
+            local ret=retval.nodes[1].nodes[1].nodes[1].nodes
+            table.insert(ret[#ret].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
         end
 
         return retval
