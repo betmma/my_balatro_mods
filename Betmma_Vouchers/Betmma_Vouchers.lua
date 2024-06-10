@@ -506,16 +506,6 @@ do
     end
 end --
 
-    local Card_use_consumable_ref=Card.use_consumeable
-    function Card:use_consumeable(area, copier)
-        local joker_number = #find_joker('joker name')
-        if self.ability.consumeable.hand_type then
-            for i=1,joker_number do
-                Card_use_consumable_ref(area, copier)
-            end
-        end
-        Card_use_consumable_ref(area, copier)
-    end
 
     setup_consumables()
     RARITY_VOUCHER_PROBABILITY={1,2,4,20}
