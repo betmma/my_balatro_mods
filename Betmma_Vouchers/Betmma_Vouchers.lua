@@ -9,24 +9,6 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
---[[
-    put some useful regular expression useful for porting here
-    G\.GAME\.used_vouchers\.([^ ]+) -> G.GAME.used_vouchers[MOD_PREFIX..'$1']
-    \)(?=\n    SMODS) -> }
-    \.loc_def = function\(self\)\n(.+\n.+\n.+)return (.+) -> .loc_vars = function(self, info_queue, center)\n$1return {vars=$2}
-
-    SMODS.Sprite:new("v_"..id, SMODS.findModByID("BetmmaVouchers").path, "v_"..id..".png", 71, 95, "asset_atli"):register();
-        this_v:reg ister()
-    ->
-    this_v.key= 'v_'..this_v.key
-        SMODS.Atlas{key=this_v.key, path=this_v.key..".png", px=71, py=95}
-        this_v.key = MOD_PREFIX .. this_v.key
-        this_v.atlas=this_v.key
-
-    G.P_CENTERS\.([^.]+?)\.config.extra -> G.P_CENTERS[MOD_PREFIX..'$1'].config.extra
-
-        ]]
-
 
 -- thanks to Denverplays2, RenSixx, KEKC and other discord users for their ideas
 -- ideas:
