@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.0.2(20240611)
+--- VERSION: 2.1.1(20240611)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -4191,7 +4191,14 @@ do
     handle_register(this_v)
 
     local function add_center_to_ability(card,name,center,default_value)
-        card.ability[name]=safe_add(card.ability[name],center.config[name],default_value)
+        if name=='h_x_mult' then
+            local new_value=(card.ability[name]or 1)*(center.config[name]or 1)
+            if new_value==1 then new_value=0 end
+            card.ability[name]=new_value
+
+        else
+            card.ability[name]=safe_add(card.ability[name],center.config[name],default_value)
+        end
     end
 
     local Card_set_ability_ref=Card.set_ability
