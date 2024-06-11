@@ -23,7 +23,7 @@ SMODS_Joker_fake=function(table)
         this_j.loc_vars=table.loc_vars
         if this_j.loc_vars then
             this_j.loc_def=function(self2)
-                return this_j.loc_vars(self2,nil,{ability=this_j.config}).vars
+                return this_j.loc_vars(self2,nil,self2).vars
             end
         end
         this_j.calculate=table.calculate

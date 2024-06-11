@@ -4,12 +4,11 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.0.1(20240610)
+--- VERSION: 2.1.0.2(20240611)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-
 -- thanks to Denverplays2, RenSixx, KEKC and other discord users for their ideas
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund (someone's joker has done it)
