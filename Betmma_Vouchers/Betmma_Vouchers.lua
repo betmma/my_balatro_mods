@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.1.1
+--- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.1.1(20240613)
+--- VERSION: 2.1.2(20240613)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -40,8 +40,71 @@ MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
 MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 
+-- Config: DISABLE UNWANTED MODS HERE
+config = {
+    -- normal vouchers
+    v_oversupply=true,
+    v_oversupply_plus=true,
+    v_gold_coin=true,
+    v_gold_bar=true,
+    v_abstract_art=true,
+    v_mondrian=true,
+    v_round_up=true,
+    v_round_up_plus=true,
+    v_event_horizon=true,
+    v_engulfer=true,
+    v_target=true,
+    v_bulls_eye=true,
+    v_voucher_bundle=true,
+    v_voucher_bulk=true,
+    v_skip=true,
+    v_skipper=true,
+    v_scrawl=true,
+    v_scribble=true,
+    v_reserve_area=true,
+    v_reserve_area_plus=true,
+    v_overkill=true,
+    v_big_blast=true,
+    v_3d_boosters=true,
+    v_4d_boosters=true,
+    v_b1g50=true,
+    v_b1g1=true,
+    v_collector=true,
+    v_connoisseur=true,
+    v_flipped_card=true,
+    v_double_flipped_card=true,
+    v_prologue=true,
+    v_epilogue=true,
+    v_bonus_plus=true,
+    v_mult_plus=true,
+    v_omnicard=true,
+    v_bulletproof=true,
+    v_cash_clutch=true,
+    v_inflation=true,
+    v_eternity=true,
+    v_half_life=true,
+    -- fusion vouchers
+    v_gold_round_up=true,
+    v_overshopping=true,
+    v_reroll_cut=true,
+    v_vanish_magic=true,
+    v_darkness=true,
+    v_double_planet=true,
+    v_trash_picker=true,
+    v_money_target=true,
+    v_art_gallery=true,
+    v_b1ginf=true,
+    v_slate=true,
+    v_gilded_glider=true,
+    v_mirror=true,
+    v_real_random=true,
+    v_4d_vouchers=true,
+    v_recycle_area=true,
+    v_chaos=true,
+}
+
 -- example: if used_voucher('slate') then ... end
-local function used_voucher(raw_key)
+function used_voucher(raw_key)
     return G.GAME.used_vouchers[MOD_PREFIX_V..raw_key]
 end
 -- example: get_voucher('slate').config.extra
@@ -144,66 +207,6 @@ function SMODS.current_mod.process_loc_text()
     G.localization.descriptions.Enhanced.ellipsis={text={'{C:inactive}(#1# abilities omitted)'}}
     G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
 end
--- Config: DISABLE UNWANTED MODS HERE
-config = {
-    -- normal vouchers
-    v_oversupply=true,
-    v_oversupply_plus=true,
-    v_gold_coin=true,
-    v_gold_bar=true,
-    v_abstract_art=true,
-    v_mondrian=true,
-    v_round_up=true,
-    v_round_up_plus=true,
-    v_event_horizon=true,
-    v_engulfer=true,
-    v_target=true,
-    v_bulls_eye=true,
-    v_voucher_bundle=true,
-    v_voucher_bulk=true,
-    v_skip=true,
-    v_skipper=true,
-    v_scrawl=true,
-    v_scribble=true,
-    v_reserve_area=true,
-    v_reserve_area_plus=true,
-    v_overkill=true,
-    v_big_blast=true,
-    v_3d_boosters=true,
-    v_4d_boosters=true,
-    v_b1g50=true,
-    v_b1g1=true,
-    v_collector=true,
-    v_connoisseur=true,
-    v_flipped_card=true,
-    v_double_flipped_card=true,
-    v_prologue=true,
-    v_epilogue=true,
-    v_bonus_plus=true,
-    v_mult_plus=true,
-    v_omnicard=true,
-    v_bulletproof=true,
-    v_cash_clutch=true,
-    v_inflation=true,
-    -- fusion vouchers
-    v_gold_round_up=true,
-    v_overshopping=true,
-    v_reroll_cut=true,
-    v_vanish_magic=true,
-    v_darkness=true,
-    v_double_planet=true,
-    v_trash_picker=true,
-    v_money_target=true,
-    v_art_gallery=true,
-    v_b1ginf=true,
-    v_slate=true,
-    v_gilded_glider=true,
-    v_mirror=true,
-    v_real_random=true,
-    v_4d_vouchers=true,
-    v_recycle_area=true,
-    v_chaos=true,
-}
 
 local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
 
@@ -435,7 +438,7 @@ do
 
         Game_start_run_ref(self, args)
 
-        local saveTable = args.savetext or nil
+        local saveTable = args and args.savetext or nil
         if saveTable then -- without this, vouchers given at the start of the run (in challenge) will be calculated twice
             if used_voucher('bonus_plus') then
                 G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
@@ -1326,7 +1329,7 @@ do
         }
         if center_table.name == 'Scrawl' then
             ease_dollars(get_voucher('scrawl').config.extra*#G.jokers.cards)
-            randomly_create_joker(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer),nil,nil)
+            randomly_create_joker(math.ceil(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)),nil,nil)
         end
         if center_table.name == 'Scribble' then
             for i=1, get_voucher('scribble').config.extra do
@@ -2417,7 +2420,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        return {vars={center.ability.extra,center.ability.extra+30}}
+        return {vars={center.ability.extra}}
     end
     handle_register(this_v)
 
@@ -2439,7 +2442,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        return {vars={center.ability.extra,center.ability.extra+4}}
+        return {vars={center.ability.extra}}
     end
     handle_register(this_v)
 
@@ -2459,6 +2462,127 @@ do
     end
 
 end -- Cash Clutch
+do 
+
+    local name="Eternity"
+    local id="eternity"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Shop can have {C:attention}Eternal{} Jokers.",
+            "{C:inactive,s:0.8}(Can't be sold or destroyed)",
+            "{C:attention}Eternal{} Jokers have {C:green}#1#%{}",
+            "chance to be {C:dark_edition}Negative{}",
+            "{C:inactive}(This chance can't be doubled){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=2.5,rarity=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={100/center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Half-life"
+    local id="half_life"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Shop can have {C:attention}Perishable{} Jokers.",
+            "{C:inactive,s:0.8}(Debuffed after 5 Rounds)",
+            "{C:attention}Perishable{} Jokers only",
+            "take up {C:attention}#1#{} joker slots",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=0.5,rarity=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'eternity'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    -- get the amount of extra joker slot by half-life jokers 
+    -- WARNING: implement of half-life is NOT setting perishable jokers to only take up 0.5 joker slots, instead it's setting perishable jokers to add 0.5 joker slots like negative edition. With this the display of joker area UI will be like 5/5.5 which wasn't I want, so I modified the CardArea:update to reduce card count by the function value. At other situations the game always use #G.jokers.cards so this does no harm. For joker limit it's not practical to directly decrease it since it's the real value, so I stored the modified value in self.config.card_limit_ref and used a lovely patch to let the ui use this value if the cardarea is joker area and half_life has been redeemed.
+    local function get_half_life_delta()
+        if not G.jokers.cards or not used_voucher('half_life')then return 0 end
+        local ret=0
+        local delta_value=get_voucher('half_life').config.extra
+        for i=1,#G.jokers.cards do
+            if G.jokers.cards[i].ability.perishable and not G.jokers.cards[i].debuff then
+                ret=ret+delta_value
+            end
+        end
+        return ret
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Eternity' then
+            G.GAME.modifiers.enable_eternals_in_shop=true
+        end
+        if center_table.name == 'Half-life' then
+            G.GAME.modifiers.enable_perishables_in_shop=true
+            G.jokers.config.card_limit = G.jokers.config.card_limit +get_half_life_delta()
+        end
+
+        Card_apply_to_run_ref(self, center)
+    end
+
+    local create_card_ref=create_card
+    function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+        local card=create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+        if used_voucher('eternity') and _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and card.ability.eternal then
+            if pseudorandom('eternity')<1/get_voucher('eternity').config.extra then
+                card:set_edition{negative=true}
+            end
+        end
+        return card
+    end
+
+    local Card_add_to_deck_ref=Card.add_to_deck
+    function Card:add_to_deck(from_debuff)
+        if not self.added_to_deck and self.ability.perishable and used_voucher('half_life') and not self.ability.consumeable then
+            G.jokers.config.card_limit = G.jokers.config.card_limit + get_voucher('half_life').config.extra
+        end
+        Card_add_to_deck_ref(self,from_debuff)
+    end
+    local Card_remove_from_deck_ref=Card.remove_from_deck
+    function Card:remove_from_deck(from_debuff)
+        if self.added_to_deck and self.ability.perishable and used_voucher('half_life') and not self.ability.consumeable then
+            G.jokers.config.card_limit = G.jokers.config.card_limit - get_voucher('half_life').config.extra
+        end
+        Card_remove_from_deck_ref(self,from_debuff)
+    end
+
+    local CardArea_update_ref=CardArea.update
+    function CardArea:update(dt)
+        CardArea_update_ref(self,dt)
+        if self==G.jokers and used_voucher('half_life')then
+            local delta=get_half_life_delta()
+            self.config.card_count=self.config.card_count-delta
+            self.config.card_limit_ref=self.config.card_limit-delta
+        end
+    end
+
+    local CardArea_draw_ref=CardArea.draw
+    function CardArea:draw()
+        CardArea_draw_ref(self)
+    end
+end -- eternity
  
 
 

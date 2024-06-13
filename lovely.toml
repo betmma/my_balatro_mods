@@ -67,3 +67,13 @@ pattern = "assembled_string = assembled_string..(type(subpart) == 'string' and s
 position = "at"
 payload = "assembled_string = assembled_string..(type(subpart) == 'string' and subpart or tostring(args.vars[tonumber(subpart[1])]))"
 match_indent = true
+
+
+# Half-life changing displayed joker limit in CardArea:draw()
+[[patches]]
+[patches.pattern]
+target = "cardarea.lua"
+pattern = "{n=G.UIT.T, config={ref_table = self.config, ref_value = 'card_limit', scale = 0.3, colour = G.C.WHITE}},"
+position = "at"
+payload = "{n=G.UIT.T, config={ref_table = self.config, ref_value = self==G.jokers and used_voucher and used_voucher('half_life') and 'card_limit_ref' or 'card_limit', scale = 0.3, colour = G.C.WHITE}},"
+match_indent = true
