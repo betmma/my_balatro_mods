@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.2
+--- MOD_DESCRIPTION: 40 More Vouchers and 17 Fusion Vouchers! v2.1.2
 --- PREFIX: betm_vouchers
 --- VERSION: 2.1.2(20240613)
 --- BADGE_COLOUR: ED40BF
@@ -319,6 +319,7 @@ end
 local function randomly_create_planet(tag,message,extra)
     return randomly_create_consumable('Planet',tag,message,extra)
 end
+
 
 local function get_weight(v)
     local _type=type(v)
@@ -2496,7 +2497,7 @@ do
             "Shop can have {C:attention}Perishable{} Jokers.",
             "{C:inactive,s:0.8}(Debuffed after 5 Rounds)",
             "{C:attention}Perishable{} Jokers only",
-            "take up {C:attention}#1#{} joker slots",
+            "take up {C:attention}#1#{} Joker slots",
         }
     }
     local this_v = SMODS.Voucher{
@@ -4347,7 +4348,7 @@ do
 
 
 end -- chaos
-    -- -- this challenge is only for test
+    -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
     --     id = 'c_mod_testvoucher',
@@ -4389,8 +4390,8 @@ end -- chaos
     --         {id = 'c_death'},
     --         {id = 'c_death'},
     --         {id = 'c_death'},
-    --         {id = 'c_death'},
-    --         {id = 'c_death'},
+    --         {id = 'c_chariot'},
+    --         {id = 'c_chariot'},
     --         {id = 'c_justice'},
     --         {id = 'c_justice'},
     --         {id = 'c_magician'},
@@ -4399,7 +4400,7 @@ end -- chaos
     --     },
     --     vouchers = {
     --         {id = MOD_PREFIX_V.. 'trash_picker'},
-    --         {id = MOD_PREFIX_V.. 'cash_clutch'},
+    --         {id = MOD_PREFIX_V.. 'collector'},
     --         {id = MOD_PREFIX_V.. '3d_boosters'},
     --         {id = MOD_PREFIX_V.. '4d_boosters'},
     --         --{id = 'v_bonus_plus'},
@@ -4407,9 +4408,10 @@ end -- chaos
     --         -- {id = 'v_connoisseur'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
-    --         {id = MOD_PREFIX_V.. 'bulletproof'},
+    --         {id = MOD_PREFIX_V.. 'eternity'},
+    --         {id = MOD_PREFIX_V.. 'half_life'},
     --         -- {id = 'v_overshopping'},
-    --         {id = MOD_PREFIX_V.. 'chaos'},
+    --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
     --         -- {id = 'v_event_horizon'},
     --     },
