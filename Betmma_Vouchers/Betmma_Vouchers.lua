@@ -2,14 +2,14 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.0
+--- MOD_DESCRIPTION: 38 More Vouchers and 17 Fusion Vouchers! v2.1.1.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.1(20240611)
+--- VERSION: 2.1.1.1(20240613)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
--- thanks to Denverplays2, RenSixx, KEKC and other discord users for their ideas
+-- thanks to Denverplays2, RenSixx, KEKC, Zahrizi, Sameone and other discord users for their ideas
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund (someone's joker has done it)
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
@@ -80,7 +80,7 @@ if IN_SMOD1 then
         if self.key:find(MOD_PREFIX_V) and self.set=='Voucher'then
             if not config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
             self.mod_name='Betmma Vouchers'
-            if self.requires and #self.requires>1 then 
+            if self.requires and #self.requires>1 and not self.config.weight then 
                 self.config.weight=fusion_voucher_weight
             end
         end
@@ -367,7 +367,7 @@ local ability_names={'mult','h_mult','h_x_mult','h_dollars','p_dollars','t_mult'
 local function load_ability_to_center(card)
     card.config.center=copy_table(card.config.center)
     for k,v in pairs(ability_names) do
-        card.config.center.config[v]=card.ability[v]
+        card.config.center.config[v]=card.ability[v] or 0
     end
     card.config.center.config.Xmult=card.ability.x_mult
     if used_voucher('real_random')then
@@ -378,7 +378,7 @@ end
 local function load_center_to_ability(card)
     card.config.center=copy_table(card.config.center)
     for k,v in pairs(ability_names) do
-        card.ability[v]=card.config.center.config[v]
+        card.ability[v]=card.config.center.config[v] or 0
     end
     card.ability.x_mult=card.config.center.config.Xmult
     if used_voucher('real_random')then
