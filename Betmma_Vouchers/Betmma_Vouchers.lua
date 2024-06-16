@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 40 More Vouchers and 17 Fusion Vouchers! v2.1.2
+--- MOD_DESCRIPTION: 40 More Vouchers and 17 Fusion Vouchers! v2.1.2.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.2(20240613)
+--- VERSION: 2.1.2.1(20240616)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -34,6 +34,7 @@ Tier 2 Voucher: Clearance Aisle: 3 random items in the shop will be free per sho
 
 Fusion Voucher: Giveaway Search (Reroll Glut + Clearance Aisle): Each shop reroll that you do will add +1 random free item to that shop. 
 ]]
+--sendDebugMessage(tprint(table))
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 local JOKER_MOD_PREFIX=IN_SMOD1 and "betm_jokers_"or ''
 MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
@@ -101,6 +102,8 @@ config = {
     v_4d_vouchers=true,
     v_recycle_area=true,
     v_chaos=true,
+    v_debt_burden=true,
+    -- v_bobby_pin=true
 }
 
 -- example: if used_voucher('slate') then ... end
@@ -209,6 +212,7 @@ function SMODS.current_mod.process_loc_text()
 end
 
 local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
+local usingCryptid=SMODS.Mods and SMODS.Mods["Cryptid"] or false
 
 function TalismanCompat(num)
 	return usingTalisman and Big:new(num) or num
@@ -2584,7 +2588,125 @@ do
         CardArea_draw_ref(self)
     end
 end -- eternity
- 
+do 
+    local name="Debt Burden"
+    local id="debt_burden"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Shop can have {C:attention}Rental{} Jokers.",
+            "{C:inactive,s:0.8}(Costs {C:money,s:0.8}$3{C:inactive,s:0.8} per round only if you",
+            "{C:attention,s:0.8}aren't in debt before round ends{C:inactive,s:0.8})",
+            "Each {C:attention}Rental{} Joker increases",
+            "debt limit by {C:red}-$#1#{}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=10,rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Bobby Pin"
+    local id="bobby_pin"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Shop can have {C:attention}Pinned{} Jokers.",
+            "{C:inactive,s:0.8}(Stays pinned to the leftmost position)",
+            "Each {C:attention}Pinned{} Joker retrigger",
+            "the rightmost Joker once",-- not implemented
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'debt_burden'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    -- should change rental side ui
+
+    local function get_debt_burden_delta()
+        if not G.jokers.cards or not used_voucher('debt_burden')then return 0 end
+        local ret=0
+        local delta_value=get_voucher('debt_burden').config.extra
+        for i=1,#G.jokers.cards do
+            if G.jokers.cards[i].ability.rental and not G.jokers.cards[i].debuff then
+                ret=ret+delta_value
+            end
+        end
+        return ret
+    end
+    
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Debt Burden' then
+            G.GAME.modifiers.enable_rentals_in_shop=true
+            G.GAME.bankrupt_at = G.GAME.bankrupt_at - get_debt_burden_delta()
+        end
+        if center_table.name == 'Bobby Pin' then
+            G.GAME.modifiers.cry_enable_pinned_in_shop=true
+        end
+
+        Card_apply_to_run_ref(self, center)
+    end
+
+    local Card_calculate_rental_ref=Card.calculate_rental
+    function Card:calculate_rental()
+        if used_voucher('debt_burden') and G.GAME.dollars<0 then
+            return
+        end
+        Card_calculate_rental_ref(self)
+    end
+    
+    local Card_add_to_deck_ref=Card.add_to_deck
+    function Card:add_to_deck(from_debuff)
+        if not self.added_to_deck and self.ability.rental and used_voucher('debt_burden') and not self.ability.consumeable then
+            G.GAME.bankrupt_at = G.GAME.bankrupt_at - get_voucher('debt_burden').config.extra
+        end
+        Card_add_to_deck_ref(self,from_debuff)
+    end
+    local Card_remove_from_deck_ref=Card.remove_from_deck
+    function Card:remove_from_deck(from_debuff)
+        if self.added_to_deck and self.ability.rental and used_voucher('debt_burden') and not self.ability.consumeable then
+            G.GAME.bankrupt_at = G.GAME.bankrupt_at + get_voucher('debt_burden').config.extra
+        end
+        Card_remove_from_deck_ref(self,from_debuff)
+    end
+
+    local create_card_ref=create_card
+    function create_card(_type, area, legendary, _rarity, 
+        skip_materialize, soulable, forced_key, key_append)
+        local card=create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+        if not usingCryptid and G.GAME.modifiers.cry_enable_pinned_in_shop then
+            if _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and pseudorandom('cry_pin'..(key_append or '')..G.GAME.round_resets.ante) > 0.7 then
+                card.pinned = true
+            end
+        end
+        return card
+    end
+
+
+
+
+
+end -- debt burden
 
 
     -- ################
