@@ -14,7 +14,7 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 
-# Betmma Vouchers: Adds 42 Vouchers and 17 fusion Vouchers.
+# Betmma Vouchers: Adds 42 Vouchers and 18 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
@@ -78,6 +78,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - 4D Vouchers (4D Boosters + Oversupply): Rerolls apply to Vouchers, but rerolled Vouchers cost $2 more.
 - Recycle Area (Reserve Area + Wasteful): You can discard your hand once when opening a Tarot Pack or Spectral Pack.
 - Chaos (Collector + Abstract Art): Same kind of Enhancements can stack.
+- Heat Death (Eternity + Half-life): Eternal and Perishable can stack. Such Joker gives +1 Joker slot when debuffed by Perishable.
 
 # Betmma Voucher Pack: Adds 3 Voucher Packs.
 - Voucher Pack: redeem 1 of 3 vouchers.

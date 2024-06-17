@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 42 More Vouchers and 17 Fusion Vouchers! v2.1.2.2
+--- MOD_DESCRIPTION: 42 More Vouchers and 18 Fusion Vouchers! v2.1.3
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.2.2(20240617)
+--- VERSION: 2.1.3(20240617)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -103,7 +103,8 @@ config = {
     v_recycle_area=true,
     v_chaos=true,
     v_debt_burden=true,
-    v_bobby_pin=true
+    v_bobby_pin=true,
+    v_heat_death=true,
 }
 
 -- example: if used_voucher('slate') then ... end
@@ -203,6 +204,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.b_flip_hand = "Flip"
     G.localization.misc.dictionary.k_bulletproof = "Bulletproof!"
     G.localization.misc.dictionary.b_vanish = "VANISH"
+    G.localization.misc.dictionary.k_heat_death="Heat Death!"
     G.localization.misc.dictionary.over_retriggered = "Over-retriggered: "
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
@@ -4493,6 +4495,69 @@ do
 
 
 end -- chaos
+do
+    local name="Heat Death"
+    local id="heat_death"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Eternal{} and {C:attention}Perishable{} can stack.",
+            "Such Joker gives {C:dark_edition}+#1#{} Joker slot",
+            "when {C:attention}debuffed{} by Perishable",
+            "{C:inactive}(Eternity + Half-life){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=1,rarity=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'eternity',MOD_PREFIX_V..'half_life'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Heat Death' then
+            G.GAME.modifiers.cry_eternal_perishable_compat=true
+        end
+
+        Card_apply_to_run_ref(self, center)
+    end
+
+    local create_card_ref=create_card
+    function create_card(_type, area, legendary, _rarity, 
+        skip_materialize, soulable, forced_key, key_append)
+        local card=create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
+        if not usingCryptid and G.GAME.modifiers.cry_eternal_perishable_compat then
+            if _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and card.ability.eternal and not card.ability.perishable and pseudorandom('cry_per'..(key_append or '')..G.GAME.round_resets.ante) > 0.7 then
+                self.ability.perishable = true
+                self.ability.perish_tally = G.GAME.perishable_rounds
+            end
+            if _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and not card.ability.eternal and card.ability.perishable and pseudorandom('cry_per'..(key_append or '')..G.GAME.round_resets.ante) > 0.7 then
+                self.ability.eternal = true
+            end
+        end
+        return card
+    end
+
+    local Card_set_debuff_ref=Card.set_debuff
+    function Card:set_debuff(should_debuff)
+        if self.ability.perishable and self.ability.perish_tally <= 0 and self.ability.eternal and used_voucher('heat_death') and not self.ability.heat_deathed then
+            self.ability.heat_deathed=true
+            card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_heat_death'),colour = G.C.FILTER, delay = 0.45})
+            G.jokers.config.card_limit = G.jokers.config.card_limit + get_voucher('heat_death').config.extra
+        end
+        Card_set_debuff_ref(self,should_debuff)
+    end
+end -- heat death
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -4509,24 +4574,17 @@ end -- chaos
     --         -- {id = 'j_ascension'},
     --         -- {id = 'j_sock_and_buskin'},
     --         -- {id = 'j_sock_and_buskin'},
-    --         {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         {id = 'j_hiker'},
-    --         {id = JOKER_MOD_PREFIX..'j_housing_choice'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
-    --         -- {id = 'j_piggy_bank'},
-    --         -- {id = 'j_blueprint'},
-    --         -- {id = 'j_triboulet'},
-    --         -- {id = 'j_triboulet'},
+    --         {id = 'j_baron', pinned = true},
+    --         {id = JOKER_MOD_PREFIX..'j_housing_choice', pinned = true},
+    --         {id = 'j_mime', pinned = true},
+    --         {id = 'j_mime', pinned = true},
+    --         {id = 'j_mime', pinned = true},
     --     },
     --     consumeables = {
     --         {id = 'c_cryptid'},
@@ -4553,6 +4611,9 @@ end -- chaos
     --         -- {id = 'v_connoisseur'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
+    --         {id = MOD_PREFIX_V.. 'eternity'},
+    --         {id = MOD_PREFIX_V.. 'half_life'},
+    --         {id = MOD_PREFIX_V.. 'heat_death'},
     --         {id = MOD_PREFIX_V.. 'debt_burden'},
     --         {id = MOD_PREFIX_V.. 'bobby_pin'},
     --         -- {id = 'v_overshopping'},
@@ -4562,7 +4623,7 @@ end -- chaos
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --         -- cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
     --     },
     --     restrictions = {
     --         banned_cards = {
