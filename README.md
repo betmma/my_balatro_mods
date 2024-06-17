@@ -14,8 +14,8 @@ A collection of mods made by me for Balatro.
 - Piggy Bank: Put half of earned dollars into it and gain 1 Mult for each dollar.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 
-# Betmma Vouchers: Adds 40 Vouchers and 17 fusion Vouchers.
-Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
+# Betmma Vouchers: Adds 42 Vouchers and 17 fusion Vouchers.
+Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
 - Oversupply plus: Gain 1 Voucher Tag after beating every blind.
@@ -57,6 +57,8 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Inflation: At end of each Round, earn extra $1 per remaining Hand. (the same as above)
 - Eternity: Shop can have Eternal Jokers. Eternal Jokers have 40% chance to be Negative.
 - Half-life: Shop can have Perishable Jokers. Perishable Jokers only take up 0.5 Joker slots.
+- Debt Burden: Shop can have Rental Jokers. Each Rental Joker increases debt limit by -10$. Rental Jokers won't cost money if you are in debt.
+- Bobby Pin: Shop can have Pinned Jokers. Each Pinned Joker copies ability of Joker to the right if itself isn't triggered.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.

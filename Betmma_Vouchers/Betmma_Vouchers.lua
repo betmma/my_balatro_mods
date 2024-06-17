@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 40 More Vouchers and 17 Fusion Vouchers! v2.1.2.1
+--- MOD_DESCRIPTION: 42 More Vouchers and 17 Fusion Vouchers! v2.1.2.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.2.1(20240616)
+--- VERSION: 2.1.2.2(20240617)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -103,7 +103,7 @@ config = {
     v_recycle_area=true,
     v_chaos=true,
     v_debt_burden=true,
-    -- v_bobby_pin=true
+    v_bobby_pin=true
 }
 
 -- example: if used_voucher('slate') then ... end
@@ -2620,13 +2620,14 @@ do
         text = {
             "Shop can have {C:attention}Pinned{} Jokers.",
             "{C:inactive,s:0.8}(Stays pinned to the leftmost position)",
-            "Each {C:attention}Pinned{} Joker retrigger",
-            "the rightmost Joker once",-- not implemented
+            "Each {C:attention}Pinned{} Joker copies",
+            "ability of {C:attention}Joker{} to the right",
+            "if itself {C:attention}isn't triggered{}"
         }
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={rarity=2},
+        config={rarity=3},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'debt_burden'}
     }
@@ -2702,6 +2703,28 @@ do
         return card
     end
 
+    local Card_calculate_joker_ref=Card.calculate_joker
+    function Card:calculate_joker(context)
+        local ret=Card_calculate_joker_ref(self,context)
+        if self.ability.set=='Joker' and not self.debuff and self.pinned and ret==nil then
+            local other_joker = nil
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i] == self then other_joker = G.jokers.cards[i+1] end
+            end
+            if other_joker and other_joker ~= self then
+                context.blueprint = (context.blueprint and (context.blueprint + 1)) or 1
+                context.blueprint_card = context.blueprint_card or self
+                if context.blueprint > #G.jokers.cards + 1 then return end
+                local other_joker_ret = other_joker:calculate_joker(context)
+                if other_joker_ret then 
+                    other_joker_ret.card = context.blueprint_card or self
+                    other_joker_ret.colour = G.C.BLUE
+                    return other_joker_ret
+                end
+            end
+        end
+        return ret
+    end
 
 
 
@@ -4478,7 +4501,7 @@ end -- chaos
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 5000},
+    --             {id = 'dollars', value = 20},
     --         }
     --     },
     --     jokers = {
@@ -4487,13 +4510,13 @@ end -- chaos
     --         -- {id = 'j_sock_and_buskin'},
     --         -- {id = 'j_sock_and_buskin'},
     --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
-    --         {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
+    --         -- {id = 'j_oops'},
     --         {id = 'j_hiker'},
-    --         {id = JOKER_MOD_PREFIX..'j_jjookkeerr'},
+    --         {id = JOKER_MOD_PREFIX..'j_housing_choice'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
@@ -4530,8 +4553,8 @@ end -- chaos
     --         -- {id = 'v_connoisseur'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
-    --         {id = MOD_PREFIX_V.. 'eternity'},
-    --         {id = MOD_PREFIX_V.. 'half_life'},
+    --         {id = MOD_PREFIX_V.. 'debt_burden'},
+    --         {id = MOD_PREFIX_V.. 'bobby_pin'},
     --         -- {id = 'v_overshopping'},
     --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
