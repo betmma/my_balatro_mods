@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 42 More Vouchers and 19 Fusion Vouchers! v2.1.3.1
+--- MOD_DESCRIPTION: 42 More Vouchers and 19 Fusion Vouchers! v2.1.3.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.3.1(20240619)
+--- VERSION: 2.1.3.2(20240619)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -3003,7 +3003,7 @@ do
                     }},
                     {n=G.UIT.R, config={align = "cm"}, nodes={
                         {n=G.UIT.T, config={text = '+'..localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
-                        {n=G.UIT.T, config={ref_table = G.P_CENTERS[MOD_PREFIX .. 'v_vanish_magic'].config, ref_value = 'extra',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                        {n=G.UIT.T, config={ref_table = get_voucher('vanish_magic').config, ref_value = 'extra',colour = G.C.WHITE, scale = 0.55, shadow = true}}
                     }}
                 }}
             }}
