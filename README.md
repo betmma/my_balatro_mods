@@ -57,7 +57,7 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Inflation: At end of each Round, earn extra $1 per remaining Hand. (the same as above)
 - Eternity: Shop can have Eternal Jokers. Eternal Jokers have 40% chance to be Negative.
 - Half-life: Shop can have Perishable Jokers. Perishable Jokers only take up 0.5 Joker slots.
-- Debt Burden: Shop can have Rental Jokers. Each Rental Joker increases debt limit by -10$. Rental Jokers won't cost money if you are in debt.
+- Debt Burden: Shop can have Rental Jokers. Each Rental Joker increases debt limit by -$10. Rental Jokers won't cost money if you are in debt.
 - Bobby Pin: Shop can have Pinned Jokers. Each Pinned Joker copies ability of Joker to the right if itself isn't triggered.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
@@ -79,6 +79,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Recycle Area (Reserve Area + Wasteful): You can discard your hand once when opening a Tarot Pack or Spectral Pack.
 - Chaos (Collector + Abstract Art): Same kind of Enhancements can stack.
 - Heat Death (Eternity + Half-life): Eternal and Perishable can stack. Such Joker gives +1 Joker slot when debuffed by Perishable.
+- Deep Roots (Seed Money + Debt Burden): You earn interest based on the absolute value of your money. e.g. -$20 gives $4.
 
 # Betmma Voucher Pack: Adds 3 Voucher Packs.
 - Voucher Pack: redeem 1 of 3 vouchers.

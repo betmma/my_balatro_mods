@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 42 More Vouchers and 18 Fusion Vouchers! v2.1.3
+--- MOD_DESCRIPTION: 42 More Vouchers and 19 Fusion Vouchers! v2.1.3.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.3(20240617)
+--- VERSION: 2.1.3.1(20240619)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -105,6 +105,7 @@ config = {
     v_debt_burden=true,
     v_bobby_pin=true,
     v_heat_death=true,
+    v_deep_roots=true,
 }
 
 -- example: if used_voucher('slate') then ... end
@@ -2708,7 +2709,7 @@ do
     local Card_calculate_joker_ref=Card.calculate_joker
     function Card:calculate_joker(context)
         local ret=Card_calculate_joker_ref(self,context)
-        if self.ability.set=='Joker' and not self.debuff and self.pinned and ret==nil then
+        if self.ability.set=='Joker' and not self.debuff and self.pinned and used_voucher('bobby_pin') and ret==nil then
             local other_joker = nil
             for i = 1, #G.jokers.cards do
                 if G.jokers.cards[i] == self then other_joker = G.jokers.cards[i+1] end
@@ -4558,6 +4559,39 @@ do
         Card_set_debuff_ref(self,should_debuff)
     end
 end -- heat death
+do
+    local name="Deep Roots"
+    local id="deep_roots"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You earn {C:money}interest{} based on",
+            "the {C:attention}absolute value{} of your money",
+            "{C:inactive}(Seed Money + Debt Burden){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_seed_money',MOD_PREFIX_V..'debt_burden'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+    local G_FUNCS_evaluate_round_ref=G.FUNCS.evaluate_round
+    G.FUNCS.evaluate_round = function()
+        if used_voucher('deep_roots') and G.GAME.dollars<0 then
+            G.GAME.dollars=-G.GAME.dollars
+            G_FUNCS_evaluate_round_ref()
+            G.GAME.dollars=-G.GAME.dollars
+            return
+        end
+        G_FUNCS_evaluate_round_ref()
+    end
+end -- deep roots
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -4566,7 +4600,7 @@ end -- heat death
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = 20},
+    --             {id = 'dollars', value = -20},
     --         }
     --     },
     --     jokers = {
@@ -4615,7 +4649,7 @@ end -- heat death
     --         {id = MOD_PREFIX_V.. 'half_life'},
     --         {id = MOD_PREFIX_V.. 'heat_death'},
     --         {id = MOD_PREFIX_V.. 'debt_burden'},
-    --         {id = MOD_PREFIX_V.. 'bobby_pin'},
+    --         {id = MOD_PREFIX_V.. 'deep_roots'},
     --         -- {id = 'v_overshopping'},
     --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
