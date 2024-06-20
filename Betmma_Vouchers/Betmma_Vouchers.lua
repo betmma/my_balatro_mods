@@ -4539,11 +4539,11 @@ do
         local card=create_card_ref(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append)
         if not usingCryptid and G.GAME.modifiers.cry_eternal_perishable_compat then
             if _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and card.ability.eternal and not card.ability.perishable and pseudorandom('cry_per'..(key_append or '')..G.GAME.round_resets.ante) > 0.7 then
-                self.ability.perishable = true
-                self.ability.perish_tally = G.GAME.perishable_rounds
+                card.ability.perishable = true
+                card.ability.perish_tally = G.GAME.perishable_rounds
             end
             if _type == 'Joker' and ((area == G.shop_jokers) or (area == G.pack_cards)) and not card.ability.eternal and card.ability.perishable and pseudorandom('cry_per'..(key_append or '')..G.GAME.round_resets.ante) > 0.7 then
-                self.ability.eternal = true
+                card.ability.eternal = true
             end
         end
         return card
