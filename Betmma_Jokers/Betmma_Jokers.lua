@@ -457,6 +457,7 @@ function ease_dollars(mod, instant)
 
 end
 
+-- Housing Choice update status
 local ease_ante_ref=ease_ante
 function ease_ante(mod)
     ease_ante_ref(mod)
@@ -464,6 +465,13 @@ function ease_ante(mod)
     for k,joker in pairs(jokers) do
         joker.ability.extra.triggered=false
     end
+end
+
+-- I don't know why there are so many reports about housing choice causing get_straight and get_X_same such function to crash, it seems that some card's rank becomes nil and someone has guessed about voucher created has no rank but created card won't come into played hands. Anyway I should try this
+local Card_get_id_ref=Card.get_id
+function Card:get_id()
+    local ret=Card_get_id_ref(self)
+    return ret or -math.random(100,1000000)
 end
 
 
