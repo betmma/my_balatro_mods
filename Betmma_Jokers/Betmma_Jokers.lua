@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 6 More Jokers!
+--- MOD_DESCRIPTION: 7 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
@@ -37,7 +37,24 @@ SMODS.current_mod=SMODS.current_mod or {}
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_errorr = "Rank Changed!"
     G.localization.misc.challenge_names.c_mod_testjoker = "TestJoker"
-
+    G.localization.misc.contexts={
+        ['end_of_round'] = "when round ends",
+        ['discard'] = "when you discard",
+        ['debuffed_hand'] = "when hand is debuffed",
+        ['using_consumeable'] = "when using consumeable",
+        ['remove_playing_cards'] = "when removing playing cards",
+        ['destroying_card'] = "when destroying card",
+        ['setting_blind'] = "when setting blind",
+        ['first_hand_drawn'] = "when first hand drawn",
+        ['playing_card_added'] = "when playing card added",
+        ['skipping_booster'] = "when skipping booster",
+        ['skip_blind'] = "when skipping blind",
+        ['ending_shop'] = "when shop ends",
+        ['reroll_shop'] = "when rerolling shop",
+        ['selling_card'] = "when selling card",
+        ['buying_card'] = "when buying card",
+        ['open_booster'] = "when opening booster"
+    }
 end
 
 -- you can disable joker here
@@ -99,6 +116,16 @@ jokerBlacklists={}
                 "only trigger 1 time per ante",
                 "{C:inactive}(#1#)"
                 -- dollar in it adds to its sold price
+            }
+        },
+        jimbow = {
+            name = "Jimbow",
+            text = {
+                "This Joker gains {C:chips}+#2#{}",
+                "Chips {C:attention}#3#{},",
+                "context changes when achieved",
+                "{C:inactive}(Currently {C:chips}#1#{C:inactive} Chips)",
+                
             }
         }
     }
@@ -200,6 +227,46 @@ local function INIT()
                 end
             end
         },
+        jimbow = SMODS.Joker{
+            name="Jimbow", key="jimbow",
+            config={extra={chips=0,chip_mod=15,context=nil}},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=1, 
+            cost=2, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=false, 
+            eternal_compat=false,
+            loc_vars=function(self,info_queue,center)
+                if center.ability.extra.context==nil then
+                    center.ability.extra.context=select(2,pseudorandom_element(G.localization.misc.contexts,pseudoseed('jimbow')))
+                end
+                return {vars={center.ability.extra.chips,center.ability.extra.chip_mod,localize(center.ability.extra.context,'contexts')}}
+            end,
+            calculate=function(self,card,context)
+                if card.ability.extra.context==nil then
+                    card.ability.extra.context=select(2,pseudorandom_element(G.localization.misc.contexts,pseudoseed('jimbow')))
+                end
+                if not context.repetition and context[card.ability.extra.context] then
+                    card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chip_mod
+                    card.ability.extra.context=select(2,pseudorandom_element(G.localization.misc.contexts,pseudoseed('jimbow')))
+                    card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.CHIPS})
+                    -- return {
+                    --     message = localize('k_upgrade_ex'),
+                    --     colour = G.C.CHIPS,
+                    --     card = card
+                    -- }
+                end
+                if not context.repetition and SMODS.end_calculate_context(context) then
+                    return {
+                        message = localize{type='variable',key='a_chips',vars={card.ability.extra.chips}},
+                        chip_mod = card.ability.extra.chips, 
+                        colour = G.C.CHIPS
+                    }
+                end
+            end
+        },
     }
 
 
@@ -247,7 +314,7 @@ local function INIT()
 
     -- Add Jokers to center
     for k, v in pairs(jokers) do
-        if not jokerBlacklists[k] then
+        if jokerBlacklists[k]~=true then
             if IN_SMOD1 then
                 v.loc_txt = localization[k]
                 --v.spritePos = { x = 0, y = 0 }

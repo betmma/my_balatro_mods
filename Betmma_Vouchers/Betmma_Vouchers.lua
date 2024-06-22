@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 42 More Vouchers and 19 Fusion Vouchers! v2.1.3.2
+--- MOD_DESCRIPTION: 44 Vouchers and 19 Fusion Vouchers! v2.1.4
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.3.2(20240619)
+--- VERSION: 2.1.4(20240622)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -23,7 +23,6 @@
 -- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- enhancements can stack
--- tier 2 voucher pack $15
 -- give $1 per 10 cards left when round ends
 -- Grand Finale: if no cards left when round ends, gives $10
 -- money grabber + gold coin :
@@ -84,6 +83,10 @@ config = {
     v_inflation=true,
     v_eternity=true,
     v_half_life=true,
+    v_debt_burden=true,
+    v_bobby_pin=true,
+    v_stow=true,
+    v_stash=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -102,8 +105,6 @@ config = {
     v_4d_vouchers=true,
     v_recycle_area=true,
     v_chaos=true,
-    v_debt_burden=true,
-    v_bobby_pin=true,
     v_heat_death=true,
     v_deep_roots=true,
 }
@@ -214,11 +215,11 @@ function SMODS.current_mod.process_loc_text()
     G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
 end
 
-local usingTalisman = SMODS.Mods and SMODS.Mods["Talisman"] or false
+local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and true or false end
 local usingCryptid=SMODS.Mods and SMODS.Mods["Cryptid"] or false
 
 function TalismanCompat(num)
-	return usingTalisman and Big:new(num) or num
+	return usingTalisman() and Big:new(num) or num
 end
 
 local function get_plain_text_from_localize(final_line)
@@ -233,6 +234,17 @@ local function get_plain_text_from_localize(final_line)
     return ret
 end
 
+-- retuen index of obj in array. If not found return -1.
+local function get_index_in_array(array,obj)
+    local index=1
+    while array[index]~=obj and index<=#array do
+        index=index+1
+    end
+    if index<=#array then
+        return index
+    end
+    return -1
+end
 
 local function randomly_redeem_voucher(no_random_please) -- xD
     -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
@@ -916,14 +928,14 @@ do
     local mod_chips_ref=mod_chips
     function mod_chips(_chips)
         if used_voucher('round_up') then
-          _chips = usingTalisman and (_chips / Big:new(10)):ceil() * Big:new(10) or math.ceil(_chips/10)*10
+          _chips = usingTalisman() and (_chips / Big:new(10)):ceil() * Big:new(10) or math.ceil(_chips/10)*10
         end
         return mod_chips_ref(_chips)
     end
     local mod_mult_ref=mod_mult
     function mod_mult(_mult)
         if used_voucher('round_up_plus') then
-            _mult= usingTalisman and (_mult / Big:new(10)):ceil() * Big:new(10) or math.ceil(_mult/10)*10
+            _mult= usingTalisman() and (_mult / Big:new(10)):ceil() * Big:new(10) or math.ceil(_mult/10)*10
         end
         return mod_mult_ref(_mult)
     end
@@ -2733,6 +2745,93 @@ do
 
 
 end -- debt burden
+do 
+    local name="Stow"
+    local id="stow"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:dark_edition}+#1#{} Joker Slot.",
+            "Leftmost joker is debuffed",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=1,rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Stash"
+    local id="stash"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:dark_edition}+#1#{} Joker Slot.",
+            "Rightmost joker is debuffed",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=1,rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'stow'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+    
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Stow' or center_table.name == 'Stash' then
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.jokers then 
+                    G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+                end
+                return true end }))
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+    local function is_hidden(joker)
+        if not (G and G.jokers and G.jokers.cards)then return end
+        local index=get_index_in_array(G.jokers.cards,joker)
+        if index==1 and used_voucher('stow') or index==#G.jokers.cards and used_voucher('stash') then
+            return true
+        end
+        return false
+    end
+    local Card_draw_ref=Card.draw
+    function Card:draw(layer)
+        if is_hidden(self)then
+            Card_draw_ref(self,layer)
+            self.children.center:draw_shader('debuff', nil, self.ARGS.send_to_shader)
+            if self.children.front and self.ability.effect ~= 'Stone Card' then
+                self.children.front:draw_shader('debuff', nil, self.ARGS.send_to_shader)
+            end
+            return
+        end
+        Card_draw_ref(self,layer)
+    end
+    local Card_calculate_joker_ref=Card.calculate_joker
+    function Card:calculate_joker(context)
+        if is_hidden(self)then
+            return nil
+        end
+        return Card_calculate_joker_ref(self,context)
+    end
+
+end -- stow
 
 
     -- ################
@@ -4600,7 +4699,7 @@ end -- deep roots
     --         custom = {
     --         },
     --         modifiers = {
-    --             {id = 'dollars', value = -20},
+    --             {id = 'dollars', value = 2000},
     --         }
     --     },
     --     jokers = {
@@ -4614,9 +4713,9 @@ end -- deep roots
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
-    --         {id = 'j_baron', pinned = true},
-    --         {id = JOKER_MOD_PREFIX..'j_housing_choice', pinned = true},
-    --         {id = 'j_mime', pinned = true},
+    --         {id = 'j_baron', },
+    --         {id = JOKER_MOD_PREFIX..'j_jimbow', },
+    --         {id = 'j_mime', },
     --         {id = 'j_mime', pinned = true},
     --         {id = 'j_mime', pinned = true},
     --     },
@@ -4649,7 +4748,8 @@ end -- deep roots
     --         {id = MOD_PREFIX_V.. 'half_life'},
     --         {id = MOD_PREFIX_V.. 'heat_death'},
     --         {id = MOD_PREFIX_V.. 'debt_burden'},
-    --         {id = MOD_PREFIX_V.. 'deep_roots'},
+    --         {id = MOD_PREFIX_V.. 'stow'},
+    --         {id = MOD_PREFIX_V.. 'stash'},
     --         -- {id = 'v_overshopping'},
     --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
