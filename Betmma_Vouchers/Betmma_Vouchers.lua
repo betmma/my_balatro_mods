@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 44 Vouchers and 19 Fusion Vouchers! v2.1.4
+--- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.4(20240622)
+--- VERSION: 2.1.4.1(20240623)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -40,7 +40,7 @@ MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
 MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 
--- Config: DISABLE UNWANTED MODS HERE
+-- Config: DISABLE UNWANTED VOUCHERS HERE
 config = {
     -- normal vouchers
     v_oversupply=true,
@@ -87,6 +87,8 @@ config = {
     v_bobby_pin=true,
     v_stow=true,
     v_stash=true,
+    v_undying=true,
+    v_reincarnate=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -109,7 +111,8 @@ config = {
     v_deep_roots=true,
 }
 
--- example: if used_voucher('slate') then ... end
+-- example: if used_voucher('slate') then ... end 
+-- setting it to global is for lovely patches
 function used_voucher(raw_key)
     return G.GAME.used_vouchers[MOD_PREFIX_V..raw_key]
 end
@@ -142,6 +145,7 @@ local function handle_register(this_v)
 end
 
 local fusion_voucher_weight=4
+-- set default weight of fusion vouchers to 4
 if IN_SMOD1 then
     local SMODS_Center_inject=SMODS.Center.inject
     SMODS.Center.inject =function(self)
@@ -175,7 +179,7 @@ else
 end
 
 
-SMODS_Voucher_ref=SMODS.Voucher
+SMODS_Voucher_ref=SMODS.Voucher -- 0.9.8 compat thing
 SMODS_Voucher_fake=function(table)
     if IN_SMOD1 then
         return SMODS_Voucher_ref(table)
@@ -207,6 +211,8 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_bulletproof = "Bulletproof!"
     G.localization.misc.dictionary.b_vanish = "VANISH"
     G.localization.misc.dictionary.k_heat_death="Heat Death!"
+    G.localization.misc.dictionary.k_undying="Undying!"
+    G.localization.misc.dictionary.k_reincarnate="Reincarnate!"
     G.localization.misc.dictionary.over_retriggered = "Over-retriggered: "
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
@@ -234,7 +240,7 @@ local function get_plain_text_from_localize(final_line)
     return ret
 end
 
--- retuen index of obj in array. If not found return -1.
+-- return index of obj in array. If not found return -1.
 local function get_index_in_array(array,obj)
     local index=1
     while array[index]~=obj and index<=#array do
@@ -246,97 +252,98 @@ local function get_index_in_array(array,obj)
     return -1
 end
 
-local function randomly_redeem_voucher(no_random_please) -- xD
-    -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
-    -- time=1
-    local voucher_key = no_random_please or get_next_voucher_key(true)
-    local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
-    G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
-    card:start_materialize()
-    G.play:emplace(card)
-    card.cost=0
-    card.shop_voucher=false
-    local current_round_voucher=G.GAME.current_round.voucher
-    card:redeem()
-    G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher bulk may be from voucher pack or other non-shop source
-    G.E_MANAGER:add_event(Event({
-        trigger = 'after',
-        --blockable = false,
-        --blocking = false,
-        delay =  0,
-        func = function() 
-            card:start_dissolve()
-            return true
-        end}))   
-end
-
-local function randomly_create_joker(jokers_to_create,tag,message,extra)
-    extra=extra or {}
-    G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
-    G.E_MANAGER:add_event(Event({
-        func = function() 
-            for i = 1, jokers_to_create do
-                local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, tag)
-                card:add_to_deck()
-                if extra.edition~=nil then
-                    card:set_edition(extra.edition,true,false)
-                end
-                G.jokers:emplace(card)
-                card:start_materialize()
-                G.GAME.joker_buffer = 0
-            
-                if message~=nil then
-                    card_eval_status_text(card,'jokers',nil,nil,nil,{message=message})
-                end
-            end
-            return true
-        end}))   
-end
-local function randomly_create_consumable(card_type,tag,message,extra)
-    extra=extra or {}
-    
-    if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
-        G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+do -- randomly create card function series
+    function randomly_redeem_voucher(no_random_please) -- xD
+        -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
+        -- time=1
+        local voucher_key = no_random_please or get_next_voucher_key(true)
+        local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+        G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+        card:start_materialize()
+        G.play:emplace(card)
+        card.cost=0
+        card.shop_voucher=false
+        local current_round_voucher=G.GAME.current_round.voucher
+        card:redeem()
+        G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher bulk may be from voucher pack or other non-shop source
         G.E_MANAGER:add_event(Event({
-            trigger = 'before',
-            delay = 0.0,
-            func = (function()
-                    local card = create_card(card_type,G.consumeables, nil, nil, nil, nil, extra.forced_key or nil, tag)
+            trigger = 'after',
+            --blockable = false,
+            --blocking = false,
+            delay =  0,
+            func = function() 
+                card:start_dissolve()
+                return true
+            end}))   
+    end
+    function randomly_create_joker(jokers_to_create,tag,message,extra)
+        extra=extra or {}
+        G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
+        G.E_MANAGER:add_event(Event({
+            func = function() 
+                for i = 1, jokers_to_create do
+                    local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, tag)
                     card:add_to_deck()
                     if extra.edition~=nil then
                         card:set_edition(extra.edition,true,false)
                     end
-                    if extra.eternal~=nil then
-                        card.ability.eternal=extra.eternal
-                    end
-                    if extra.perishable~=nil then
-                        card.ability.perishable = extra.perishable
-                        if tag=='v_epilogue' then
-                            card.ability.perish_tally=get_voucher('epilogue').config.extra
-                        else card.ability.perish_tally = G.GAME.perishable_rounds
-                        end
-                    end
-                    if extra.extra_ability~=nil then
-                        card.ability[extra.extra_ability]=true
-                    end
-                    card.ability.BetmmaVouchers=true
-                    G.consumeables:emplace(card)
-                    G.GAME.consumeable_buffer = 0
+                    G.jokers:emplace(card)
+                    card:start_materialize()
+                    G.GAME.joker_buffer = 0
+                
                     if message~=nil then
-                        card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                        card_eval_status_text(card,'jokers',nil,nil,nil,{message=message})
                     end
+                end
                 return true
-            end)}))
+            end}))   
     end
-end
-local function randomly_create_spectral(tag,message,extra)
-    return randomly_create_consumable('Spectral',tag,message,extra)
-end
-local function randomly_create_tarot(tag,message,extra)
-    return randomly_create_consumable('Tarot',tag,message,extra)
-end
-local function randomly_create_planet(tag,message,extra)
-    return randomly_create_consumable('Planet',tag,message,extra)
+    function randomly_create_consumable(card_type,tag,message,extra)
+        extra=extra or {}
+        
+        if #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit or extra and extra.edition and extra.edition.negative then
+            G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+            G.E_MANAGER:add_event(Event({
+                trigger = 'before',
+                delay = 0.0,
+                func = (function()
+                        local card = create_card(card_type,G.consumeables, nil, nil, nil, nil, extra.forced_key or nil, tag)
+                        card:add_to_deck()
+                        if extra.edition~=nil then
+                            card:set_edition(extra.edition,true,false)
+                        end
+                        if extra.eternal~=nil then
+                            card.ability.eternal=extra.eternal
+                        end
+                        if extra.perishable~=nil then
+                            card.ability.perishable = extra.perishable
+                            if tag=='v_epilogue' then
+                                card.ability.perish_tally=get_voucher('epilogue').config.extra
+                            else card.ability.perish_tally = G.GAME.perishable_rounds
+                            end
+                        end
+                        if extra.extra_ability~=nil then
+                            card.ability[extra.extra_ability]=true
+                        end
+                        card.ability.BetmmaVouchers=true
+                        G.consumeables:emplace(card)
+                        G.GAME.consumeable_buffer = 0
+                        if message~=nil then
+                            card_eval_status_text(card,'extra',nil,nil,nil,{message=message})
+                        end
+                    return true
+                end)}))
+        end
+    end
+    function randomly_create_spectral(tag,message,extra)
+        return randomly_create_consumable('Spectral',tag,message,extra)
+    end
+    function randomly_create_tarot(tag,message,extra)
+        return randomly_create_consumable('Tarot',tag,message,extra)
+    end
+    function randomly_create_planet(tag,message,extra)
+        return randomly_create_consumable('Planet',tag,message,extra)
+    end
 end
 
 
@@ -408,12 +415,14 @@ local function load_center_to_ability(card)
         card.ability.real_random_abilities=card.config.center.real_random_abilities
     end
 end
+-- return (a or default_value)+(b or default_value)
 local function safe_add(a,b,default_value)
     return (a or default_value)+(b or default_value)
 end
 
 
 local function INIT()
+    NFS.load(SMODS.current_mod.path .. "phantom.lua")()
 
 --- deal with enhances effect changes when saving & loading
 do
@@ -1896,7 +1905,7 @@ do
     handle_register(this_v)
     local v_connoisseur=this_v
 
-    get_blind_amount_ref=get_blind_amount
+    local get_blind_amount_ref=get_blind_amount
     function get_blind_amount(ante)
         amount=get_blind_amount_ref(ante)
         if used_voucher('collector') then
@@ -2830,6 +2839,52 @@ do
         end
         return Card_calculate_joker_ref(self,context)
     end
+
+end -- stow
+do 
+    local name="Undying"
+    local id="undying"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When a non-{C:dark_edition}Phantom{} Joker is",
+            "destroyed, create a {C:dark_edition}Phantom{} copy",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=1,rarity=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Reincarnate"
+    local id="reincarnate"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When a {C:dark_edition}Phantom{} Joker is sold,",
+            "create a joker of same {C:attention}rarity{}",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=1,rarity=2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'undying'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+    
+    -- Phantom and its calculation are in phantom.lua
 
 end -- stow
 
@@ -4714,10 +4769,11 @@ end -- deep roots
     --         -- {id = 'j_oops'},
     --         -- {id = 'j_oops'},
     --         {id = 'j_baron', },
-    --         {id = JOKER_MOD_PREFIX..'j_jimbow', },
     --         {id = 'j_mime', },
-    --         {id = 'j_mime', pinned = true},
-    --         {id = 'j_mime', pinned = true},
+    --         {id = 'j_mime', },
+    --         -- {id = 'j_madness', eternal = true},
+    --         {id = JOKER_MOD_PREFIX..'j_housing_choice', edition='phantom'},
+    --         {id = 'j_ceremonial', pinned = true},
     --     },
     --     consumeables = {
     --         {id = 'c_cryptid'},
@@ -4748,8 +4804,8 @@ end -- deep roots
     --         {id = MOD_PREFIX_V.. 'half_life'},
     --         {id = MOD_PREFIX_V.. 'heat_death'},
     --         {id = MOD_PREFIX_V.. 'debt_burden'},
-    --         {id = MOD_PREFIX_V.. 'stow'},
-    --         {id = MOD_PREFIX_V.. 'stash'},
+    --         {id = MOD_PREFIX_V.. 'undying'},
+    --         {id = MOD_PREFIX_V.. 'reincarnate'},
     --         -- {id = 'v_overshopping'},
     --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
@@ -4757,7 +4813,7 @@ end -- deep roots
     --     },
     --     deck = {
     --         type = 'Challenge Deck',
-    --         -- cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},}
+    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red',d='negative'},}
     --     },
     --     restrictions = {
     --         banned_cards = {
