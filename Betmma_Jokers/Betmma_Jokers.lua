@@ -56,6 +56,7 @@ function SMODS.current_mod.process_loc_text()
         ['open_booster'] = "when opening booster"
     }
 end
+local loc_text=SMODS.current_mod.process_loc_text
 
 -- you can disable joker here
 jokerBlacklists={}
@@ -467,13 +468,6 @@ function ease_ante(mod)
     end
 end
 
--- I don't know why there are so many reports about housing choice causing get_straight and get_X_same such function to crash, it seems that some card's rank becomes nil and someone has guessed about voucher created has no rank but created card won't come into played hands. Anyway I should try this
-local Card_get_id_ref=Card.get_id
-function Card:get_id()
-    local ret=Card_get_id_ref(self)
-    return ret or -math.random(100,1000000)
-end
-
 
 
 function SMODS.end_calculate_context(c)
@@ -541,7 +535,7 @@ local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
             SMODS.Joker=SMODS_Joker_fake
             INIT()
             SMODS.Joker=SMODS_Joker_ref
-            SMODS.current_mod.process_loc_text()
+            loc_text()
             for k,v in pairs(Jokers) do
                 
                 if type(v.calculate)=='function' then

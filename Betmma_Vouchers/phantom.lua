@@ -58,7 +58,7 @@
 
     local Card_start_dissolve_ref=Card.start_dissolve
     function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
-        if not(#dissolve_colours==1 and dissolve_colours[1]==G.C.GOLD) and not(self.edition and self.edition.phantom) and self.ability.set=='Joker' and used_voucher('undying') then -- 'not(#dissolve_colours==1 and dissolve_colours[1]==G.C.GOLD)' is to exclude sell
+        if not self.selling and not(self.edition and self.edition.phantom) and self.ability.set=='Joker' and used_voucher('undying') then -- 'not(#dissolve_colours==1 and dissolve_colours[1]==G.C.GOLD)' is to exclude sell
             local card = copy_card(self, nil, nil, nil, true)
             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_undying')})
             card.getting_sliced=false
@@ -66,7 +66,7 @@
             card:add_to_deck()
             G.jokers:emplace(card)
         end
-        if not(#dissolve_colours==1 and dissolve_colours[1]==G.C.GOLD) and self.edition and self.edition.phantom and self.ability.set=='Joker' then
+        if not self.selling and self.edition and self.edition.phantom and self.ability.set=='Joker' then
             for i=1,2 do
                 if #G.jokers.cards <= G.jokers.config.card_limit -1 then  -- -1 is because this card isn't removed yet and still adds 1 joker slot
                     local card = copy_card(self, nil, nil, nil, self.edition and self.edition.phantom)
@@ -106,6 +106,7 @@
                     end}))   
 
         end
+        self.selling=true
         Card_sell_card_ref(self)
     end
 

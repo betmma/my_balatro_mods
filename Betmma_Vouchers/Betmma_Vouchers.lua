@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1
+--- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1b
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.4.1(20240623)
+--- VERSION: 2.1.4.1b(20240624)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -421,6 +421,13 @@ local function safe_add(a,b,default_value)
 end
 
 
+-- I don't know why there are so many reports about housing choice causing get_straight and get_X_same such function to crash, it seems that some card's rank becomes nil and someone has guessed about voucher created has no rank but created card won't come into played hands. Anyway I should try this
+    local Card_get_id_ref=Card.get_id
+    function Card:get_id()
+        local ret=Card_get_id_ref(self)
+        return ret or -math.random(100,1000000)
+    end
+    
 local function INIT()
     NFS.load(SMODS.current_mod.path .. "phantom.lua")()
 
@@ -2886,7 +2893,7 @@ do
     
     -- Phantom and its calculation are in phantom.lua
 
-end -- stow
+end -- undying
 
 
     -- ################
