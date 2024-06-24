@@ -43,7 +43,7 @@ function SMODS.current_mod.process_loc_text()
         ['debuffed_hand'] = "when hand is debuffed",
         ['using_consumeable'] = "when using consumeable",
         ['remove_playing_cards'] = "when removing playing cards",
-        ['destroying_card'] = "when destroying card",
+        ['cards_destroyed'] = "when destroying card", -- destroying_card is true for every card played to test if a joker can destroy it lol
         ['setting_blind'] = "when setting blind",
         ['first_hand_drawn'] = "when first hand drawn",
         ['playing_card_added'] = "when playing card added",

@@ -65,6 +65,7 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Undying: When a non-Phantom Joker is destroyed, create a Phantom copy.
 - Reincarnation: When a Phantom Joker is sold, create a joker of same rarity.
 (Phantom Edition: +1 Joker Slot. Can't trigger. When destroyed, lose Phantom and duplicate itself twice)
+Undying and Reincarnation are unavailable on Steamodded 0.9.8 version.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.

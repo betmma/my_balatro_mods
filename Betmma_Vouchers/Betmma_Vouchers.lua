@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1b
+--- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1c
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.4.1b(20240624)
+--- VERSION: 2.1.4.1c(20240624)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -110,6 +110,10 @@ config = {
     v_heat_death=true,
     v_deep_roots=true,
 }
+if not IN_SMOD1 then
+    config.v_undying=false
+    config.v_reincarnate=false
+end
 
 -- example: if used_voucher('slate') then ... end 
 -- setting it to global is for lovely patches
@@ -427,9 +431,16 @@ end
         local ret=Card_get_id_ref(self)
         return ret or -math.random(100,1000000)
     end
-    
+
+function GET_PATH_COMPAT()
+    return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaVouchers').path
+end
+
 local function INIT()
-    NFS.load(SMODS.current_mod.path .. "phantom.lua")()
+    if config.v_undying or config.v_reincarnate then
+        local PATH=GET_PATH_COMPAT()
+        NFS.load(PATH .. "phantom.lua")()
+    end
 
 --- deal with enhances effect changes when saving & loading
 do
