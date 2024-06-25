@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 20 Fusion Vouchers! v2.1.4.2
+--- MOD_DESCRIPTION: 46 Vouchers and 20 Fusion Vouchers! v2.1.5
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.4.2(20240625)
+--- VERSION: 2.1.5(20240625)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -4800,6 +4800,19 @@ do
             config.delay=(config.delay or 0.8)/(1+G.betmma_solar_system_times)
         end
         update_hand_text_ref(config,vals)
+    end
+
+    local level_up_hand_ref=level_up_hand
+    function level_up_hand(card,hand,instant,amount)
+        -- TarotDX forgot to add the second level for DX planets when instant is true LOL
+            amount = amount or 1
+            if instant and card and card.ability and card.ability.set and card.ability.set == "Planet_dx" then    
+                G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level + amount)
+                G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + G.GAME.hands[hand].l_mult*(amount), 1)
+                G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*(amount), 0)
+            end
+        
+        level_up_hand_ref(card,hand,instant,amount)
     end
 
     local level_up_hand_ref=level_up_hand
