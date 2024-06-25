@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 19 Fusion Vouchers! v2.1.4.1c
+--- MOD_DESCRIPTION: 46 Vouchers and 20 Fusion Vouchers! v2.1.4.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.4.1c(20240624)
+--- VERSION: 2.1.4.2(20240625)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -109,6 +109,7 @@ config = {
     v_chaos=true,
     v_heat_death=true,
     v_deep_roots=true,
+    v_solar_system=true,
 }
 if not IN_SMOD1 then
     config.v_undying=false
@@ -217,6 +218,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_heat_death="Heat Death!"
     G.localization.misc.dictionary.k_undying="Undying!"
     G.localization.misc.dictionary.k_reincarnate="Reincarnate!"
+    G.localization.misc.dictionary.k_solar_system="Solar System!"
     G.localization.misc.dictionary.over_retriggered = "Over-retriggered: "
     for k,v in pairs(real_random_data) do
         G.localization.descriptions.Enhanced['real_random_'..k] =v 
@@ -4764,6 +4766,96 @@ do
         G_FUNCS_evaluate_round_ref()
     end
 end -- deep roots
+do
+    local name="Solar System"
+    local id="solar_system"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Retrigger {C:planet}Planet Card{} once",
+            "per {C:planet}Planet Card{} held,",
+            "including the using one",
+            "{C:inactive}(Planet Merchant + Event Horizon){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_planet_merchant',MOD_PREFIX_V..'event_horizon'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    local function is_planet(card)
+        return card.ability and card.ability.consumeable and (card.ability.consumeable.hand_type or card.ability.consumeable.hand_types) -- hand_types is for cryptid planets
+    end
+
+    local update_hand_text_ref=update_hand_text
+    function update_hand_text(config, vals)
+        if G.betmma_solar_system_times then
+            config.delay=(config.delay or 0.8)/(1+G.betmma_solar_system_times)
+        end
+        update_hand_text_ref(config,vals)
+    end
+
+    local level_up_hand_ref=level_up_hand
+    function level_up_hand(card, hand, instant, amount)
+        if G.betmma_solar_system_times then
+            instant=true
+            level_up_hand_ref(card,hand,instant,amount)
+            if G.betmma_solar_system_times > 9 then
+                return
+            end
+            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2/(1+G.betmma_solar_system_times), func = function()
+                play_sound('tarot1')
+                if card then card:juice_up(0.8, 0.5) end
+                G.TAROT_INTERRUPT_PULSE = true
+                return true end }))
+            update_hand_text({delay = 0}, {mult = G.GAME.hands[hand].mult, StatusText = true})
+            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9/(1+G.betmma_solar_system_times), func = function()
+                play_sound('tarot1')
+                if card then card:juice_up(0.8, 0.5) end
+                return true end }))
+            update_hand_text({delay = 0}, {chips = G.GAME.hands[hand].chips, StatusText = true})
+            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9/(1+G.betmma_solar_system_times), func = function()
+                play_sound('tarot1')
+                if card then card:juice_up(0.8, 0.5) end
+                G.TAROT_INTERRUPT_PULSE = nil
+                return true end }))
+            update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level=G.GAME.hands[hand].level})
+            delay(1.3/(1+G.betmma_solar_system_times))
+            return
+        end
+        level_up_hand_ref(card,hand,instant,amount)
+    end
+
+    local Card_use_consumeable_ref=Card.use_consumeable
+    function Card:use_consumeable(area, copier)
+        Card_use_consumeable_ref(self,area,copier)
+        if used_voucher('solar_system') and is_planet(self) and not self.solar_system_retriggered then
+            G.betmma_solar_system_times=1
+            self.solar_system_retriggered=true
+            card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_solar_system')})
+            Card_use_consumeable_ref(self,area,copier) -- extra 1 time for "including the using one"
+            for i = 1, #G.consumeables.cards do
+                local card=G.consumeables.cards[i]
+                if is_planet(card) then
+                    G.betmma_solar_system_times=G.betmma_solar_system_times+1
+                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_solar_system')})
+                    Card_use_consumeable_ref(self,area,copier)
+                end
+            end
+            self.solar_system_retriggered=false
+            G.betmma_solar_system_times=nil
+        end
+    end
+
+end -- solar system
+
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{
     --     name = "TestVoucher",
@@ -4790,41 +4882,37 @@ end -- deep roots
     --         {id = 'j_mime', },
     --         {id = 'j_mime', },
     --         -- {id = 'j_madness', eternal = true},
-    --         {id = JOKER_MOD_PREFIX..'j_housing_choice', edition='phantom'},
+    --         {id = JOKER_MOD_PREFIX..'j_jimbow'},--, edition='phantom'},
     --         {id = 'j_ceremonial', pinned = true},
     --     },
     --     consumeables = {
-    --         {id = 'c_cryptid'},
+    --         -- {id = 'c_cryptid'},
     --         --{id = 'c_devil_cu'},
-    --         {id = 'c_death'},
-    --         {id = 'c_death'},
-    --         {id = 'c_death'},
-    --         {id = 'c_death'},
-    --         {id = 'c_chariot'},
-    --         {id = 'c_chariot'},
-    --         {id = 'c_justice'},
-    --         {id = 'c_justice'},
-    --         {id = 'c_magician'},
-    --         {id = 'c_magician'},
-    --         {id = 'c_magician'},
+    --         -- {id = 'c_death'},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
+    --         {id='c_pluto',negative=true},
     --     },
     --     vouchers = {
     --         {id = MOD_PREFIX_V.. 'trash_picker'},
-    --         {id = MOD_PREFIX_V.. 'collector'},
+    --         {id = MOD_PREFIX_V.. 'solar_system'},
     --         {id = MOD_PREFIX_V.. '3d_boosters'},
     --         {id = MOD_PREFIX_V.. '4d_boosters'},
-    --         --{id = 'v_bonus_plus'},
     --         {id = MOD_PREFIX_V.. 'real_random'},
-    --         -- {id = 'v_connoisseur'},
     --         {id = 'v_paint_brush'},
     --         -- {id = 'v_liquidation'},
     --         {id = MOD_PREFIX_V.. 'eternity'},
     --         {id = MOD_PREFIX_V.. 'half_life'},
     --         {id = MOD_PREFIX_V.. 'heat_death'},
-    --         {id = MOD_PREFIX_V.. 'debt_burden'},
-    --         {id = MOD_PREFIX_V.. 'undying'},
-    --         {id = MOD_PREFIX_V.. 'reincarnate'},
-    --         -- {id = 'v_overshopping'},
+    --         {id = MOD_PREFIX_V.. 'engulfer'},
+    --         -- {id = MOD_PREFIX_V.. 'undying'},
+    --         -- {id = MOD_PREFIX_V.. 'reincarnate'},
     --         --{id = MOD_PREFIX_V.. 'chaos'},
     --         {id = 'v_retcon'},
     --         -- {id = 'v_event_horizon'},
