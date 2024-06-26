@@ -359,7 +359,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
     function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
         -- to give voucher pack correct description
         if _c.set == 'Booster' then 
-            if _c.name:find('Voucher Pack') then 
+            if _c.name and _c.name:find('Voucher Pack') then 
                 local first_pass = nil
                 if not full_UI_table then 
                     first_pass = true
