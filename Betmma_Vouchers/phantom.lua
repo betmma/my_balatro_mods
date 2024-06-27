@@ -12,16 +12,16 @@
         key='phantom',
         loc_txt={
             name = 'Phantom',
+            label = 'Phantom',
             text = {
                 "{C:dark_edition}+1{} Joker Slot. {C:red}Can't trigger.",
                 "When destroyed, lose {C:dark_edition}Phantom{}",
                 "and {C:attention}duplicate{} itself twice"
             }
         },
-        shader='phantom'
+        shader='phantom',
+        omit_mod_prefix = true
     }
-    edition.key='e_phantom'
-    edition.shader='phantom' -- I hate mod prefix ;(
     edition.extra_cost=-10
 
     local Card_set_edition_ref=Card.set_edition
