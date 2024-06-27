@@ -263,11 +263,23 @@ do -- randomly create card function series
     function randomly_redeem_voucher(no_random_please) -- xD
         -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
         -- time=1
+        local area
+        if G.STATE == G.STATES.HAND_PLAYED then
+            if not G.redeemed_vouchers_during_hand then
+                -- may need repositioning
+                G.redeemed_vouchers_during_hand = CardArea(
+                    G.play.T.x, G.play.T.y, G.play.T.w, G.play.T.h, 
+                    {type = 'play', card_limit = 5})
+            end
+            area = G.redeemed_vouchers_during_hand
+        else
+            area = G.play
+        end
         local voucher_key = no_random_please or get_next_voucher_key(true)
-        local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
-        G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+        local card = Card(area.T.x + area.T.w/2 - G.CARD_W/2,
+        area.T.y + area.T.h/2-G.CARD_H/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
         card:start_materialize()
-        G.play:emplace(card)
+        area:emplace(card)
         card.cost=0
         card.shop_voucher=false
         local current_round_voucher=G.GAME.current_round.voucher
@@ -4449,30 +4461,6 @@ do
         end
         return ret
     end
-
-    local G_FUNCS_draw_from_discard_to_deck_ref=G.FUNCS.draw_from_discard_to_deck
-    G.FUNCS.draw_from_discard_to_deck = function(e)
-        if (used_voucher('real_random')) then
-            for k, v in ipairs(G.discard.cards) do
-                if v.ability.set=='Voucher' then
-                    -- print(k,'addad')
-                    --k.k()
-                    G.E_MANAGER:add_event(Event({
-                        func = (function()     
-                                v:remove()
-                        return true end)
-                    }))
-                end
-            end
-        end
-        G.E_MANAGER:add_event(Event({
-            trigger = 'immediate',
-            func = (function()     
-                G_FUNCS_draw_from_discard_to_deck_ref(e)
-            return true end)
-          }))
-    end
-
 end -- real random
 do
     local name="4D Vouchers"
