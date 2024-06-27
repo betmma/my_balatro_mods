@@ -15,7 +15,7 @@ A collection of mods made by me for Balatro.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 - Jimbow: This Joker gains +15 Chips when {context}. Context changes when achieved.
 
-# Betmma Vouchers: Adds 46 Vouchers and 20 fusion Vouchers.
+# Betmma Vouchers: Adds 46 Vouchers and 21 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
@@ -88,6 +88,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Heat Death (Eternity + Half-life): Eternal and Perishable can stack. Such Joker gives +1 Joker slot when debuffed by Perishable.
 - Deep Roots (Seed Money + Debt Burden): You earn interest based on the absolute value of your money. e.g. -$20 gives $4.
 - Solar System (Planet Merchant + Event Horizon): Retrigger Planet Card once per Planet Card held, including the using one.
+- Forbidden Area (Reserve Area + Undying): When no consumable slot left, buying a Consumable card moves it to Joker area and it acts like a Joker.
 
 # Betmma Voucher Pack: Adds 3 Voucher Packs.
 - Voucher Pack: redeem 1 of 3 vouchers.
