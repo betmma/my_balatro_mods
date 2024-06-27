@@ -356,10 +356,21 @@ local function INIT()
         if context.discard and not context.other_card.debuff and
         pseudorandom('errorr') < G.GAME.probabilities.normal/card.ability.extra.odds then -- the argument of pseudorandom is hashed and only for random seed, so every string is ok
             local card=context.other_card
-            local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-            local rank_suffix = {'2','3','4','5','6','7','8','9','T','J','Q','K','A'}
-            local rand = math.floor(pseudorandom('rank')*13+1)
-            card:set_base(G.P_CARDS[suit_prefix..rank_suffix[rand]])
+            local suit_prefix
+            if IN_SMOD1 then
+                suit_prefix = SMODS.Suits[card.base.suit].card_key
+            else
+                suit_prefix = string.sub(card.base.suit, 1, 1)
+            end
+            local rank_suffix
+            if IN_SMOD1 then
+                rank_suffix = pseudorandom_element(SMODS.Ranks, pseudoseed('rank')).card_key
+            else
+                local ranks = {'2','3','4','5','6','7','8','9','T','J','Q','K','A'}
+                local rand = math.floor(pseudorandom('rank')*13+1)
+                rank_suffix = ranks[rand]
+            end
+            card:set_base(G.P_CARDS[suit_prefix..'_'..rank_suffix])
             return {
                 message = localize('k_errorr'),
                 card = card,
