@@ -63,81 +63,81 @@ jokerBlacklists={}
 
 
     
-    local localization = {
-        jjookkeerr = {
-            name = "JJookkeerr",
-            text = {
-                "Jokers with \"Joker\"",
-                "in their names",
-                "each gives {X:mult,C:white} X#1# {} Mult",
-                -- if I count right there are 24 common, 6 uncommon and 3 rare jokers that satisfy this condition
-            }
-        },
-        ascension = {
-            name = "Ascension",
-            text = {
-                "Increase the tier of",
-                "played poker hand by 1 ",
-                "(e.g. High Card counts as One Pair)",
-                -- How the poker hand "contained" is calculated should be clarified:
-                -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
-            }
-        },
-        hasty = {
-            name = "Hasty Joker",
-            text = {
-                "Earn {C:money}$#1#{} if round",
-            "ends after first hand",
-            }
-        },
-        errorr = {
-            name = "ERRORR",
-            text = {
-                "Discarded cards have",
-            "{C:green}#1# in #2#{} chance to",
-            "become random rank"
-            }
-        },
-        piggy_bank = {
-            name = " Piggy Bank ",
-            text = {
-                "Put half of earned dollars",
-                "into it and gain {C:red}+#2#{} Mult",
-                "for each dollar",
-                "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
-                -- dollar in it adds to its sold price
-            }
-        },
-        housing_choice = {
-            name = "Housing Choice",
-            text = {
-                "Get a random {C:attention}Voucher{}",
-                "if played hand contains",
-                "a {C:attention}Full House{}. This can",
-                "only trigger 1 time per ante",
-                "{C:inactive}(#1#)"
-                -- dollar in it adds to its sold price
-            }
-        },
-        jimbow = {
-            name = "Jimbow",
-            text = {
-                "This Joker gains {C:chips}+#2#{}",
-                "Chips {C:attention}#3#{},",
-                "context changes when achieved",
-                "{C:inactive}(Currently {C:chips}#1#{C:inactive} Chips)",
-                
-            }
+local localization = {
+    jjookkeerr = {
+        name = "JJookkeerr",
+        text = {
+            "Jokers with \"Joker\"",
+            "in their names",
+            "each gives {X:mult,C:white} X#1# {} Mult",
+            -- if I count right there are 24 common, 6 uncommon and 3 rare jokers that satisfy this condition
+        }
+    },
+    ascension = {
+        name = "Ascension",
+        text = {
+            "Increase the tier of",
+            "played poker hand by 1 ",
+            "(e.g. High Card counts as One Pair)",
+            -- How the poker hand "contained" is calculated should be clarified:
+            -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
+        }
+    },
+    hasty = {
+        name = "Hasty Joker",
+        text = {
+            "Earn {C:money}$#1#{} if round",
+        "ends after first hand",
+        }
+    },
+    errorr = {
+        name = "ERRORR",
+        text = {
+            "Discarded cards have",
+        "{C:green}#1# in #2#{} chance to",
+        "become random rank"
+        }
+    },
+    piggy_bank = {
+        name = " Piggy Bank ",
+        text = {
+            "Put half of earned dollars",
+            "into it and gain {C:red}+#2#{} Mult",
+            "for each dollar",
+            "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
+            -- dollar in it adds to its sold price
+        }
+    },
+    housing_choice = {
+        name = "Housing Choice",
+        text = {
+            "Get a random {C:attention}Voucher{}",
+            "if played hand contains",
+            "a {C:attention}Full House{}. This can",
+            "only trigger 1 time per ante",
+            "{C:inactive}(#1#)"
+            -- dollar in it adds to its sold price
+        }
+    },
+    jimbow = {
+        name = "Jimbow",
+        text = {
+            "This Joker gains {C:chips}+#2#{}",
+            "Chips {C:attention}#3#{},",
+            "context changes when achieved",
+            "{C:inactive}(Currently {C:chips}#1#{C:inactive} Chips)",
+            
         }
     }
+}
 
-    --[[SMODS.Joker:new(
-        name, slug,
-        config,
-        spritePos, loc_txt,
-        rarity, cost, unlocked, discovered, blueprint_compat, eternal_compat
-    )
-    ]]
+--[[SMODS.Joker:new(
+    name, slug,
+    config,
+    spritePos, loc_txt,
+    rarity, cost, unlocked, discovered, blueprint_compat, eternal_compat
+)
+]]
 
 local function INIT()
     local jokers = {
@@ -510,27 +510,27 @@ function randomly_redeem_voucher(no_random_please) -- xD
             card:start_dissolve()
             return true
         end}))   
-    end
+end
 
-    if IN_SMOD1 then
+if IN_SMOD1 then
+    INIT()
+else
+    SMODS['INIT']=SMODS['INIT'] or {}
+    SMODS['INIT']['BetmmaJokers']=function()
+        SMODS.Joker=SMODS_Joker_fake
         INIT()
-    else
-        SMODS['INIT']=SMODS['INIT'] or {}
-        SMODS['INIT']['BetmmaJokers']=function()
-            SMODS.Joker=SMODS_Joker_fake
-            INIT()
-            SMODS.Joker=SMODS_Joker_ref
-            loc_text()
-            for k,v in pairs(Jokers) do
-                
-                if type(v.calculate)=='function' then
-                    v.calculate_ref=v.calculate
-                    v.calculate=function(card, context)
-                        return v.calculate_ref(card,card,context)
-                    end
+        SMODS.Joker=SMODS_Joker_ref
+        loc_text()
+        for k,v in pairs(Jokers) do
+            
+            if type(v.calculate)=='function' then
+                v.calculate_ref=v.calculate
+                v.calculate=function(card, context)
+                    return v.calculate_ref(card,card,context)
                 end
             end
         end
     end
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------
