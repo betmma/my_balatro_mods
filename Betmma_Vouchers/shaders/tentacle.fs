@@ -13,6 +13,9 @@ extern bool shadow;
 extern MY_HIGHP_OR_MEDIUMP vec4 burn_colour_1;
 extern MY_HIGHP_OR_MEDIUMP vec4 burn_colour_2;
 extern float real_time;
+extern MY_HIGHP_OR_MEDIUMP vec2 mouse_screen_pos;
+extern MY_HIGHP_OR_MEDIUMP float hovering;
+extern MY_HIGHP_OR_MEDIUMP float screen_scale;
 
 vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
 {
@@ -123,11 +126,14 @@ vec4 effect( vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords
     float field = (1.+ (
         cos(length(field_part1) / 19.483) + sin(length(field_part2) / 33.155) * cos(field_part2.y / 15.73) +
         cos(length(field_part3) / 27.193) * sin(field_part3.x / 21.92) ))/2.;
+	vec2 mouse_offset = (mouse_screen_pos.xy )/screen_scale; // want to add tentacles following mouse but failed
 
-	float r2=(uv.y-0.5)*(uv.y-0.5)*1.69+(uv.x-0.5)*(uv.x-0.5);
+	uv.x=uv.x-0.5;
+	uv.y=(uv.y-0.5)*1.3;
+	float r2=uv.y*uv.y+uv.x*uv.x;
 	float r=sqrt(r2);
 	float r8=r2*r2*r2*r2*16;
-	float angle=atan((uv.y-0.5)*1.3, uv.x-0.5)*3+ sin(real_time)+field*2.5*r;
+	float angle=atan(uv.y,uv.x)*3+ sin(real_time)+field*2.5*r ;
 	float ray=cos(angle);//-mod(real_time, .2)
 	float ray4=ray * ray ;
 	if (1-ray4 > 0.001/(r2*r2)-clamp(0.25*(r-0.62),0,0.3))
@@ -143,9 +149,6 @@ vec4 effect( vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords
 	return dissolve_mask(tex*colour, texture_coords, uv);
 }
 
-extern MY_HIGHP_OR_MEDIUMP vec2 mouse_screen_pos;
-extern MY_HIGHP_OR_MEDIUMP float hovering;
-extern MY_HIGHP_OR_MEDIUMP float screen_scale;
 
 #ifdef VERTEX
 vec4 position( mat4 transform_projection, vec4 vertex_position )

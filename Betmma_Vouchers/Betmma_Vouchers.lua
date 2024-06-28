@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 21 Fusion Vouchers! v2.1.5.1
+--- MOD_DESCRIPTION: 46 Vouchers and 21 Fusion Vouchers! v2.1.5.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.5.1(20240628)
+--- VERSION: 2.1.5.2(20240628)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -5052,79 +5052,82 @@ do
 end -- forbidden area
 
     -- this challenge is only for test
-    -- table.insert(G.CHALLENGES,1,{
-    --     name = "TestVoucher",
-    --     id = 'c_mod_testvoucher',
-    --     rules = {
-    --         custom = {
-    --         },
-    --         modifiers = {
-    --             {id = 'dollars', value = 2000},
-    --         }
-    --     },
-    --     jokers = {
-    --         --{id = 'j_jjookkeerr'},
-    --         -- {id = 'j_ascension'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         -- {id = 'j_sock_and_buskin'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         -- {id = 'j_oops'},
-    --         {id = 'j_baron', },
-    --         {id = 'j_mime', },
-    --         {id = 'j_cry_universum', },
-    --         -- {id = 'j_madness', eternal = true},
-    --         {id = JOKER_MOD_PREFIX..'j_jimbow'},--, edition='phantom'},
-    --         {id = 'j_ceremonial', pinned = true},
-    --     },
-    --     consumeables = {
-    --         -- {id = 'c_cryptid'},
-    --         --{id = 'c_devil_cu'},
-    --         -- {id = 'c_death'},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --         {id='c_pluto',negative=true},
-    --     },
-    --     vouchers = {
-    --         {id = MOD_PREFIX_V.. 'trash_picker'},
-    --         {id = MOD_PREFIX_V.. 'solar_system'},
-    --         {id = MOD_PREFIX_V.. '3d_boosters'},
-    --         {id = MOD_PREFIX_V.. '4d_boosters'},
-    --         {id = MOD_PREFIX_V.. 'real_random'},
-    --         {id = 'v_paint_brush'},
-    --         -- {id = 'v_liquidation'},
-    --         {id = MOD_PREFIX_V.. 'overshopping'},
-    --         {id = MOD_PREFIX_V.. 'forbidden_area'},
-    --         {id = MOD_PREFIX_V.. 'reserve_area_plus'},
-    --         {id = MOD_PREFIX_V.. 'reserve_area'},
-    --         -- {id = MOD_PREFIX_V.. 'undying'},
-    --         -- {id = MOD_PREFIX_V.. 'reincarnate'},
-    --         --{id = MOD_PREFIX_V.. 'chaos'},
-    --         {id = 'v_retcon'},
-    --         -- {id = 'v_event_horizon'},
-    --     },
-    --     deck = {
-    --         type = 'Challenge Deck',
-    --         cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red',d='negative'},}
-    --     },
-    --     restrictions = {
-    --         banned_cards = {
-    --         },
-    --         banned_tags = {
-    --         },
-    --         banned_other = {
-    --         }
-    --     }
-    -- })
+    if 0 then
+        
+        table.insert(G.CHALLENGES,1,{
+            name = "TestVoucher",
+            id = 'c_mod_testvoucher',
+            rules = {
+                custom = {
+                },
+                modifiers = {
+                    {id = 'dollars', value = 2000},
+                }
+            },
+            jokers = {
+                --{id = 'j_jjookkeerr'},
+                -- {id = 'j_ascension'},
+                -- {id = 'j_sock_and_buskin'},
+                -- {id = 'j_sock_and_buskin'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                {id = 'j_baron', },
+                {id = 'j_mime', },
+                {id = 'j_cry_universum', },
+                -- {id = 'j_madness', eternal = true},
+                {id = JOKER_MOD_PREFIX..'j_jimbow'},-- edition='phantom'},
+                {id = 'j_ceremonial', pinned = true},
+            },
+            consumeables = {
+                -- {id = 'c_cryptid'},
+                --{id = 'c_devil_cu'},
+                -- {id = 'c_death'},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+                {id='c_pluto',negative=true},
+            },
+            vouchers = {
+                {id = MOD_PREFIX_V.. 'trash_picker'},
+                {id = MOD_PREFIX_V.. 'solar_system'},
+                {id = MOD_PREFIX_V.. '3d_boosters'},
+                {id = MOD_PREFIX_V.. '4d_boosters'},
+                {id = MOD_PREFIX_V.. 'real_random'},
+                {id = 'v_paint_brush'},
+                -- {id = 'v_liquidation'},
+                {id = MOD_PREFIX_V.. 'overshopping'},
+                {id = MOD_PREFIX_V.. 'forbidden_area'},
+                {id = MOD_PREFIX_V.. 'reserve_area_plus'},
+                {id = MOD_PREFIX_V.. 'reserve_area'},
+                {id = MOD_PREFIX_V.. 'undying'},
+                {id = MOD_PREFIX_V.. 'reincarnate'},
+                --{id = MOD_PREFIX_V.. 'chaos'},
+                {id = 'v_retcon'},
+                -- {id = 'v_event_horizon'},
+            },
+            deck = {
+                type = 'Challenge Deck',
+                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red',d='negative'},}
+            },
+            restrictions = {
+                banned_cards = {
+                },
+                banned_tags = {
+                },
+                banned_other = {
+                }
+            }
+        })
+    end
     init_localization()
 end
 if IN_SMOD1 then

@@ -7,9 +7,10 @@
             loc_txt={
                 name = 'Phantom',
                 text = {
-                    "{C:dark_edition}+1{} Joker Slot. {C:red}Can't trigger.",
-                    "When destroyed, lose {C:dark_edition}Phantom{}",
-                    "and {C:attention}duplicate{} itself twice"
+                    "{C:dark_edition}+1{} Joker Slot.", 
+                    "{C:red}50% chance to trigger",
+                    -- "When destroyed, lose {C:dark_edition}Phantom{}",
+                    -- "and {C:attention}duplicate{} itself twice"
                 }
             },
             extra_cost=-10,
@@ -48,19 +49,19 @@
     end
 
 
-    local lo=localize
-    function localize(args, misc_cat)
-        local ret=lo(args, misc_cat)
-        if ret=='ERROR' then
-            print(args,misc_cat)
-            -- sendDebugMessage(tprint(G.localization.misc.labels))
-            if args and (type(args)=='table') then
-                sendDebugMessage(tprint(args))
-            end
-        end
-        -- print(ret)
-        return ret
-    end
+    -- local lo=localize
+    -- function localize(args, misc_cat)
+    --     local ret=lo(args, misc_cat)
+    --     if ret=='ERROR' then
+    --         print(args,misc_cat)
+    --         -- sendDebugMessage(tprint(G.localization.misc.labels))
+    --         if args and (type(args)=='table') then
+    --             sendDebugMessage(tprint(args))
+    --         end
+    --     end
+    --     -- print(ret)
+    --     return ret
+    -- end
 
 
     function get_betmma_shaders(card)
@@ -87,7 +88,11 @@
 
     local Card_calculate_joker_ref=Card.calculate_joker
     function Card:calculate_joker(context)
-        if self.edition and self.edition.phantom then return nil end
+        if self.edition and self.edition.phantom then 
+            if pseudorandom('phantom'..(self.ability.name or ""))<0.5 then
+                return nil
+            end
+        end
         return Card_calculate_joker_ref(self,context)
     end
 
@@ -103,19 +108,19 @@
             card:add_to_deck()
             G.jokers:emplace(card)
         end
-        if not self.selling and self.edition and self.edition.phantom and self.ability.set=='Joker' then
-            for i=1,2 do
-                if #G.jokers.cards <= G.jokers.config.card_limit -1 then  -- -1 is because this card isn't removed yet and still adds 1 joker slot
-                    local card = copy_card(self, nil, nil, nil, self.edition and self.edition.phantom)
-                    card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
-                    card.getting_sliced=false
-                    card:add_to_deck()
-                    G.jokers:emplace(card)
-                else
-                    card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_no_room_ex')})
-                end
-            end
-        end
+        -- if not self.selling and self.edition and self.edition.phantom and self.ability.set=='Joker' then -- duplicate twice effect is discarded
+        --     for i=1,2 do
+        --         if #G.jokers.cards <= G.jokers.config.card_limit -1 then  -- -1 is because this card isn't removed yet and still adds 1 joker slot
+        --             local card = copy_card(self, nil, nil, nil, self.edition and self.edition.phantom)
+        --             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
+        --             card.getting_sliced=false
+        --             card:add_to_deck()
+        --             G.jokers:emplace(card)
+        --         else
+        --             card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_no_room_ex')})
+        --         end
+        --     end
+        -- end
         Card_start_dissolve_ref(self,dissolve_colours, silent, dissolve_time_fac, no_juice)
     end
 
