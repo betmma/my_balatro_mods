@@ -36,13 +36,15 @@
         -- sendDebugMessage(tprint(edition_data))
         edition_data.key=e_..v
         edition_data.shader=v
+        edition_data.omit_mod_prefix=true
+        edition_data.loc_txt.label=edition_data.loc_txt.name
         local edition=SMODS.Edition(edition_data)
         edition.key=e_..v
         edition.shader=v
         SMODS.Centers[e_..v]=edition
         SMODS.Centers[MOD_PREFIX_E..v]=nil
-        betmma_extra_data.labels[v]=edition_data.loc_txt.name
-        --G.localization.descriptions[v]=edition_data.loc_txt.name
+        -- betmma_extra_data.labels[v]=edition_data.loc_txt.name
+        -- --G.localization.descriptions[v]=edition_data.loc_txt.name
     end
 
 
