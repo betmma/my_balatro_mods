@@ -77,3 +77,31 @@ pattern = "{n=G.UIT.T, config={ref_table = self.config, ref_value = 'card_limit'
 position = "at"
 payload = "{n=G.UIT.T, config={ref_table = self.config, ref_value = self==G.jokers and used_voucher and used_voucher('half_life') and 'card_limit_ref' or 'card_limit', scale = 0.3, colour = G.C.WHITE}},"
 match_indent = true
+
+# Reincarnate changing get_current_pool to be able to return specific rarity of jokers and supporting mod rarities as long as these jokers are in G.P_JOKER_RARITY_POOLS. Set _append to BetmmaAssigningRarity and set _legendary to rarity you want
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "_starting_pool, _pool_key = G.P_JOKER_RARITY_POOLS[rarity], 'Joker'..rarity..((not _legendary and _append) or '')"
+position = "before"
+payload = '''
+    if _append=='BetmmaAssigningRarity' and (_legendary) then
+        rarity=_legendary
+    end
+'''
+match_indent = true
+
+# Forbidden Area adds consumables to joker slots
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.consumeables:emplace(c1)"
+position = "at"
+payload = '''
+    if (#G.consumeables.cards < G.consumeables.config.card_limit + ((c1.edition and c1.edition.negative) and 1 or 0)) or not c1.betmma_forbidden_area_bought then
+        G.consumeables:emplace(c1)
+    else
+        G.jokers:emplace(c1)
+    end
+'''
+match_indent = true
