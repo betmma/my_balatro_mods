@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 46 Vouchers and 21 Fusion Vouchers! v2.1.5.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.5.1(20240627)
+--- VERSION: 2.1.5.1(20240628)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -201,6 +201,7 @@ SMODS_Voucher_fake=function(table)
 end
 
 real_random_data={}
+betmma_extra_data={}
 SMODS.current_mod=SMODS.current_mod or {}
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary["k_fusion_voucher"] = "Fusion Voucher"
@@ -226,6 +227,11 @@ function SMODS.current_mod.process_loc_text()
     end
     G.localization.descriptions.Enhanced.ellipsis={text={'{C:inactive}(#1# abilities omitted)'}}
     G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
+    for k, v in pairs(betmma_extra_data) do
+        for k2, v2 in pairs(v) do
+            G.localization.misc[k][k2]=v2
+        end
+    end
 end
 
 local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and true or false end

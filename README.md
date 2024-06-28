@@ -70,7 +70,7 @@ Undying and Reincarnation are unavailable on Steamodded 0.9.8 version.
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.
 - Overshopping (Overstock + Oversupply): You can shop after skipping blinds.
-- Reroll Cut (Director's Cut + Reroll Surplus): Rerolling boss blind also rerolls tags, and gives a random tag .
+- Reroll Cut (Director's Cut + Reroll Surplus): Rerolling boss blind also rerolls tags, and gives a random tag.
 - Vanish Magic (Magic Trick + Blank): You can make playing cards in the shop vanish and earn $3 for each.
 - Darkness (Glow Up + Antimatter): Negative cards appear 4X more often.
 - Double Planet (Planet Merchant + B1G50): Create a random Planet card when buying a Planet card.
