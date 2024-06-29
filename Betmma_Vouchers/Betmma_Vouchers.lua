@@ -3309,7 +3309,7 @@ do
     G.FUNCS.buy_from_shop = function(e)
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
-        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + 1 < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, +1 is because buy_from_shop adds a card in an event that is executed after this code
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
@@ -4895,8 +4895,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When no consumable slot left,",
-            "buying a {C:attention}Consumable{} card moves it to",
+            "When no consumable slot left, buying or",
+            "reserving a {C:attention}Consumable{} card moves it to",
             "{C:attention}Joker area{} and it acts like a Joker",
             "{C:inactive}(Reserve Area + Undying){}"
         }
