@@ -4979,7 +4979,7 @@ do
         return ret
     end
 
-    function recursion_play_cards(max_index,now_index) -- Localthunk only uses nested events. I use recursive events instead :smiling_imp:
+    function recursion_play_cards(max_index,now_index,e) -- Localthunk only uses nested events. I use recursive events instead :smiling_imp:
         if now_index>max_index then
             after_event(function()   
                 print('end')
@@ -5039,7 +5039,7 @@ do
         if used_voucher('forbidden_area') then
             G.hand.config.highlighted_limit=999
             mark_highlighted_cards()
-            recursion_play_cards(#G.jokers.cards,1)
+            recursion_play_cards(#G.jokers.cards,1,e)
         else
             G_FUNCS_play_cards_from_highlighted_ref(e)
         end
@@ -5101,7 +5101,9 @@ end -- forbidden area
                 {id = MOD_PREFIX_V.. 'solar_system'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
-                {id = MOD_PREFIX_V.. 'real_random'},
+                {id = MOD_PREFIX_V.. 'eternity'},
+                {id = MOD_PREFIX_V.. 'half_life'},
+                {id = MOD_PREFIX_V.. 'heat_death'},
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
