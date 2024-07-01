@@ -104,4 +104,4 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
-The mods are written and tested on both Steamodded 1.0.0 and 0.9.8, but I suggest using 1.0.0.
+The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.

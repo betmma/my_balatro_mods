@@ -22,7 +22,7 @@ target = "card.lua"
 pattern = "elseif not self.greyed then"
 position = "at"
 payload = '''
-elseif not self.greyed and not get_betmma_shaders(self) then 
+elseif not self.greyed and not (get_betmma_shaders and get_betmma_shaders(self)) then 
 '''
 match_indent = true
 
