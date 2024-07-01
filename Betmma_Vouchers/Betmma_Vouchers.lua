@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 21 Fusion Vouchers! v2.1.5.2
+--- MOD_DESCRIPTION: 46 Vouchers and 22 Fusion Vouchers! v2.1.5.3
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.5.2(20240628)
+--- VERSION: 2.1.5.3(20240701)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -111,6 +111,7 @@ config = {
     v_deep_roots=true,
     v_solar_system=true,
     v_forbidden_area=true,
+    v_voucher_tycoon=true,
 }
 if not IN_SMOD1 then
     config.v_undying=false
@@ -5050,6 +5051,51 @@ do
     -- end
 
 end -- forbidden area
+do
+    local name="Voucher Tycoon"
+    local id="voucher_tycoon"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Vouchers{} appear in the shop",
+            "{C:inactive}(Oversupply + Planet Tycoon){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'oversupply','v_planet_tycoon'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Voucher Tycoon' then
+            local flag=false
+            for k, v in pairs(SMODS.ConsumableType.obj_buffer) do
+                if v=='Voucher' then
+                    flag=true
+                    break
+                end
+            end
+            if not flag then
+                table.insert(SMODS.ConsumableType.obj_buffer,1,'Voucher')
+            end
+            G.GAME.voucher_rate=(G.GAME.voucher_rate or 0)+2
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+
+end -- voucher tycoon
 
     -- this challenge is only for test
     if 0 then
@@ -5098,7 +5144,7 @@ end -- forbidden area
             },
             vouchers = {
                 {id = MOD_PREFIX_V.. 'trash_picker'},
-                {id = MOD_PREFIX_V.. 'solar_system'},
+                {id = MOD_PREFIX_V.. 'voucher_tycoon'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
                 {id = MOD_PREFIX_V.. 'eternity'},
