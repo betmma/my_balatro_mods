@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 22 Fusion Vouchers! v2.1.6
+--- MOD_DESCRIPTION: 48 Vouchers and 22 Fusion Vouchers! v2.1.6.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6(20240706)
+--- VERSION: 2.1.6.1(20240706)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -501,6 +501,7 @@ do
     -- Restore enhanced cards effect changes
     local Game_start_run_ref = Game.start_run
     function Game.start_run(self, args)
+        G.GAME.voucher_rate=(G.GAME.voucher_rate or 0) -- If you played a run with voucher tycoon, 'Voucher' is added into SMOD pool and will try to access G.GAME.voucher_rate in a new run and will crash if G.GAME.voucher_rate is nil
 
         G.P_CENTERS.m_bonus.config.bonus = enhanced_prototype_centers.m_bonus
         G.P_CENTERS.m_mult.config.mult = enhanced_prototype_centers.m_mult
@@ -5179,7 +5180,7 @@ do
 end -- voucher tycoon
 
     -- this challenge is only for test
-    if 0 then
+    if nil then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
