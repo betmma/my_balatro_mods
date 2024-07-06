@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 46 Vouchers and 22 Fusion Vouchers! v2.1.5.3
+--- MOD_DESCRIPTION: 48 Vouchers and 22 Fusion Vouchers! v2.1.6
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.5.3(20240701)
+--- VERSION: 2.1.6(20240706)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -89,6 +89,8 @@ config = {
     v_stash=true,
     v_undying=true,
     v_reincarnate=true,
+    v_bargain_aisle=true,
+    v_clearance_aisle=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -116,6 +118,7 @@ config = {
 if not IN_SMOD1 then
     config.v_undying=false
     config.v_reincarnate=false
+    config.v_voucher_tycoon=false
 end
 
 -- example: if used_voucher('slate') then ... end 
@@ -2953,6 +2956,84 @@ do
     -- Phantom and its calculation are in phantom.lua
 
 end -- undying
+do 
+    local name="Bargain Aisle"
+    local id="bargain_aisle"
+    local loc_txt = {
+        name = name,
+        text = {
+            "First item in shop is {C:attention}free{}",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    local name="Clearance Aisle"
+    local id="clearance_aisle"
+    local loc_txt = {
+        name = name,
+        text = {
+            "First pack in shop is {C:attention}free{}",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'bargain_aisle'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={}}
+    end
+    handle_register(this_v)
+
+    function bargain_aisle_effect()
+        G.E_MANAGER:add_event(Event({func = function()
+            if G.shop_jokers and G.shop_jokers.cards[1]~=nil then 
+                G.shop_jokers.cards[1].ability.couponed=true
+                G.shop_jokers.cards[1]:set_cost()
+            end
+            return true end }))
+    end
+    function clearance_aisle_effect()
+        G.E_MANAGER:add_event(Event({func = function()
+            if G.shop_booster and G.shop_booster.cards[1]~=nil then 
+                G.shop_booster.cards[1].ability.couponed=true
+                G.shop_booster.cards[1]:set_cost()
+            end
+            return true end }))
+    end
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Bargain Aisle' and G.shop_jokers then
+            bargain_aisle_effect()
+        end
+        if center_table.name == 'Clearance Aisle' and G.shop_booster then
+            clearance_aisle_effect()
+        end
+
+        Card_apply_to_run_ref(self, center)
+    end
+
+    -- I add the effects in lovely patch
+   
+
+end -- bargain aisle
 
 
     -- ################
@@ -5153,11 +5234,8 @@ end -- voucher tycoon
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
-                {id = MOD_PREFIX_V.. 'forbidden_area'},
-                {id = MOD_PREFIX_V.. 'reserve_area_plus'},
-                {id = MOD_PREFIX_V.. 'reserve_area'},
-                {id = MOD_PREFIX_V.. 'undying'},
-                {id = MOD_PREFIX_V.. 'reincarnate'},
+                {id = MOD_PREFIX_V.. 'bargain_aisle'},
+                {id = MOD_PREFIX_V.. 'clearance_aisle'},
                 --{id = MOD_PREFIX_V.. 'chaos'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},

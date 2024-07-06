@@ -105,3 +105,21 @@ payload = '''
     end
 '''
 match_indent = true
+
+# Bargain/Clearance Aisle setting first item/pack to $0
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "G.GAME.tags[i]:apply_to_run({type = 'shop_final_pass'})"
+position = "after"
+payload = '''
+    end
+    if used_voucher('bargain_aisle') then
+        bargain_aisle_effect()
+    end
+    if used_voucher('clearance_aisle') then
+        clearance_aisle_effect()
+'''
+match_indent = true
+
+
