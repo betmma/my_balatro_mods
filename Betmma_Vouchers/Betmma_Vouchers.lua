@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 22 Fusion Vouchers! v2.1.6.1
+--- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6.1(20240706)
+--- VERSION: 2.1.6.2(20240707)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -34,6 +34,13 @@ Tier 2 Voucher: Clearance Aisle: 3 random items in the shop will be free per sho
 Fusion Voucher: Giveaway Search (Reroll Glut + Clearance Aisle): Each shop reroll that you do will add +1 random free item to that shop. 
 ]]
 --sendDebugMessage(tprint(table))
+function pprint(x)
+    if type(x)=='table' then
+        sendDebugMessage(tprint(x))
+    else
+        print(x)
+    end
+end
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 local JOKER_MOD_PREFIX=IN_SMOD1 and "betm_jokers_"or ''
 MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
@@ -114,11 +121,13 @@ config = {
     v_solar_system=true,
     v_forbidden_area=true,
     v_voucher_tycoon=true,
+    v_cryptozoology=true,
 }
 if not IN_SMOD1 then
     config.v_undying=false
     config.v_reincarnate=false
     config.v_voucher_tycoon=false
+    config.v_cryptozoology=false
 end
 
 -- example: if used_voucher('slate') then ... end 
@@ -5178,6 +5187,109 @@ do
     end
 
 end -- voucher tycoon
+do
+    local name="Cryptozoology"
+    local id="cryptozoology"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Jokers{} bought directly have {C:dark_edition}#1#%{}",
+            "chance to have {C:attention}Tentacle{} edition",
+            "{C:inactive}(Crystal Ball + Undying){}"
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={extra=15,rarity=4},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={'v_crystal_ball',MOD_PREFIX_V..'undying'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local G_FUNCS_buy_from_shop_ref=G.FUNCS.buy_from_shop
+    G.FUNCS.buy_from_shop = function(e)
+        local c1 = e.config.ref_table
+        local ret=G_FUNCS_buy_from_shop_ref(e)
+        
+        if c1.ability.set == 'Joker' and used_voucher('cryptozoology') and pseudorandom('cryptozoology')*100 < get_voucher('cryptozoology').config.extra then -- buying a joker
+            c1:set_edition('e_tentacle')
+        end
+    end
+
+    
+    local Card_calculate_joker_ref=Card.calculate_joker
+    function Card:calculate_joker(context)
+        if self.ability.set == "Joker" and not self.debuff and self.edition and self.edition.tentacle and not context.blueprint and context.setting_blind and not self.getting_sliced then 
+            local my_pos = nil
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i] == self then my_pos = i; break end
+            end
+            if my_pos and G.jokers.cards[my_pos+1] and not self.getting_sliced and not G.jokers.cards[my_pos+1].ability.eternal and not G.jokers.cards[my_pos+1].getting_sliced then 
+                local sliced_card = G.jokers.cards[my_pos+1]
+                sliced_card.getting_sliced = true
+                G.GAME.joker_buffer = G.GAME.joker_buffer - 1
+                G.E_MANAGER:add_event(Event({func = function()
+                    G.GAME.joker_buffer = 0
+                    local sliced_ability=sliced_card.ability
+                    local values={}
+                    local possibleKeys={'bonus','h_mult','mult','t_mult','h_dollars','x_mult','extra_value','h_size','perma_bonus','p_dollars','h_x_mult','t_chips','d_size'}
+                    for k, v in pairs(possibleKeys) do
+                        if sliced_ability[v] and sliced_ability[v]~=0 then
+                            values[#values+1]=sliced_ability[v]
+                        end
+                    end
+                    if sliced_ability.extra then
+                        if type(sliced_ability.extra)=='table' then
+                            for k, v in pairs(sliced_ability.extra) do
+                                if type(v)=='number' then
+                                    values[#values+1]=v
+                                end
+                            end
+                        elseif type(sliced_ability.extra)=='number' and sliced_ability.extra~=0 then
+                            values[#values+1]=sliced_ability.extra
+                        end
+                    end
+                    if #values==0 then
+                        values={0}
+                    end
+                    local self_ability=self.ability
+                    pprint(sliced_ability)
+                    pprint(self_ability)
+                    local valueIndex=1
+                    for k, v in pairs(possibleKeys) do
+                        if self_ability[v] and self_ability[v]~=0 then
+                            self_ability[v]=self_ability[v]+values[valueIndex]
+                            valueIndex=(valueIndex) % #values + 1
+                        end
+                    end
+                    if self_ability.extra then
+                        if type(self_ability.extra)=='table' then
+                            for k, v in pairs(self_ability.extra) do
+                                if type(v)=='number' then
+                                    self_ability.extra[k]=self_ability.extra[k]+values[valueIndex]
+                                    valueIndex=(valueIndex) % #values + 1
+                                end
+                            end
+                        elseif type(self_ability.extra)=='number' then
+                            self_ability.extra=self_ability.extra+values[valueIndex]
+                        end
+                    end
+                    self:juice_up(0.8, 0.8)
+                    sliced_card:start_dissolve({HEX("57ecab")}, nil, 1.6)
+                    play_sound('slice1', 0.96+math.random()*0.08)
+                return true end }))
+                card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.RED, no_juice = true})
+            end
+        end
+        return Card_calculate_joker_ref(self,context)
+    end
+
+
+end -- cryptozoology
 
     -- this challenge is only for test
     if nil then
@@ -5236,7 +5348,7 @@ end -- voucher tycoon
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = MOD_PREFIX_V.. 'bargain_aisle'},
-                {id = MOD_PREFIX_V.. 'clearance_aisle'},
+                {id = MOD_PREFIX_V.. 'cryptozoology'},
                 --{id = MOD_PREFIX_V.. 'chaos'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},

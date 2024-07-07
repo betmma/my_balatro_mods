@@ -20,7 +20,11 @@
             loc_txt={
                 name = 'Tentacle',
                 text = {
-                    "{C:dark_edition}Tentacle{}.",
+                    "When {C:attention}Blind{} is selected",
+                    "destroy Joker to the",
+                    "right and add its value",
+                    "to this joker's value",
+                    --"{C:dark_edition}Tentacle{}.",
                 }
             },
         }
