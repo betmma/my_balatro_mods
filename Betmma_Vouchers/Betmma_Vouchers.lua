@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.2
+--- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.3
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6.2(20240707)
+--- VERSION: 2.1.6.3(20240708)
 --- BADGE_COLOUR: ED40BF
 
 ----------------------------------------------
@@ -2902,12 +2902,21 @@ do
     local Card_draw_ref=Card.draw
     function Card:draw(layer)
         if is_hidden(self)then
+            if self.stash_debuff==nil then
+                self.stash_debuff=self.debuff
+                self:set_debuff(true)
+            end
             Card_draw_ref(self,layer)
             self.children.center:draw_shader('debuff', nil, self.ARGS.send_to_shader)
             if self.children.front and self.ability.effect ~= 'Stone Card' then
                 self.children.front:draw_shader('debuff', nil, self.ARGS.send_to_shader)
             end
             return
+        else
+            if self.stash_debuff~=nil then
+                self:set_debuff(self.stash_debuff)
+                self.stash_debuff=nil
+            end
         end
         Card_draw_ref(self,layer)
     end
@@ -5257,8 +5266,8 @@ do
                         values={0}
                     end
                     local self_ability=self.ability
-                    pprint(sliced_ability)
-                    pprint(self_ability)
+                    -- pprint(sliced_ability)
+                    -- pprint(self_ability)
                     local valueIndex=1
                     for k, v in pairs(possibleKeys) do
                         if self_ability[v] and self_ability[v]~=0 then
@@ -5347,7 +5356,7 @@ end -- cryptozoology
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
-                {id = MOD_PREFIX_V.. 'bargain_aisle'},
+                {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'cryptozoology'},
                 --{id = MOD_PREFIX_V.. 'chaos'},
                 {id = 'v_retcon'},
