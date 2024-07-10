@@ -2,10 +2,11 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.3
+--- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.4
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6.3(20240708)
+--- VERSION: 2.1.6.4(20240710)
 --- BADGE_COLOUR: ED40BF
+--- PRIORITY: -1
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -5378,6 +5379,26 @@ end -- cryptozoology
     end
     init_localization()
 end
+
+if AddLoopableVoucher then -- loop mod compatibility
+	AddLoopableVoucher('v_betm_vouchers_gold_coin')
+	AddLoopableVoucher('v_betm_vouchers_gold_bar')
+	AddLoopableVoucher('v_betm_vouchers_abstract_art')
+	AddLoopableVoucher('v_betm_vouchers_mondrian')
+	AddLoopableVoucher('v_betm_vouchers_voucher_bundle')
+	AddLoopableVoucher('v_betm_vouchers_voucher_bulk')
+	AddLoopableVoucher('v_betm_vouchers_scrawl')
+	AddLoopableVoucher('v_betm_vouchers_scribble')
+	AddLoopableVoucher('v_betm_vouchers_bonus_plus')
+	AddLoopableVoucher('v_betm_vouchers_mult_plus')
+	AddLoopableVoucher('v_betm_vouchers_cash_clutch')
+	AddLoopableVoucher('v_betm_vouchers_inflation')
+	-- AddLoopableVoucher('v_betm_vouchers_stow')
+	-- AddLoopableVoucher('v_betm_vouchers_stash')
+	AddLoopableVoucher('v_betm_vouchers_trash_picker')
+end
+
+
 if IN_SMOD1 then
     INIT()
 else
