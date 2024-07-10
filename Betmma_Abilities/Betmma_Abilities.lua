@@ -29,27 +29,16 @@ do
         local Card_load=Card.load
         function Card:load(cardTable,other_card)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if self.config.center.set=='Ability' then
-                self.T.w=W*34/71
-                self.T.h=H*34/95
+            if G.P_CENTERS[cardTable.save_fields.center].set=='Ability' then
+                G.P_CENTERS[cardTable.save_fields.center].load=function()
+                    self.T.w=W*34/71
+                    self.T.h=H*34/95
+                end
             end
 
             Card_load(self,cardTable,other_card)
         end
     end -- make Abilities appear as 34*34 instead of card size 71*95
-
-    local Game_start_run_ref=Game.start_run
-    -- create Ability area
-    function Game:start_run(args) 
-        Game_start_run_ref(self,args)
-        self.betmma_abilities = CardArea(G.consumeables.T.x+G.CARD_W, G.consumeables.T.y+2.2*G.CARD_H, 1.3*G.CARD_W, 0.3*G.CARD_H, {
-            card_limit = 3,
-            type = "betmma_ability",
-            highlight_limit = 1
-        })
-        self.betmma_abilities.card_w=self.betmma_abilities.card_w*34/71
-        -- self.betmma_abilities.is=true
-    end
 
     local CardArea_draw_ref=CardArea.draw
     -- enable Ability area to draw abilities in it
@@ -226,7 +215,7 @@ SMODS.ConsumableType { --Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0,
+    shop_rate = 0.1,
     default = 'c_betm_abilities_GIL'
 }
 
@@ -305,8 +294,8 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     loc_txt = {
         name = 'Glitched Seed',
         text = {
-            'Next 3 return values of',
-            '{C:attention}pseudorandom{}', 
+            'Next #5# return values',
+            'of {C:attention}pseudorandom{}', 
             'function is set to {C:attention}0{}',
             '(#4# times left)',
             'Cooldown: {C:mult}#1#/#2# #3# left{}'
@@ -315,12 +304,12 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     set = 'Ability',
     pos = {x = 0,y = 0}, 
     atlas = key, 
-    config = {extra = {cooldown={type='round', now=nil, need=1}},  },
+    config = {extra = {cooldown={type='round', now=nil, need=1}, value=3},  },
     discovered = true,
     cost = 6,
     loc_vars = function(self, info_queue, card)
         ability_copy_table(card)
-        return {vars = {card.ability.extra.cooldown.now,card.ability.extra.cooldown.need,card.ability.extra.cooldown.type,pseudorandom_forced_0_count}}
+        return {vars = {card.ability.extra.cooldown.now,card.ability.extra.cooldown.need,card.ability.extra.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
     end,
     keep_on_use = function(self,card)
         return true
@@ -328,7 +317,7 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     can_use = cooled_down,
     use = function(self,card,area,copier)
         ability_copy_table(card)
-        pseudorandom_forced_0_count=pseudorandom_forced_0_count+3
+        pseudorandom_forced_0_count=pseudorandom_forced_0_count+card.ability.extra.value
         -- card.ability.extra.cooldown.now=card.ability.extra.cooldown.now+card.ability.extra.cooldown.need/2
     end
 }
@@ -345,6 +334,36 @@ function pseudorandom(seed, min, max)
     end
     return pseudorandom_ref(seed, min, max)
 end
+
+
+-- function CardArea:load(cardAreaTable)
+--     if self==G.betmma_abilities then
+--         print('abilities loaded!')
+--     end
+
+--     if self.cards then remove_all(self.cards) end
+--     self.cards = {}
+--     if self.children then remove_all(self.children) end
+--     self.children = {}
+
+--     self.config = cardAreaTable.config
+
+--     for i = 1, #cardAreaTable.cards do
+--         pprint(cardAreaTable.cards[i])
+--         loading = true
+--         local card = Card(0, 0, G.CARD_W, G.CARD_H, G.P_CENTERS.j_joker, G.P_CENTERS.c_base)
+--         loading = nil
+--         card:load(cardAreaTable.cards[i])
+--         self.cards[#self.cards + 1] = card
+--         if card.highlighted then 
+--             self.highlighted[#self.highlighted + 1] = card
+--         end
+--         card:set_card_area(self)
+--     end
+--     self:set_ranks()
+--     self:align_cards()
+--     self:hard_set_cards()
+-- end
 
 -- local set_screen_positions_ref = set_screen_positions
 -- function set_screen_positions()
