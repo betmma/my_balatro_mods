@@ -472,10 +472,11 @@ function GET_PATH_COMPAT()
 end
 
 local function INIT()
+    local PATH=GET_PATH_COMPAT()
     if config.v_undying or config.v_reincarnate then
-        local PATH=GET_PATH_COMPAT()
         NFS.load(PATH .. "phantom.lua")()
     end
+    -- NFS.load(PATH .. 'Betmma_Abilities.lua')
 
 --- deal with enhances effect changes when saving & loading
 do
@@ -5301,7 +5302,7 @@ do
 end -- cryptozoology
 
     -- this challenge is only for test
-    if nil then
+    if 1 then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
@@ -5326,7 +5327,7 @@ end -- cryptozoology
                 -- {id = 'j_oops'},
                 {id = 'j_baron', },
                 {id = 'j_mime', },
-                {id = 'j_cry_universum', },
+                -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_jimbow'},-- edition='phantom'},
                 {id = 'j_ceremonial', pinned = true},
@@ -5347,7 +5348,6 @@ end -- cryptozoology
             },
             vouchers = {
                 {id = MOD_PREFIX_V.. 'trash_picker'},
-                {id = MOD_PREFIX_V.. 'voucher_tycoon'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
                 {id = MOD_PREFIX_V.. 'eternity'},
@@ -5357,8 +5357,8 @@ end -- cryptozoology
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = MOD_PREFIX_V.. 'stow'},
-                {id = MOD_PREFIX_V.. 'cryptozoology'},
-                --{id = MOD_PREFIX_V.. 'chaos'},
+                {id = MOD_PREFIX_V.. 'real_random'},
+                {id = MOD_PREFIX_V.. 'chaos'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },

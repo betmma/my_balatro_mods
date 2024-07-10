@@ -98,10 +98,10 @@ target = "functions/button_callbacks.lua"
 pattern = "G.consumeables:emplace(c1)"
 position = "at"
 payload = '''
-    if (#G.consumeables.cards < G.consumeables.config.card_limit + ((c1.edition and c1.edition.negative) and 1 or 0)) or not c1.betmma_forbidden_area_bought then
-        G.consumeables:emplace(c1)
-    else
+    if not (#G.consumeables.cards < G.consumeables.config.card_limit + ((c1.edition and c1.edition.negative) and 1 or 0)) and c1.betmma_forbidden_area_bought then
         G.jokers:emplace(c1)
+    else
+        G.consumeables:emplace(c1)
     end
 '''
 match_indent = true

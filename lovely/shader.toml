@@ -34,9 +34,9 @@ target = "card.lua"
 pattern = "if not self.config.center.discovered and (self.ability.consumeable or self.config.center.unlocked) and not self.config.center.demo and not self.bypass_discovery_center then"
 position = "before"
 payload = '''
-                    --if self.edition then
+                    if draw_betmma_shaders~=nil then
                         draw_betmma_shaders(self)
-                    --end
+                    end
 '''
 match_indent = true
 

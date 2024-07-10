@@ -1,0 +1,51 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Let Abilities go to Ability Area when bought from shop
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.consumeables:emplace(c1)"
+position = "at"
+payload = '''
+    if c1.ability.set=='Ability' then -- betmma_abilities
+        G.betmma_abilities:emplace(c1)
+    else
+        G.consumeables:emplace(c1)
+    end
+'''
+match_indent = true
+
+# Prevent using Abilities costs pack card 
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "elseif G.GAME.pack_choices and G.GAME.pack_choices > 1 then"
+position = "before"
+payload = '''
+                  elseif card.ability.set=='Ability' then -- betmma_abilities
+                    G.booster_pack.alignment.offset.y = G.booster_pack.alignment.offset.py
+                    G.booster_pack.alignment.offset.py = nil
+'''
+match_indent = true
+
+
+# Prevent dissolve when using Abilities in pack. Also emplace Ability card when bought from pack
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK then"
+position = "after"
+payload = '''
+if card.ability.set=='Ability' then -- betmma_abilities
+    area:remove_from_highlighted(card)
+    play_sound('cardSlide2', nil, 0.3)
+    dont_dissolve = true
+    if card.area~=G.betmma_abilities then
+        G.betmma_abilities:emplace(card)
+    end
+end
+'''
+match_indent = true
