@@ -1,4 +1,4 @@
---- STEAMODDED HEADER
+--- NONONOSTEAMODDED HEADER
 --- MOD_NAME: Betmma Abilities
 --- MOD_ID: BetmmaAbilities
 --- MOD_AUTHOR: [Betmma]
