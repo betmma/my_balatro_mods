@@ -190,19 +190,28 @@ end -- preparation
 function update_ability_cooldown(type)
     for i = 1,#G.betmma_abilities.cards do
         local card=G.betmma_abilities.cards[i]
-        if card.ability.extra.cooldown.type==type then
-            card.ability.extra.cooldown.now=card.ability.extra.cooldown.now-1
-            if card.ability.extra.cooldown.now<0 then
-                card.ability.extra.cooldown.now=0
+        if card.ability.cooldown.type==type then
+            card.ability.cooldown.now=card.ability.cooldown.now-1
+            if card.ability.cooldown.now<0 then
+                card.ability.cooldown.now=0
             end
         end
     end
 end
 
 local end_round_ref = end_round
+-- update 'round' cooldown
 function end_round()
     update_ability_cooldown('round')
     end_round_ref()
+end
+
+local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
+-- update 'hand' cooldown
+G.FUNCS.play_cards_from_highlighted=function(e)
+    update_ability_cooldown('hand')
+    local ret= G_FUNCS_play_cards_from_highlighted_ref(e)
+    return ret
 end
 
 SMODS.ConsumableType { --Ability Consumable Type
@@ -220,9 +229,9 @@ SMODS.ConsumableType { --Ability Consumable Type
 }
 
 function ability_copy_table(card)
-    if card.ability.extra.cooldown.now ==nil then
-        card.ability.extra=copy_table(card.ability.extra)
-        card.ability.extra.cooldown.now=card.ability.extra.cooldown.need
+    if card.ability.cooldown.now ==nil then
+        card.ability=copy_table(card.ability)
+        card.ability.cooldown.now=card.ability.cooldown.need
     end
 end
 
@@ -236,13 +245,12 @@ local function get_atlas(key)
 end
 local function cooled_down(self,card)
     ability_copy_table(card)
-    if card.ability.extra.cooldown and card.ability.extra.cooldown.now<=0 then
+    if card.ability.cooldown and card.ability.cooldown.now<=0 then
         return true
     else
         return false
     end
 end
-
 local key='GIL'
 get_atlas(key)
 betm_abilities[key]=SMODS.Consumable { --GIL
@@ -259,18 +267,19 @@ betm_abilities[key]=SMODS.Consumable { --GIL
     set = 'Ability',
     pos = {x = 0,y = 0}, 
     atlas = key, 
-    config = {extra = {cooldown={type='round', now=nil, need=1}},  },
+    config = {extra = {}, cooldown={type='round', now=nil, need=1} },
     discovered = true,
     cost = 6,
     loc_vars = function(self, info_queue, card)
         ability_copy_table(card)
-        return {vars = {card.ability.extra.cooldown.now,card.ability.extra.cooldown.need,card.ability.extra.cooldown.type}}
+        return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type}}
     end,
     keep_on_use = function(self,card)
         return true
     end,
     can_use = cooled_down,
     use = function(self,card,area,copier)
+        -- pprint(card.ability.cooldown)
         ability_copy_table(card)
         local allEternal=true
         for i = 1, #G.jokers.cards do
@@ -282,8 +291,9 @@ betm_abilities[key]=SMODS.Consumable { --GIL
         for i = 1, #G.jokers.cards do
             G.jokers.cards[i].ability.eternal=not allEternal
         end
-        -- card.ability.extra.cooldown.now=card.ability.extra.cooldown.now+card.ability.extra.cooldown.need/2
-    end
+        -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+    end,
+    -- add_to_deck=ability_copy_table
 }
 
 
@@ -294,9 +304,8 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     loc_txt = {
         name = 'Glitched Seed',
         text = {
-            'Next #5# return values',
-            'of {C:attention}pseudorandom{}', 
-            'function is set to {C:attention}0{}',
+            'Next #5# random events',
+            'are guaranteed success', 
             '(#4# times left)',
             'Cooldown: {C:mult}#1#/#2# #3# left{}'
     }
@@ -304,12 +313,12 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     set = 'Ability',
     pos = {x = 0,y = 0}, 
     atlas = key, 
-    config = {extra = {cooldown={type='round', now=nil, need=1}, value=3},  },
+    config = {extra = { value=2},cooldown={type='round', now=nil, need=1}, },
     discovered = true,
     cost = 6,
     loc_vars = function(self, info_queue, card)
         ability_copy_table(card)
-        return {vars = {card.ability.extra.cooldown.now,card.ability.extra.cooldown.need,card.ability.extra.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
+        return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
     end,
     keep_on_use = function(self,card)
         return true
@@ -318,14 +327,14 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     use = function(self,card,area,copier)
         ability_copy_table(card)
         pseudorandom_forced_0_count=pseudorandom_forced_0_count+card.ability.extra.value
-        -- card.ability.extra.cooldown.now=card.ability.extra.cooldown.now+card.ability.extra.cooldown.need/2
+        -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
     end
 }
 
 pseudorandom_forced_0_count=0
 local pseudorandom_ref=pseudorandom
 function pseudorandom(seed, min, max)
-    if pseudorandom_forced_0_count>0 and type(seed) == 'string' then
+    if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random'then
         pseudorandom_forced_0_count=pseudorandom_forced_0_count-1
         if min and max then
             return min
@@ -336,6 +345,98 @@ function pseudorandom(seed, min, max)
 end
 
 
+local key='rank_bump'
+get_atlas(key)
+betm_abilities[key]=SMODS.Consumable { --rank bump
+    key = key,
+    loc_txt = {
+        name = 'Rank Bump',
+        text = {
+            'Temporarily increase ranks of',
+            'chosen cards by 1 for this hand',
+            'Cooldown: {C:mult}#1#/#2# #3# left{}'
+    }
+    },
+    set = 'Ability',
+    pos = {x = 0,y = 0}, 
+    atlas = key, 
+    config = {extra = { value=2},cooldown={type='hand', now=nil, need=2}, },
+    discovered = true,
+    cost = 6,
+    loc_vars = function(self, info_queue, card)
+        ability_copy_table(card)
+        return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
+    end,
+    keep_on_use = function(self,card)
+        return true
+    end,
+    can_use = function(self,card)
+        return cooled_down(self,card)and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
+    end,
+    use = function(self,card,area,copier)
+        ability_copy_table(card)
+        
+        for i=1, #G.hand.highlighted do
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                local card = G.hand.highlighted[i]
+                card.ability.rank_bumped=true
+                local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+                local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
+                if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+                elseif rank_suffix == 10 then rank_suffix = 'T'
+                elseif rank_suffix == 11 then rank_suffix = 'J'
+                elseif rank_suffix == 12 then rank_suffix = 'Q'
+                elseif rank_suffix == 13 then rank_suffix = 'K'
+                elseif rank_suffix == 14 then rank_suffix = 'A'
+                end
+                card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+            return true end }))
+        end  
+        -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+    end
+}
+
+local function cancel_bump(area)
+    for k, v in ipairs(area.cards) do
+        if v.ability.rank_bumped then
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                local card=v
+                local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+                local rank_suffix = card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
+                if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+                elseif rank_suffix == 10 then rank_suffix = 'T'
+                elseif rank_suffix == 11 then rank_suffix = 'J'
+                elseif rank_suffix == 12 then rank_suffix = 'Q'
+                elseif rank_suffix == 13 then rank_suffix = 'K'
+                elseif rank_suffix == 14 then rank_suffix = 'A'
+                end
+                card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+                v.ability.rank_bumped=nil
+            return true end }))
+        end
+    end
+end
+
+local function cancel_bump_all()
+    cancel_bump(G.play)
+    cancel_bump(G.hand)
+    cancel_bump(G.discard)
+    cancel_bump(G.deck)
+end
+
+local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
+G.FUNCS.draw_from_play_to_discard = function(e)
+    cancel_bump_all()
+    G_FUNCS_draw_from_play_to_discard_ref(e)
+end
+
+local G_FUNCS_discard_cards_from_highlighted=G.FUNCS.discard_cards_from_highlighted
+G.FUNCS.discard_cards_from_highlighted = function(e, hook)
+    if not hook then
+        cancel_bump_all()
+    end
+    G_FUNCS_discard_cards_from_highlighted(e,hook)
+end
 -- function CardArea:load(cardAreaTable)
 --     if self==G.betmma_abilities then
 --         print('abilities loaded!')
