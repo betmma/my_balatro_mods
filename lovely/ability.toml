@@ -1,4 +1,4 @@
-nonono[manifest]
+[manifest]
 version = "1.0.0"
 dump_lua = true
 priority = 0
@@ -11,12 +11,14 @@ target = "game.lua"
 pattern = '''G.SPLASH_BACK = Sprite(-30, -6, G.ROOM.T.w+60, G.ROOM.T.h+12, G.ASSET_ATLAS["ui_1"], {x = 2, y = 0})'''
 position = "before"
 payload = '''
+if USING_BETMMA_ABILITIES then -- not adding area if Betmma_Abilities.lua isn't executed
     self.betmma_abilities = CardArea(G.consumeables.T.x+G.CARD_W, G.consumeables.T.y+2.2*G.CARD_H, 1.3*G.CARD_W, 0.3*G.CARD_H, {
             card_limit = 3,
             type = "betmma_ability",
             highlight_limit = 1
     })
     self.betmma_abilities.card_w=self.betmma_abilities.card_w*34/71
+end
 '''
 match_indent = true
 
@@ -64,6 +66,23 @@ if card.ability.set=='Ability' then -- betmma_abilities
     if card.area~=G.betmma_abilities then
         G.betmma_abilities:emplace(card)
     end
+end
+'''
+match_indent = true
+
+# modify draw_shader function to support sending values in _send while also sending original values like mouse_screen_pos.
+[[patches]]
+[patches.pattern]
+target = "engine/sprite.lua"
+pattern = '''G.SHADERS[_shader or 'dissolve']:send("shadow",(not not _shadow_height))'''
+position = "after"
+payload = '''
+if type(_send)=='table' and _send.betmma==true then
+    --G.SHADERS[_shader or 'dissolve']:send((SMODS.Shaders[_shader or 'dissolve'] and SMODS.Shaders[_shader or 'dissolve'].original_key) or _shader,_send.vanilla)
+    for k, v in ipairs(_send.extra) do
+        G.SHADERS[_shader]:send(v.name, v.val or (v.func and v.func()) or v.ref_table[v.ref_value])
+    end
+    _send=nil
 end
 '''
 match_indent = true

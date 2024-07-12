@@ -1,4 +1,4 @@
---- NONONOSTEAMODDED HEADER
+--- STEAMODDED HEADER
 --- MOD_NAME: Betmma Abilities
 --- MOD_ID: BetmmaAbilities
 --- MOD_AUTHOR: [Betmma]
@@ -10,6 +10,7 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 MOD_PREFIX='betm_abilities'
+USING_BETMMA_ABILITIES=true
 betm_abilities={}
 betm_abilities_atlases={}
 
@@ -185,9 +186,46 @@ do
         end
         return G_FUNCS_check_for_buy_space_ref(card)
     end
-end -- preparation
+end -- Ability Area preparation
+
+function GET_PATH_COMPAT()
+    return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaVouchers').path
+end
+
+function betmma_load_shader(v)
+    local file = NFS.read(GET_PATH_COMPAT().."/shaders/"..v..".fs")
+    love.filesystem.write(v.."-temp.fs", file)
+    G.SHADERS[v] = love.graphics.newShader(v.."-temp.fs")
+    love.filesystem.remove(v.."-temp.fs")
+end
+betmma_load_shader('cooldown')
+
+local Card_draw_ref=Card.draw
+function Card:draw(layer)
+    if self.ability.set=='Ability' and self.area==G.betmma_abilities and not ability_cooled_down(self) then
+        Card_draw_ref(self,layer)
+        local _send=self.ARGS.send_to_shader
+        _send={betmma=true,extra={{name='percentage',val=ability_cooled_down_percentage(self)}},vanilla=_send}
+        -- print(_send[1].val)
+        self.children.center:draw_shader('cooldown', nil, _send)
+        if self.children.front and self.ability.effect ~= 'Stone Card' then
+            self.children.front:draw_shader('cooldown', nil, _send)
+        end
+        return
+    else
+        if self.stash_debuff~=nil then
+            self:set_debuff(self.stash_debuff)
+            self.stash_debuff=nil
+        end
+    end
+    Card_draw_ref(self,layer)
+end
 
 function update_ability_cooldown(type)
+    if G.betmma_abilities==nil then
+        print("G.betmma_abilities doesn't exist! Maybe ability.toml isn't installed correctly.")
+        return
+    end
     for i = 1,#G.betmma_abilities.cards do
         local card=G.betmma_abilities.cards[i]
         if card.ability.cooldown.type==type then
@@ -214,7 +252,7 @@ G.FUNCS.play_cards_from_highlighted=function(e)
     return ret
 end
 
-SMODS.ConsumableType { --Ability Consumable Type
+SMODS.ConsumableType { -- Define Ability Consumable Type
     key = 'Ability',
     collection_rows = { 4,3 },
     primary_colour = G.C.CHIPS,
@@ -224,7 +262,7 @@ SMODS.ConsumableType { --Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.1,
+    shop_rate = 990.1,
     default = 'c_betm_abilities_GIL'
 }
 
@@ -243,13 +281,21 @@ local function get_atlas(key)
         path = 'a_'..key..'.png'
     }
 end
-local function cooled_down(self,card)
+function ability_cooled_down(self,card)
+    if not card then card=self end
     ability_copy_table(card)
     if card.ability.cooldown and card.ability.cooldown.now<=0 then
         return true
     else
         return false
     end
+end
+function ability_cooled_down_percentage(card)
+    ability_copy_table(card)
+    if card.ability.cooldown then
+        return math.max(card.ability.cooldown.now,0)/card.ability.cooldown.need
+    end
+    return 0
 end
 local key='GIL'
 get_atlas(key)
@@ -277,7 +323,7 @@ betm_abilities[key]=SMODS.Consumable { --GIL
     keep_on_use = function(self,card)
         return true
     end,
-    can_use = cooled_down,
+    can_use = ability_cooled_down,
     use = function(self,card,area,copier)
         -- pprint(card.ability.cooldown)
         ability_copy_table(card)
@@ -323,7 +369,7 @@ betm_abilities[key]=SMODS.Consumable { --glitched seed
     keep_on_use = function(self,card)
         return true
     end,
-    can_use = cooled_down,
+    can_use = ability_cooled_down,
     use = function(self,card,area,copier)
         ability_copy_table(card)
         pseudorandom_forced_0_count=pseudorandom_forced_0_count+card.ability.extra.value
@@ -360,18 +406,18 @@ betm_abilities[key]=SMODS.Consumable { --rank bump
     set = 'Ability',
     pos = {x = 0,y = 0}, 
     atlas = key, 
-    config = {extra = { value=2},cooldown={type='hand', now=nil, need=2}, },
+    config = {extra = { },cooldown={type='hand', now=nil, need=2}, },
     discovered = true,
     cost = 6,
     loc_vars = function(self, info_queue, card)
         ability_copy_table(card)
-        return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
+        return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,}}
     end,
     keep_on_use = function(self,card)
         return true
     end,
     can_use = function(self,card)
-        return cooled_down(self,card)and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
+        return ability_cooled_down(self,card)and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
     end,
     use = function(self,card,area,copier)
         ability_copy_table(card)
@@ -379,7 +425,7 @@ betm_abilities[key]=SMODS.Consumable { --rank bump
         for i=1, #G.hand.highlighted do
             G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
                 local card = G.hand.highlighted[i]
-                card.ability.rank_bumped=true
+                card.ability.rank_bumped=(card.ability.rank_bumped or 0)+1
                 local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
                 local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
                 if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
@@ -399,20 +445,22 @@ betm_abilities[key]=SMODS.Consumable { --rank bump
 local function cancel_bump(area)
     for k, v in ipairs(area.cards) do
         if v.ability.rank_bumped then
-            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
-                local card=v
-                local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-                local rank_suffix = card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
-                if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
-                elseif rank_suffix == 10 then rank_suffix = 'T'
-                elseif rank_suffix == 11 then rank_suffix = 'J'
-                elseif rank_suffix == 12 then rank_suffix = 'Q'
-                elseif rank_suffix == 13 then rank_suffix = 'K'
-                elseif rank_suffix == 14 then rank_suffix = 'A'
-                end
-                card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
-                v.ability.rank_bumped=nil
-            return true end }))
+            for i=1,v.ability.rank_bumped do
+                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                    local card=v
+                    local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+                    local rank_suffix = card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
+                    if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+                    elseif rank_suffix == 10 then rank_suffix = 'T'
+                    elseif rank_suffix == 11 then rank_suffix = 'J'
+                    elseif rank_suffix == 12 then rank_suffix = 'Q'
+                    elseif rank_suffix == 13 then rank_suffix = 'K'
+                    elseif rank_suffix == 14 then rank_suffix = 'A'
+                    end
+                    card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+                    v.ability.rank_bumped=nil
+                return true end }))
+            end
         end
     end
 end

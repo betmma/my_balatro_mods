@@ -5380,7 +5380,8 @@ end -- cryptozoology
     init_localization()
 end
 
-if AddLoopableVoucher then -- loop mod compatibility
+if LoopVoucher and LoopVoucher.AddLoopableVoucher then -- loop mod compatibility
+    AddLoopableVoucher=LoopVoucher.AddLoopableVoucher
 	AddLoopableVoucher('v_betm_vouchers_gold_coin')
 	AddLoopableVoucher('v_betm_vouchers_gold_bar')
 	AddLoopableVoucher('v_betm_vouchers_abstract_art')
