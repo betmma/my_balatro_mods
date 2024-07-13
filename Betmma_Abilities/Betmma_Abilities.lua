@@ -305,8 +305,79 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 990.1,
-    default = 'c_betm_abilities_GIL'
+    shop_rate = 0.1,
+    default = 'c_betm_abilities_GIL',
+    create_UIBox_your_collection = function(self)
+        local deck_tables = {}
+
+        G.your_collection = {}
+        for j = 1, #self.collection_rows do
+            G.your_collection[j] = CardArea(
+                G.ROOM.T.x + 0.2 * G.ROOM.T.w / 2, G.ROOM.T.h,
+                (self.collection_rows[j] + 0.25) * G.CARD_W/71*34,
+                1 * G.CARD_H/95*34,
+                { card_limit = self.collection_rows[j], type = 'title', highlight_limit = 0, collection = true })
+            table.insert(deck_tables,
+                {
+                    n = G.UIT.R,
+                    config = { align = "cm", padding = 0, no_fill = true },
+                    nodes = {
+                        { n = G.UIT.O, config = { object = G.your_collection[j] } }
+                    }
+                }
+            )
+        end
+
+        local sum = 0
+        for j = 1, #G.your_collection do
+            for i = 1, self.collection_rows[j] do
+                sum = sum + 1
+                local center = G.P_CENTER_POOLS[self.key][sum]
+                if not center then break end
+                local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w / 2, G.your_collection[j].T.y,
+                    G.CARD_W, G.CARD_H, nil, center)
+                card:start_materialize(nil, i > 1 or j > 1)
+                G.your_collection[j]:emplace(card)
+            end
+        end
+
+        local center_options = {}
+        for i = 1, math.ceil(#G.P_CENTER_POOLS[self.key] / sum) do
+            table.insert(center_options,
+                localize('k_page') ..
+                ' ' .. tostring(i) .. '/' .. tostring(math.ceil(#G.P_CENTER_POOLS[self.key] / sum)))
+        end
+
+        INIT_COLLECTION_CARD_ALERTS()
+        local option_nodes = { create_option_cycle({
+            options = center_options,
+            w = 4.5,
+            cycle_shoulders = true,
+            opt_callback = 'your_collection_' .. string.lower(self.key) .. '_page',
+            focus_args = { snap_to = true, nav = 'wide' },
+            current_option = 1,
+            colour = G.C.RED,
+            no_pips = true
+        }) }
+        if SMODS.Palettes[self.key] and #SMODS.Palettes[self.key].names > 1 then
+            option_nodes[#option_nodes + 1] = create_option_cycle({
+                w = 4.5,
+                scale = 0.8,
+                options = SMODS.Palettes[self.key].names,
+                opt_callback = "update_recolor",
+                current_option = G.SETTINGS.selected_colours[self.key].order,
+                type = self.key
+            })
+        end
+        local t = create_UIBox_generic_options({
+            back_func = 'your_collection',
+            contents = {
+                { n = G.UIT.R, config = { align = "cm", minw = 2.5, padding = 0.1, r = 0.1, colour = G.C.BLACK, emboss = 0.05 }, nodes = deck_tables },
+                { n = G.UIT.R, config = { align = "cm", padding = 0 },                                                           nodes = option_nodes },
+            }
+        })
+        return t
+    end
 }
 
 function ability_copy_table(card)
@@ -327,7 +398,7 @@ end
 function ability_cooled_down(self,card)
     if not card then card=self end
     ability_copy_table(card)
-    if card.ability.cooldown and card.ability.cooldown.now<=0 then
+    if card.ability.cooldown and (card.ability.cooldown.type=='passive' or card.ability.cooldown.now<=0) then
         return true
     else
         return false
@@ -336,6 +407,7 @@ end
 function ability_cooled_down_percentage(card)
     ability_copy_table(card)
     if card.ability.cooldown then
+        if card.ability.cooldown.type=='passive'then return 0 end
         return math.max(card.ability.cooldown.now,0)/card.ability.cooldown.need
     end
     return 0
@@ -595,20 +667,21 @@ end --cached hand
 do
     local key='zircon'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { --rank bump
+    betm_abilities[key]=SMODS.Consumable { 
         key = key,
         loc_txt = {
             name = 'Zircon',
             text = {
-                '{C:green}#4#%{} chance to create a {C:legendary,E:1}Legendary{} Joker.',
-                'Otherwise, create a {C:legendary,E:1}Legendary{} Voucher',
+                '{C:green}#4#%{} chance to create a', 
+                '{C:legendary,E:1}Legendary{} Joker, otherwise',
+                'create a {C:legendary,E:1}Legendary{} Voucher',
                 'Cooldown: {C:mult}#1#/#2# #3# left{}'
         }
         },
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {chance=50 },cooldown={type='hand', now=nil, need=20}, },
+        config = {extra = {chance=50 },cooldown={type='hand', now=nil, need=30}, },
         discovered = true,
         cost = 20,
         loc_vars = function(self, info_queue, card)
@@ -656,5 +729,66 @@ do
         end
     }
 end --zircon
+do
+    local key='rental_slot'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Rental Slot',
+            text = {
+                "{C:dark_edition}+#1#{} Joker Slot. Lose",
+                "{C:money}$#2#{} after each round",
+                '{C:blue}Passive{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=1,lose=4},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 1,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value,card.ability.extra.lose}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        add_to_deck = function(self,card,area,copier)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.jokers then 
+                    G.jokers.config.card_limit = G.jokers.config.card_limit + card.ability.extra.value
+                end
+                return true end }))
+        end,
+        remove_from_deck = function(self,card,area,copier)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.jokers then 
+                    G.jokers.config.card_limit = G.jokers.config.card_limit - card.ability.extra.value
+                end
+                return true end }))
+        end,
+        calculate=function(self,card,context)
+            if context.end_of_round then
+                ease_dollars(-card.ability.extra.lose)
+                card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
+            end
+        end
+    }
+    
+    local end_round_ref = end_round
+    function end_round()
+        if G.betmma_abilities.cards then
+            for i=1,#G.betmma_abilities.cards do
+                G.betmma_abilities.cards[i]:calculate_joker({end_of_round=true})
+            end 
+        end
+        end_round_ref()
+    end
+end --rental slot
 ----------------------------------------------
 ------------MOD CODE END----------------------
