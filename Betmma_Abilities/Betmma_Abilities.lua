@@ -13,6 +13,45 @@ MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
 betm_abilities={}
 betm_abilities_atlases={}
+function get_randomly_redeem_voucher()
+    if not randomly_redeem_voucher then
+        function randomly_redeem_voucher(no_random_please) -- xD
+            -- local voucher_key = time==0 and "v_voucher_bulk" or get_next_voucher_key(true)
+            -- time=1
+            local area
+            if G.STATE == G.STATES.HAND_PLAYED then
+                if not G.redeemed_vouchers_during_hand then
+                    -- may need repositioning
+                    G.redeemed_vouchers_during_hand = CardArea(
+                        G.play.T.x, G.play.T.y, G.play.T.w, G.play.T.h, 
+                        {type = 'play', card_limit = 5})
+                end
+                area = G.redeemed_vouchers_during_hand
+            else
+                area = G.play
+            end
+            local voucher_key = no_random_please or get_next_voucher_key(true)
+            local card = Card(area.T.x + area.T.w/2 - G.CARD_W/2,
+            area.T.y + area.T.h/2-G.CARD_H/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[voucher_key],{bypass_discovery_center = true, bypass_discovery_ui = true})
+            card:start_materialize()
+            area:emplace(card)
+            card.cost=0
+            card.shop_voucher=false
+            local current_round_voucher=G.GAME.current_round.voucher
+            card:redeem()
+            G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher bulk may be from voucher pack or other non-shop source
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                --blockable = false,
+                --blocking = false,
+                delay =  0,
+                func = function() 
+                    card:start_dissolve()
+                    return true
+                end}))   
+        end
+    end
+end -- randomly_redeem_voucher
 
 do
 
@@ -266,7 +305,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.1,
+    shop_rate = 990.1,
     default = 'c_betm_abilities_GIL'
 }
 
@@ -348,7 +387,6 @@ do
         -- add_to_deck=ability_copy_table
     }
 end --GIL
-
 do
     local key='glitched_seed'
     get_atlas(key)
@@ -371,7 +409,7 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             ability_copy_table(card)
-            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',pseudorandom_forced_0_count,card.ability.extra.value}}
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
         end,
         keep_on_use = function(self,card)
             return true
@@ -397,7 +435,6 @@ do
         return pseudorandom_ref(seed, min, max)
     end
 end --glitched seed
-
 do
     local key='rank_bump'
     get_atlas(key)
@@ -419,7 +456,7 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             ability_copy_table(card)
-            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,}}
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',}}
         end,
         keep_on_use = function(self,card)
             return true
@@ -494,7 +531,6 @@ do
         G_FUNCS_discard_cards_from_highlighted(e,hook)
     end
 end --rank bump
-
 do
     local key='cached_hand'
     get_atlas(key)
@@ -537,7 +573,6 @@ do
         end
     }
     local G_FUNCS_evaluate_play_ref=G.FUNCS.evaluate_play
-    -- update 'hand' cooldown
     G.FUNCS.evaluate_play=function(e)
         local ret= G_FUNCS_evaluate_play_ref(e)
         G.GAME.betmma_cached_hand=(G.GAME.betmma_cached_hand or 0)-1
@@ -557,5 +592,69 @@ do
         return text, loc_disp_text, poker_hands, scoring_hand, disp_text
     end
 end --cached hand
+do
+    local key='zircon'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { --rank bump
+        key = key,
+        loc_txt = {
+            name = 'Zircon',
+            text = {
+                '{C:green}#4#%{} chance to create a {C:legendary,E:1}Legendary{} Joker.',
+                'Otherwise, create a {C:legendary,E:1}Legendary{} Voucher',
+                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {chance=50 },cooldown={type='hand', now=nil, need=20}, },
+        discovered = true,
+        cost = 20,
+        loc_vars = function(self, info_queue, card)
+            ability_copy_table(card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
+            card.ability.extra.chance}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
+        end,
+        use = function(self,card,area,copier)
+            ability_copy_table(card)
+            local space_left=G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)
+            if space_left>0 and pseudorandom('zircon')<card.ability.extra.chance/100 then
+                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+                    play_sound('timpani')
+                    local card = create_card('Joker', G.jokers, true, nil, nil, nil, nil, 'sou')
+                    card:add_to_deck()
+                    G.jokers:emplace(card)
+                    check_for_unlock{type = 'spawn_legendary'}
+                    return true end }))
+            else
+                local key
+                if USING_BETMMA_VOUCHERS then
+                    local get_current_pool_ref=get_current_pool
+                    get_current_pool=function(key)
+                        return get_voucher_pool_with_filter(
+                            function(card)
+                                return get_rarity_card(card)==4
+                            end
+                        )
+                    end
+                    key= get_next_voucher_key_ref()
+                    get_current_pool=get_current_pool_ref
+                else
+                    key=get_next_voucher_key()
+                end
+                get_randomly_redeem_voucher()
+                randomly_redeem_voucher(key)
+            end
+            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+        end
+    }
+end --zircon
 ----------------------------------------------
 ------------MOD CODE END----------------------
