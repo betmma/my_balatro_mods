@@ -256,11 +256,19 @@ function SMODS.current_mod.process_loc_text()
     end
 end
 
-local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and true or false end
+local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
 local usingCryptid=SMODS.Mods and SMODS.Mods["Cryptid"] or false
 
 function TalismanCompat(num)
-	return usingTalisman() and Big:new(num) or num
+    local using=usingTalisman()
+    if not using then return num end
+    if using=='omeganum'then
+        return to_big(num)
+    end
+    if (using==true or using=='bignumber')then
+        return to_big(num)
+    end
+	return num
 end
 
 local function get_plain_text_from_localize(final_line)
@@ -4730,7 +4738,7 @@ do
     end
 
     G.FUNCS.can_discard_booster=function(e)
-        if #G.hand.cards>0 then
+        if #G.hand.cards>0 and #G.deck.cards>0 then
             e.config.colour = G.C.RED
             e.config.button='discard_booster'
         else

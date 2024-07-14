@@ -86,3 +86,18 @@ if type(_send)=='table' and _send.betmma==true then
 end
 '''
 match_indent = true
+
+# call calculate_joker on each ability when a consumable is used.
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''e.config.ref_table:use_consumeable(area)'''
+position = "after"
+payload = '''
+if G.betmma_abilities then
+    for i = 1, #G.betmma_abilities.cards do
+        G.betmma_abilities.cards[i]:calculate_joker({using_consumeable = true, consumeable = card})
+    end
+end
+'''
+match_indent = true

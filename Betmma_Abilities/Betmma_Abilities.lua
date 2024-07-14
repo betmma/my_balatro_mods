@@ -153,6 +153,7 @@ do
     end
 
     local Card_can_sell_card_ref=Card.can_sell_card
+    -- let Abilities always be sellable
     function Card:can_sell_card(context)
         if self.ability.set=='Ability' then
             return true
@@ -161,8 +162,9 @@ do
     end
 
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
+    -- override Ability cards UI and make use and sell buttons smaller
     function G.UIDEF.use_and_sell_buttons(card)
-        if card.ability.set=='Ability' then -- override Ability cards UI and make buttons smaller
+        if card.ability.set=='Ability' then 
             if card.area and card.area == G.pack_cards then
                 return {
                 n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
@@ -195,6 +197,9 @@ do
                 {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
                 }}
             }}
+            if card.ability.cooldown and card.ability.cooldown.type=='passive' then
+                use={n=G.UIT.B, config = {w=0.1,h=1}}
+            end -- remove use button if this is passive ability
             local t = {
                 n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
                 {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
@@ -225,7 +230,7 @@ do
         end
         return G_FUNCS_check_for_buy_space_ref(card)
     end
-end -- Ability Area preparation
+end -- Ability Area and Ability Cards preparation
 
 do
     function GET_PATH_COMPAT()
@@ -305,8 +310,8 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.1,
-    default = 'c_betm_abilities_GIL',
+    shop_rate = 990.1,
+    default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
 
@@ -315,7 +320,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
             G.your_collection[j] = CardArea(
                 G.ROOM.T.x + 0.2 * G.ROOM.T.w / 2, G.ROOM.T.h,
                 (self.collection_rows[j] + 0.25) * G.CARD_W/71*34,
-                1 * G.CARD_H/95*34,
+                1 * G.CARD_H/95*34, -- I added /71*34 to make abilities closer
                 { card_limit = self.collection_rows[j], type = 'title', highlight_limit = 0, collection = true })
             table.insert(deck_tables,
                 {
@@ -790,5 +795,89 @@ do
         end_round_ref()
     end
 end --rental slot
+do
+    local key='philosophy'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Philosophy',
+            text = {
+                "{C:attention}+#1#{} Ability Slot",
+                '{C:blue}Passive{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=1},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        add_to_deck = function(self,card,area,copier)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_abilities then 
+                    G.betmma_abilities.config.card_limit = G.betmma_abilities.config.card_limit + card.ability.extra.value
+                end
+                return true end }))
+        end,
+        remove_from_deck = function(self,card,area,copier)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_abilities then 
+                    G.betmma_abilities.config.card_limit = G.betmma_abilities.config.card_limit - card.ability.extra.value
+                end
+                return true end }))
+        end,
+    }
+end --philosophy
+do
+    local key='midas_touch'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Midas Touch',
+            text = {
+                "Gain {C:money}$#1#{} when",
+                "using an ability",
+                '{C:blue}Passive{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=2},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+            if context.using_consumeable then
+                local card2=context.consumeable
+                if card2.ability.set=='Ability' and not(card2.ability.cooldown and card2.ability.cooldown.type=='passive') then
+                    ease_dollars(card.ability.extra.value)
+                    card_eval_status_text(card, 'dollars', card.ability.extra.value)
+                end
+            end
+        end
+    }
+end --midas touch
 ----------------------------------------------
 ------------MOD CODE END----------------------
