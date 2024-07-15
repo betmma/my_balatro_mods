@@ -192,11 +192,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
     -- G.STATES.VOUCHER_PACK=1337
     local ease_background_colour_blind_ref=ease_background_colour_blind
     function ease_background_colour_blind(state, blind_override)
-        if G.InBetmmaVoucherPack then
-            -- print(G.GAME.BetmmaVoucherPackKey)
-            -- print(#G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey])
-            -- print(G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].color)
-            -- print(G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].background_color)
+        if G.InBetmmaVoucherPack and G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey] then -- G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey] should always have value but someone reported crash.
             ease_colour(G.C.DYN_UI.MAIN, G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].color)
             ease_background_colour{new_colour = G.C.VOUCHER_PACK_COLORS[G.GAME.BetmmaVoucherPackKey].background_color, contrast = 3}
             return
