@@ -146,13 +146,14 @@ function normalize_rarity(rarity)
     if not rarity then return 1 end
     return math.max(1,math.min(math.ceil(rarity),#RARITY_VOUCHER_PROBABILITY))
 end
-local function get_rarity(raw_key)
-    local card= G.P_CENTERS[raw_key]
+local function get_rarity(key)
+    local card= G.P_CENTERS[key]
     return card and card.config and normalize_rarity(card.config.rarity) or 1
-end
+end -- input: raw_key like v_betm_vouchers_abstract_art
 function get_rarity_card(card)
     return card and card.config and normalize_rarity(card.config.rarity) or 1
-end
+end -- input: a card object (equal to G.P_CENTERS[key])
+
 -- example: handle_atlas('slate') loads 'v_slate.png' and assign it
 local function handle_atlas(raw_key,this_v)
     if IN_SMOD1 then
@@ -166,6 +167,7 @@ local function handle_atlas(raw_key,this_v)
     end
 end
 
+-- register card if in SMOD 0.9.8
 local function handle_register(this_v)
     if not IN_SMOD1 then
         this_v:register()
@@ -402,52 +404,6 @@ do -- randomly create card function series
     end
 end
 
-
-local function get_weight(v)
-    local _type=type(v)
-
-    if _type~='table' and _type~='string' then return 1 end
-    -- if _type=='table' and v.name == "Ace of Spades"then return 9999 end
-    if _type=='string' then
-        if G.P_CENTERS[v] then
-            v=G.P_CENTERS[v]
-        end
-    end
-    if v.weight then return v.weight end
-    if v.config and v.config.weight then return v.config.weight end
-    return 1
-end
-
-local function pseudorandom_element_weighted(_t, seed)
-    if seed then math.randomseed(seed) end
-    -- local keys = {}
-    -- for k, v in pairs(_t) do
-    --     keys[#keys+1] = {k = k,v = v}
-    -- end
-  
-    -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
-    --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
-    -- else
-    --   table.sort(keys, function (a, b) return a.k < b.k end)
-    -- end
-    local _type
-    local cume, it, center, center_key = 0, 0, nil, nil
-    for k, v in pairs(_t) do
-        _type=type(v)
-        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
-    end
-    local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
-    
-    for k, v in pairs(_t) do
-        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
-            it = it + get_weight(v) 
-            if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
-        end
-    end
-    if center == nil then center.a() end
-    return center,center_key
-end
-
 local ability_names={'mult','h_mult','h_x_mult','h_dollars','p_dollars','t_mult','t_chips','h_size','d_size','bonus'}
 -- for cards whose ability is changed, load ability values to config.center so that these can be displayed in hover ui. Note that after doing this config.center is no longer the same in G.P_CENTERS so this function should be used as little as possible
 local function load_ability_to_center(card)
@@ -591,6 +547,51 @@ do
     end
 end --
 
+
+local function get_weight(v)
+    local _type=type(v)
+
+    if _type~='table' and _type~='string' then return 1 end
+    -- if _type=='table' and v.name == "Ace of Spades"then return 9999 end
+    if _type=='string' then
+        if G.P_CENTERS[v] then
+            v=G.P_CENTERS[v]
+        end
+    end
+    if v.weight then return v.weight end
+    if v.config and v.config.weight then return v.config.weight end
+    return 1
+end
+
+local function pseudorandom_element_weighted(_t, seed)
+    if seed then math.randomseed(seed) end
+    -- local keys = {}
+    -- for k, v in pairs(_t) do
+    --     keys[#keys+1] = {k = k,v = v}
+    -- end
+  
+    -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
+    --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
+    -- else
+    --   table.sort(keys, function (a, b) return a.k < b.k end)
+    -- end
+    local _type
+    local cume, it, center, center_key = 0, 0, nil, nil
+    for k, v in pairs(_t) do
+        _type=type(v)
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
+    end
+    local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
+    
+    for k, v in pairs(_t) do
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
+            it = it + get_weight(v) 
+            if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
+        end
+    end
+    if center == nil then center.a() end
+    return center,center_key
+end
 
     setup_consumables()
     RARITY_VOUCHER_PROBABILITY={1,2,4,20}
@@ -2917,6 +2918,7 @@ do
         if is_hidden(self)then
             if self.stash_debuff==nil then
                 self.stash_debuff=self.debuff
+                self.stash_debuff_has=true
                 self:set_debuff(true)
             end
             Card_draw_ref(self,layer)
@@ -2926,9 +2928,10 @@ do
             end
             return
         else
-            if self.stash_debuff~=nil then
+            if self.stash_debuff_has then
                 self:set_debuff(self.stash_debuff)
                 self.stash_debuff=nil
+                self.stash_debuff_has=nil
             end
         end
         Card_draw_ref(self,layer)

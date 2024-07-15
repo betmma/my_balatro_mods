@@ -252,6 +252,17 @@ do
         return G_UIDEF_use_and_sell_buttons_ref(card)
     end
 
+    local G_FUNCS_can_buy_and_use_ref=G.FUNCS.can_buy_and_use
+    -- prevent buy and use button on abilities in shop (will appear if cooldown is 0 and will crash when clicked)
+    G.FUNCS.can_buy_and_use = function(e)
+        G_FUNCS_can_buy_and_use_ref(e)
+        if e.config.ref_table.ability.set=='Ability' then
+            e.UIBox.states.visible = false
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        end
+    end
+
     local G_FUNCS_check_for_buy_space_ref=G.FUNCS.check_for_buy_space
     G.FUNCS.check_for_buy_space = function(card)
         if card.ability.set=='Ability' then
@@ -666,7 +677,7 @@ end --rank bump
 do
     local key='cached_hand'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { --rank bump
+    betm_abilities[key]=SMODS.Consumable { 
         key = key,
         loc_txt = {
             name = 'Cached Hand',
@@ -724,6 +735,44 @@ do
         return text, loc_disp_text, poker_hands, scoring_hand, disp_text
     end
 end --cached hand
+do
+    local key='heal'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Heal',
+            text = {
+                "Undebuff selected cards",
+                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = { },cooldown={type='hand', now=nil, need=3}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            ability_copy_table(card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
+            }}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G.hand.highlighted and #G.hand.highlighted>0
+        end,
+        use = function(self,card,area,copier)
+            ability_copy_table(card)
+            for i=1,#G.hand.highlighted do
+                G.hand.highlighted[i]:set_debuff(false)
+            end
+            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+        end
+    }
+end --heal
 do
     local key='zircon'
     get_atlas(key)
