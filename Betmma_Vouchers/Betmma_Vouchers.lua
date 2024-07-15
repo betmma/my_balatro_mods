@@ -1001,14 +1001,14 @@ do
     local mod_chips_ref=mod_chips
     function mod_chips(_chips)
         if used_voucher('round_up') then
-          _chips = usingTalisman() and (_chips / Big:new(10)):ceil() * Big:new(10) or math.ceil(_chips/10)*10
+          _chips = usingTalisman() and ((_chips+9.9999) / to_big(10)):floor() * to_big(10) or math.ceil(_chips/10)*10
         end
         return mod_chips_ref(_chips)
     end
     local mod_mult_ref=mod_mult
     function mod_mult(_mult)
         if used_voucher('round_up_plus') then
-            _mult= usingTalisman() and (_mult / Big:new(10)):ceil() * Big:new(10) or math.ceil(_mult/10)*10
+            _mult= usingTalisman() and ((_mult+9.9999) / to_big(10)):floor() * to_big(10) or math.ceil(_mult/10)*10
         end
         return mod_mult_ref(_mult)
     end
