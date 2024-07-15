@@ -60,8 +60,10 @@ do
         function Card:set_ability(center, initial, delay_sprites)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
             if center.set=='Ability' then
-                self.T.w=W*34/71
-                self.T.h=H*34/95
+                -- self.T.w=W*34/71
+                -- self.T.h=H*34/95
+                self.T.w=G.ABILITY_W
+                self.T.h=G.ABILITY_H
             end
             Card_set_ability_ref(self,center,initial,delay_sprites)
         end
@@ -71,8 +73,8 @@ do
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
             if G.P_CENTERS[cardTable.save_fields.center].set=='Ability' then
                 G.P_CENTERS[cardTable.save_fields.center].load=function()
-                    self.T.w=W*34/71
-                    self.T.h=H*34/95
+                    self.T.w=G.ABILITY_W
+                    self.T.h=G.ABILITY_H
                 end
             end
 
@@ -102,28 +104,59 @@ do
         end
     end
 
+    local function cardarea_align(self,direction)
+        local alignd='x'  -- align dimension
+        local alignp='w'  -- align parameter (card.w)
+        local alignp2='card_w' -- align parameter2 (self.card_w)
+        local otherd='y'
+        local otherp='h'
+        if direction=='vertical' then
+            alignd='y'
+            alignp='h'
+            alignp2='card_h'
+            self.card_h=self.card_h or self.config.card_h or G.CARD_H
+            -- self.T[alignp]-self[alignp2] determines the length of range of cards distributed inside. I set shop_ability.config.card_h to 0.1 to increase the range.
+            otherd='x'
+            otherp='w'
+        end
+        for k, card in ipairs(self.cards) do
+            if not card.states.drag.is then 
+                card.T.r = 0.1*(-#self.cards/2 - 0.5 + k)/(#self.cards)+ (G.SETTINGS.reduced_motion and 0 or 1)*0.02*math.sin(2*G.TIMERS.REAL+card.T[alignd])
+                local max_cards = math.max(#self.cards, self.config.temp_limit)
+                card.T[alignd] = self.T[alignd] + (self.T[alignp]-self[alignp2])*((k-1)/math.max(max_cards-1, 1) - 0.5*(#self.cards-max_cards)/math.max(max_cards-1, 1)) + 0.5*(self[alignp2] - card.T[alignp])
+                if #self.cards > 2 or (#self.cards > 1 and self == G.consumeables) or (#self.cards > 1 and self.config.spread) then
+                    card.T[alignd] = self.T[alignd] + (self.T[alignp]-self[alignp2])*((k-1)/(#self.cards-1)) + 0.5*(self[alignp2] - card.T[alignp])
+                elseif #self.cards > 1 and self ~= G.consumeables then
+                    card.T[alignd] = self.T[alignd] + (self.T[alignp]-self[alignp2])*((k - 0.5)/(#self.cards)) + 0.5*(self[alignp2] - card.T[alignp])
+                else
+                    card.T[alignd] = self.T[alignd] + self.T[alignp]/2 - self[alignp2]/2 + 0.5*(self[alignp2] - card.T[alignp])
+                end
+                local highlight_height = G.HIGHLIGHT_H/2
+                if not card.highlighted then highlight_height = 0 end
+                card.T[otherd] = self.T[otherd] + self.T[otherp]/2 - card.T[otherp]/2 - highlight_height+ (G.SETTINGS.reduced_motion and 0 or 1)*0.03*math.sin(0.666*G.TIMERS.REAL+card.T[alignd])
+                card.T[alignd] = card.T[alignd] + card.shadow_parrallax.x/30
+            end
+        end
+        if not G.GAME.modifiers.cry_conveyor then table.sort(self.cards, function (a, b) return a.T[alignd] + a.T[alignp]/2 - 100*(a.pinned and a.sort_id or 0) < b.T[alignd] + b.T[alignp]/2 - 100*(b.pinned and b.sort_id or 0) end) end
+    end
+
     local CardArea_align_cards_ref=CardArea.align_cards
-    -- enable Ability area to align cards in its border
+    -- enable Ability area to align cards in its border. Also implement vertical align for Ability shop area.
     function CardArea:align_cards()
         if self==G.betmma_abilities then
+            self.T.y=self.T.y-0.04 -- dunno why abilities are slightly lower than upper border. move them up a bit
+            cardarea_align(self)
+            self.T.y=self.T.y+0.04
+        end
+        if self.config.vertical==true and self.config.type=='shop' then
+            cardarea_align(self,'vertical')
             for k, card in ipairs(self.cards) do
-                if not card.states.drag.is then 
-                    card.T.r = 0.1*(-#self.cards/2 - 0.5 + k)/(#self.cards)+ (G.SETTINGS.reduced_motion and 0 or 1)*0.02*math.sin(2*G.TIMERS.REAL+card.T.x)
-                    local max_cards = math.max(#self.cards, self.config.temp_limit)
-                    card.T.x = self.T.x + (self.T.w-self.card_w)*((k-1)/math.max(max_cards-1, 1) - 0.5*(#self.cards-max_cards)/math.max(max_cards-1, 1)) + 0.5*(self.card_w - card.T.w)
-                    if #self.cards > 2 or (#self.cards > 1 and self == G.consumeables) or (#self.cards > 1 and self.config.spread) then
-                        card.T.x = self.T.x + (self.T.w-self.card_w)*((k-1)/(#self.cards-1)) + 0.5*(self.card_w - card.T.w)
-                    elseif #self.cards > 1 and self ~= G.consumeables then
-                        card.T.x = self.T.x + (self.T.w-self.card_w)*((k - 0.5)/(#self.cards)) + 0.5*(self.card_w - card.T.w)
-                    else
-                        card.T.x = self.T.x + self.T.w/2 - self.card_w/2 + 0.5*(self.card_w - card.T.w)
-                    end
-                    local highlight_height = G.HIGHLIGHT_H/2
-                    if not card.highlighted then highlight_height = 0 end
-                    card.T.y = self.T.y + self.T.h/2 - card.T.h/2 - highlight_height+ (G.SETTINGS.reduced_motion and 0 or 1)*0.03*math.sin(0.666*G.TIMERS.REAL+card.T.x)
-                    card.T.x = card.T.x + card.shadow_parrallax.x/30
-                end
+                card.rank = k
             end
+            if self.children.view_deck then
+                self.children.view_deck:set_role{major = self.cards[1] or self}
+            end
+            return
         end
         CardArea_align_cards_ref(self)
     end
@@ -233,6 +266,28 @@ do
 end -- Ability Area and Ability Cards preparation
 
 do
+    local G_UIDEF_shop_ref= G.UIDEF.shop
+    function G.UIDEF.shop()
+        local t=G_UIDEF_shop_ref()
+        G.GAME.shop.ability_max=G.GAME.shop.ability_max or 2
+        local abilities_w=0.8
+        G.shop_abilities = CardArea(
+          G.hand.T.x+0,
+          G.hand.T.y+G.ROOM.T.y + 9,
+          abilities_w,
+          1.05*G.CARD_H, 
+          {card_limit = G.GAME.shop.ability_max, type = 'shop', highlight_limit = 1, vertical=true, card_h=0.1})
+        local row2=t.nodes[1].nodes[1].nodes[1].nodes[1] -- UIBox_dyn_container needs 3 nodes[1]. 4 nodes[1] is line 699
+        row2=row2.nodes[3].nodes -- nodes of second row (row2.nodes[2] is an empty row)
+        G.shop_vouchers.T.w=G.shop_vouchers.T.w-abilities_w -- shorten voucher area to give space to my ability area
+        row2[#row2+1]={n=G.UIT.C, config={align = "cm", padding = 0.2, r=0.2, colour = G.C.L_BLACK, emboss = 0.05, maxw = abilities_w}, nodes={
+            {n=G.UIT.O, config={object = G.shop_abilities}},
+        }}
+        return t
+    end
+end -- add Ability area in shop (maybe only appear after a boss blind?)
+
+do
     function GET_PATH_COMPAT()
         return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaVouchers').path
     end
@@ -310,7 +365,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 990.1,
+    shop_rate = 0.0,
     default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}

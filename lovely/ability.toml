@@ -12,6 +12,8 @@ pattern = '''G.SPLASH_BACK = Sprite(-30, -6, G.ROOM.T.w+60, G.ROOM.T.h+12, G.ASS
 position = "before"
 payload = '''
 if USING_BETMMA_ABILITIES then -- not adding area if Betmma_Abilities.lua isn't executed
+    self.ABILITY_W=0.8
+    self.ABILITY_H=0.8
     self.betmma_abilities = CardArea(G.consumeables.T.x+1.1*G.CARD_W, G.consumeables.T.y+2.2*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, {
             card_limit = 3,
             type = "betmma_ability",
@@ -21,6 +23,41 @@ if USING_BETMMA_ABILITIES then -- not adding area if Betmma_Abilities.lua isn't 
 end
 '''
 match_indent = true
+
+
+# Create Abilities in shop
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if G.load_shop_booster then'''
+position = "before"
+payload = '''
+if G.load_shop_abilities then 
+    nosave_shop = true
+    G.shop_abilities:load(G.load_shop_abilities)
+    for k, v in ipairs(G.shop_abilities.cards) do
+        create_shop_card_ui(v)
+        v:start_materialize()
+    end
+    G.load_shop_abilities = nil
+else
+    for i = 1, G.GAME.shop.ability_max - #G.shop_abilities.cards do
+        local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('shop_abilities'))
+        local card = create_card('Ability', area, nil, nil, nil, nil, nil, 'sho')
+        --local card = Card(G.shop_abilities.T.x + G.shop_abilities.T.w/2,
+        --G.shop_abilities.T.y+G.ABILITY_W*(i-1), G.ABILITY_W, G.ABILITY_H, G.P_CARDS.empty, center,{bypass_discovery_center = true, bypass_discovery_ui = true})
+        cry_misprintize(card)
+            if G.GAME.modifiers.cry_enable_flipped_in_shop and pseudorandom('cry_flip_'..G.GAME.round_resets.ante) > 0.7 then
+                card.cry_flipped = true
+            end
+        create_shop_card_ui(card, 'Ability', area)
+        --card:start_materialize()
+        G.shop_abilities:emplace(card)
+    end
+end
+'''
+match_indent = true
+
 
 
 # Let Abilities go to Ability Area when bought from shop
