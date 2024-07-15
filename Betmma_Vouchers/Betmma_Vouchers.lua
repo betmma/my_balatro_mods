@@ -2913,7 +2913,7 @@ do
     function Card:draw(layer)
         if is_hidden(self)then
             if self.stash_debuff==nil then
-                self.stash_debuff=self.debuff
+                self.stash_debuff=(self.debuff and true or false)
                 self:set_debuff(true)
             end
             Card_draw_ref(self,layer)
