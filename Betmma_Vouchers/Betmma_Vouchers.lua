@@ -2914,6 +2914,7 @@ do
         if is_hidden(self)then
             if self.stash_debuff==nil then
                 self.stash_debuff=(self.debuff and true or false)
+                self.stash_debuff_has=true
                 self:set_debuff(true)
             end
             Card_draw_ref(self,layer)
@@ -2923,9 +2924,10 @@ do
             end
             return
         else
-            if self.stash_debuff~=nil then
+            if self.stash_debuff_has then
                 self:set_debuff(self.stash_debuff)
                 self.stash_debuff=nil
+                self.stash_debuff_has=nil
             end
         end
         Card_draw_ref(self,layer)
