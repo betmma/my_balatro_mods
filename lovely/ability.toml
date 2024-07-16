@@ -32,27 +32,29 @@ target = "game.lua"
 pattern = '''if G.load_shop_booster then'''
 position = "before"
 payload = '''
-if G.load_shop_abilities then 
-    nosave_shop = true
-    G.shop_abilities:load(G.load_shop_abilities)
-    for k, v in ipairs(G.shop_abilities.cards) do
-        create_shop_card_ui(v)
-        v:start_materialize()
-    end
-    G.load_shop_abilities = nil
-else
-    for i = 1, G.GAME.shop.ability_max - #G.shop_abilities.cards do
-        local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('shop_abilities'))
-        local card = create_card('Ability', area, nil, nil, nil, nil, nil, 'sho')
-        --local card = Card(G.shop_abilities.T.x + G.shop_abilities.T.w/2,
-        --G.shop_abilities.T.y+G.ABILITY_W*(i-1), G.ABILITY_W, G.ABILITY_H, G.P_CARDS.empty, center,{bypass_discovery_center = true, bypass_discovery_ui = true})
-        cry_misprintize(card)
-            if G.GAME.modifiers.cry_enable_flipped_in_shop and pseudorandom('cry_flip_'..G.GAME.round_resets.ante) > 0.7 then
-                card.cry_flipped = true
-            end
-        create_shop_card_ui(card, 'Ability', area)
-        --card:start_materialize()
-        G.shop_abilities:emplace(card)
+if G.shop_abilities then
+    if G.load_shop_abilities then 
+        nosave_shop = true
+        G.shop_abilities:load(G.load_shop_abilities)
+        for k, v in ipairs(G.shop_abilities.cards) do
+            create_shop_card_ui(v)
+            v:start_materialize()
+        end
+        G.load_shop_abilities = nil
+    else
+        for i = 1, G.GAME.shop.ability_max - #G.shop_abilities.cards do
+            local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('shop_abilities'))
+            local card = create_card('Ability', area, nil, nil, nil, nil, nil, 'sho')
+            --local card = Card(G.shop_abilities.T.x + G.shop_abilities.T.w/2,
+            --G.shop_abilities.T.y+G.ABILITY_W*(i-1), G.ABILITY_W, G.ABILITY_H, G.P_CARDS.empty, center,{bypass_discovery_center = true, bypass_discovery_ui = true})
+            cry_misprintize(card)
+                if G.GAME.modifiers.cry_enable_flipped_in_shop and pseudorandom('cry_flip_'..G.GAME.round_resets.ante) > 0.7 then
+                    card.cry_flipped = true
+                end
+            create_shop_card_ui(card, 'Ability', area)
+            --card:start_materialize()
+            G.shop_abilities:emplace(card)
+        end
     end
 end
 '''
@@ -67,7 +69,7 @@ target = "functions/button_callbacks.lua"
 pattern = "G.consumeables:emplace(c1)"
 position = "at"
 payload = '''
-    if c1.ability.set=='Ability' then -- betmma_abilities
+    if c1.ability.set=='Ability' and G.betmma_abilities then -- betmma_abilities
         G.betmma_abilities:emplace(c1)
     else
         G.consumeables:emplace(c1)
@@ -100,7 +102,7 @@ if card.ability.set=='Ability' then -- betmma_abilities
     area:remove_from_highlighted(card)
     play_sound('cardSlide2', nil, 0.3)
     dont_dissolve = true
-    if card.area~=G.betmma_abilities then
+    if card.area~=G.betmma_abilities and G.betmma_abilities then
         G.betmma_abilities:emplace(card)
     end
 end

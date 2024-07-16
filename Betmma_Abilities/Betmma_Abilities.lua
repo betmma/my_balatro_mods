@@ -277,26 +277,46 @@ do
 end -- Ability Area and Ability Cards preparation
 
 do
+    local end_round_ref = end_round
+    -- set create_ability_shop to *defeated blind is boss blind*
+    function end_round()
+        if G.GAME.blind:get_type() == 'Boss' then
+            G.GAME.create_ability_shop=true
+        else
+            G.GAME.create_ability_shop=false
+        end
+        end_round_ref()
+    end
+    local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
+    -- set create_ability_shop to false when skipping blind (deal with overshopping)
+    G.FUNCS.skip_blind = function(e)
+        G_FUNCS_skip_blind_ref(e)
+        G.GAME.create_ability_shop=false
+    end
     local G_UIDEF_shop_ref= G.UIDEF.shop
     function G.UIDEF.shop()
         local t=G_UIDEF_shop_ref()
-        G.GAME.shop.ability_max=G.GAME.shop.ability_max or 2
-        local abilities_w=0.8
-        G.shop_abilities = CardArea(
-          G.hand.T.x+0,
-          G.hand.T.y+G.ROOM.T.y + 9,
-          abilities_w,
-          1.05*G.CARD_H, 
-          {card_limit = G.GAME.shop.ability_max, type = 'shop', highlight_limit = 1, vertical=true, card_h=0.1})
-        local row2=t.nodes[1].nodes[1].nodes[1].nodes[1] -- UIBox_dyn_container needs 3 nodes[1]. 4 nodes[1] is line 699
-        row2=row2.nodes[3].nodes -- nodes of second row (row2.nodes[2] is an empty row)
-        G.shop_vouchers.T.w=G.shop_vouchers.T.w-abilities_w -- shorten voucher area to give space to my ability area
-        row2[#row2+1]={n=G.UIT.C, config={align = "cm", padding = 0.2, r=0.2, colour = G.C.L_BLACK, emboss = 0.05, maxw = abilities_w}, nodes={
-            {n=G.UIT.O, config={object = G.shop_abilities}},
-        }}
+        if G.GAME.create_ability_shop then
+            G.GAME.shop.ability_max=G.GAME.shop.ability_max or 2
+            local abilities_w=0.8
+            G.shop_abilities = CardArea(
+              G.hand.T.x+0,
+              G.hand.T.y+G.ROOM.T.y + 9,
+              abilities_w,
+              1.05*G.CARD_H, 
+              {card_limit = G.GAME.shop.ability_max, type = 'shop', highlight_limit = 1, vertical=true, card_h=0.1})
+            local row2=t.nodes[1].nodes[1].nodes[1].nodes[1] -- UIBox_dyn_container needs 3 nodes[1]. 4 nodes[1] is line 699
+            row2=row2.nodes[3].nodes -- nodes of second row (row2.nodes[2] is an empty row)
+            G.shop_vouchers.T.w=G.shop_vouchers.T.w-abilities_w -- shorten voucher area to give space to my ability area
+            row2[#row2+1]={n=G.UIT.C, config={align = "cm", padding = 0.2, r=0.2, colour = G.C.L_BLACK, emboss = 0.05, maxw = abilities_w}, nodes={
+                {n=G.UIT.O, config={object = G.shop_abilities}},
+            }}
+        else
+            G.shop_abilities=nil
+        end
         return t
     end
-end -- add Ability area in shop (maybe only appear after a boss blind?)
+end -- add Ability area in shop (only appear after a boss blind)
 
 do
     function GET_PATH_COMPAT()
