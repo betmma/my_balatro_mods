@@ -2422,6 +2422,14 @@ do
     end
     handle_register(this_v)
 
+    local function is_hidden(joker)
+        if not (G and G.jokers and G.jokers.cards)then return end
+        local index=get_index_in_array(G.jokers.cards,joker)
+        if index==1 and used_voucher('stow') or index==#G.jokers.cards and used_voucher('stash') then
+            return true
+        end
+        return false
+    end
     local Card_set_debuff=Card.set_debuff
     function Card:set_debuff(should_debuff)
         if used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
@@ -2430,7 +2438,19 @@ do
                 self.params.debuff_by_curse=false
             end
         end
+        if card.area == G.jokers and is_hidden(self) then
+            should_debuff = true
+        end
         Card_set_debuff(self,should_debuff)
+    end
+    local Card_update_ref = Card.update
+    function Card:update(dt)
+        if card.area == G.jokers then
+            if not card.debuff ~= not is_hidden(self) then
+                G.GAME.blind:debuff_card(card)
+            end
+        end
+        Card_update_ref(self, dt)
     end
 
     local Card_calculate_seal_ref=Card.calculate_seal
@@ -2900,37 +2920,6 @@ do
                 return true end }))
         end
         Card_apply_to_run_ref(self, center)
-    end
-    local function is_hidden(joker)
-        if not (G and G.jokers and G.jokers.cards)then return end
-        local index=get_index_in_array(G.jokers.cards,joker)
-        if index==1 and used_voucher('stow') or index==#G.jokers.cards and used_voucher('stash') then
-            return true
-        end
-        return false
-    end
-    local Card_draw_ref=Card.draw
-    function Card:draw(layer)
-        if is_hidden(self)then
-            if self.stash_debuff==nil then
-                self.stash_debuff=(self.debuff and true or false)
-                self.stash_debuff_has=true
-                self:set_debuff(true)
-            end
-            Card_draw_ref(self,layer)
-            self.children.center:draw_shader('debuff', nil, self.ARGS.send_to_shader)
-            if self.children.front and self.ability.effect ~= 'Stone Card' then
-                self.children.front:draw_shader('debuff', nil, self.ARGS.send_to_shader)
-            end
-            return
-        else
-            if self.stash_debuff_has then
-                self:set_debuff(self.stash_debuff)
-                self.stash_debuff=nil
-                self.stash_debuff_has=nil
-            end
-        end
-        Card_draw_ref(self,layer)
     end
     local Card_calculate_joker_ref=Card.calculate_joker
     function Card:calculate_joker(context)
