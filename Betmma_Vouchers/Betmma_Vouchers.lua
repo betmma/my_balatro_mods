@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.4
+--- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.2.0-alpha
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6.4(20240710)
+--- VERSION: 2.2.0-alpha(20240717)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -5317,7 +5317,7 @@ do
 end -- cryptozoology
 
     -- this challenge is only for test
-    if 1 then
+    if nil then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",

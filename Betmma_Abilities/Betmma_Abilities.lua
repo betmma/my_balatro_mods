@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 0.0.1
+--- VERSION: 1.0.0-alpha(20240717)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -911,7 +911,7 @@ do
     
     local end_round_ref = end_round
     function end_round()
-        if G.betmma_abilities.cards then
+        if G.betmma_abilities and G.betmma_abilities.cards then
             for i=1,#G.betmma_abilities.cards do
                 G.betmma_abilities.cards[i]:calculate_joker({end_of_round=true})
             end 
