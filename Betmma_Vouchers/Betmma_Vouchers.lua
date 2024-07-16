@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.1.6.4
+--- MOD_DESCRIPTION: 48 Vouchers and 23 Fusion Vouchers! v2.2.0-alpha
 --- PREFIX: betm_vouchers
---- VERSION: 2.1.6.4(20240710)
+--- VERSION: 2.2.0-alpha(20240717)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -47,6 +47,7 @@ local JOKER_MOD_PREFIX=IN_SMOD1 and "betm_jokers_"or ''
 MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
 MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
+USING_BETMMA_VOUCHERS=true
 
 -- Config: DISABLE UNWANTED VOUCHERS HERE
 config = {
@@ -141,10 +142,18 @@ local function get_voucher(raw_key)
     return G.P_CENTERS[MOD_PREFIX_V..raw_key]
 end
 
-local function get_rarity(raw_key)
-    local card= G.P_CENTERS[raw_key]
-    return card and card.config and card.config.rarity or 1
+function normalize_rarity(rarity)
+    if not rarity then return 1 end
+    return math.max(1,math.min(math.ceil(rarity),#RARITY_VOUCHER_PROBABILITY))
 end
+local function get_rarity(key)
+    local card= G.P_CENTERS[key]
+    return card and card.config and normalize_rarity(card.config.rarity) or 1
+end -- input: raw_key like v_betm_vouchers_abstract_art
+function get_rarity_card(card)
+    return card and card.config and normalize_rarity(card.config.rarity) or 1
+end -- input: a card object (equal to G.P_CENTERS[key])
+
 -- example: handle_atlas('slate') loads 'v_slate.png' and assign it
 local function handle_atlas(raw_key,this_v)
     if IN_SMOD1 then
@@ -158,6 +167,7 @@ local function handle_atlas(raw_key,this_v)
     end
 end
 
+-- register card if in SMOD 0.9.8
 local function handle_register(this_v)
     if not IN_SMOD1 then
         this_v:register()
@@ -394,52 +404,6 @@ do -- randomly create card function series
     end
 end
 
-
-local function get_weight(v)
-    local _type=type(v)
-
-    if _type~='table' and _type~='string' then return 1 end
-    -- if _type=='table' and v.name == "Ace of Spades"then return 9999 end
-    if _type=='string' then
-        if G.P_CENTERS[v] then
-            v=G.P_CENTERS[v]
-        end
-    end
-    if v.weight then return v.weight end
-    if v.config and v.config.weight then return v.config.weight end
-    return 1
-end
-
-local function pseudorandom_element_weighted(_t, seed)
-    if seed then math.randomseed(seed) end
-    -- local keys = {}
-    -- for k, v in pairs(_t) do
-    --     keys[#keys+1] = {k = k,v = v}
-    -- end
-  
-    -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
-    --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
-    -- else
-    --   table.sort(keys, function (a, b) return a.k < b.k end)
-    -- end
-    local _type
-    local cume, it, center, center_key = 0, 0, nil, nil
-    for k, v in pairs(_t) do
-        _type=type(v)
-        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
-    end
-    local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
-    
-    for k, v in pairs(_t) do
-        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
-            it = it + get_weight(v) 
-            if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
-        end
-    end
-    if center == nil then center.a() end
-    return center,center_key
-end
-
 local ability_names={'mult','h_mult','h_x_mult','h_dollars','p_dollars','t_mult','t_chips','h_size','d_size','bonus'}
 -- for cards whose ability is changed, load ability values to config.center so that these can be displayed in hover ui. Note that after doing this config.center is no longer the same in G.P_CENTERS so this function should be used as little as possible
 local function load_ability_to_center(card)
@@ -584,12 +548,53 @@ do
 end --
 
 
+local function get_weight(v)
+    local _type=type(v)
+
+    if _type~='table' and _type~='string' then return 1 end
+    -- if _type=='table' and v.name == "Ace of Spades"then return 9999 end
+    if _type=='string' then
+        if G.P_CENTERS[v] then
+            v=G.P_CENTERS[v]
+        end
+    end
+    if v.weight then return v.weight end
+    if v.config and v.config.weight then return v.config.weight end
+    return 1
+end
+
+local function pseudorandom_element_weighted(_t, seed)
+    if seed then math.randomseed(seed) end
+    -- local keys = {}
+    -- for k, v in pairs(_t) do
+    --     keys[#keys+1] = {k = k,v = v}
+    -- end
+  
+    -- if keys[1] and keys[1].v and type(keys[1].v) == 'table' and keys[1].v.sort_id then
+    --   table.sort(keys, function (a, b) return a.v.sort_id < b.v.sort_id end)
+    -- else
+    --   table.sort(keys, function (a, b) return a.k < b.k end)
+    -- end
+    local _type
+    local cume, it, center, center_key = 0, 0, nil, nil
+    for k, v in pairs(_t) do
+        _type=type(v)
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then cume = cume + get_weight(v) end
+    end
+    local poll = pseudorandom(pseudoseed((seed or 'weighted_random')..G.GAME.round_resets.ante))*cume
+    
+    for k, v in pairs(_t) do
+        if (_type~='table') or (not G.GAME.banned_keys[v.key]) then 
+            it = it + get_weight(v) 
+            if it >= poll and it - get_weight(v) <= poll then center = v; center_key=k; break end
+        end
+    end
+    if center == nil then center.a() end
+    return center,center_key
+end
+
     setup_consumables()
     RARITY_VOUCHER_PROBABILITY={1,2,4,20}
-    local function normalize_rarity(rarity)
-        if not rarity then return 1 end
-        return math.max(1,math.min(math.ceil(rarity),#RARITY_VOUCHER_PROBABILITY))
-    end
     local get_current_pool_ref=get_current_pool
     function get_current_pool(_type, _rarity, _legendary, _append)
         if _type=='Voucher'then _append='lol' end -- MathIsFun will do something to prevent crash with Deck of Equilibrium when _append has value
@@ -618,17 +623,16 @@ end --
             return unpack(ret)
         end
         return unpack(ret)
-    end
+    end -- this function adds rarity check 
 
     local get_current_pool_copy=get_current_pool -- this is because when the following function is called get_current_pool has been replaced to itself
-    local function get_specific_rarity_vouchers_pool(rarity)
+    function get_specific_rarity_vouchers_pool(rarity)
         local pool,pool_key=get_current_pool_ref('Voucher')
         local new_pool={}
         local _pool_size=0
         for k,v in pairs(pool) do
             if v~='UNAVAILABLE' then
-                local card= G.P_CENTERS[v]
-                local card_rarity=card.config and normalize_rarity(card.config.rarity)
+                local card_rarity=get_rarity(v)
                 if card_rarity==rarity then
                     new_pool[#new_pool+1]=v
                     _pool_size=_pool_size+1
@@ -639,7 +643,7 @@ end --
             return get_current_pool_copy('Voucher')
         end
         return new_pool,pool_key
-    end
+    end -- this function bypasses rarity check so specific rarity vouchers are guaranteed to be in the pool, but not requirements (e.g. tier 2 needs tier 1)
 
     local function get_voucher_pool_with_filter_and_reqs(func)
         -- func should take in G.P_CENTERS[key] and return a boolean
@@ -659,15 +663,15 @@ end --
             return get_current_pool_copy('Voucher')
         end
         return new_pool,pool_key
-    end
+    end -- this function bypasses rarity check but not requirements (same as above but more flexible since you can input a func)
 
-    local function get_voucher_pool_with_filter(func)
+    function get_voucher_pool_with_filter(func)
         -- func should take in G.P_CENTERS[key] and return a boolean
         local _starting_pool, _pool_key = G.P_CENTER_POOLS['Voucher'], 'Voucher'
         local _pool=EMPTY(G.ARGS.TEMP_POOL)
         local _pool_size=0
         for k, v in ipairs(_starting_pool) do
-            if func(v) and not G.GAME.banned_keys[v.key] then 
+            if func(v) and not G.GAME.banned_keys[v.key] and not G.GAME.used_vouchers[v.key] then 
                 -- don't check for requires
                 _pool[#_pool + 1] = v.key
                 _pool_size = _pool_size + 1
@@ -677,9 +681,9 @@ end --
             return get_current_pool_copy('Voucher')
         end
         return _pool,_pool_key
-    end
+    end -- this function bypasses everything except for banned keys and used_vouchers
 
-    local get_next_voucher_key_ref=get_next_voucher_key
+    get_next_voucher_key_ref=get_next_voucher_key
     function get_next_voucher_key(_from_tag)
         -- local _pool, _pool_key = get_current_pool('Voucher')
         -- this pool contains strings
@@ -4737,7 +4741,7 @@ do
     end
 
     G.FUNCS.can_discard_booster=function(e)
-        if #G.hand.cards>0 then
+        if #G.hand.cards>0 and #G.deck.cards>0 then
             e.config.colour = G.C.RED
             e.config.button='discard_booster'
         else
@@ -5313,7 +5317,7 @@ do
 end -- cryptozoology
 
     -- this challenge is only for test
-    if 1 then
+    if nil then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
@@ -5390,7 +5394,8 @@ end -- cryptozoology
     init_localization()
 end
 
-if AddLoopableVoucher then -- loop mod compatibility
+if LoopVoucher and LoopVoucher.AddLoopableVoucher then -- loop mod compatibility
+    AddLoopableVoucher=LoopVoucher.AddLoopableVoucher
 	AddLoopableVoucher('v_betm_vouchers_gold_coin')
 	AddLoopableVoucher('v_betm_vouchers_gold_bar')
 	AddLoopableVoucher('v_betm_vouchers_abstract_art')
