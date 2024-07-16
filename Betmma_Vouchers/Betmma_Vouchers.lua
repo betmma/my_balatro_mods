@@ -2921,13 +2921,6 @@ do
         end
         Card_apply_to_run_ref(self, center)
     end
-    local Card_calculate_joker_ref=Card.calculate_joker
-    function Card:calculate_joker(context)
-        if is_hidden(self)then
-            return nil
-        end
-        return Card_calculate_joker_ref(self,context)
-    end
 
 end -- stow
 do 
