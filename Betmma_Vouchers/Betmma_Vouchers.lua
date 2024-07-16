@@ -2438,16 +2438,16 @@ do
                 self.params.debuff_by_curse=false
             end
         end
-        if card.area == G.jokers and is_hidden(self) then
+        if self.area == G.jokers and is_hidden(self) then
             should_debuff = true
         end
         Card_set_debuff(self,should_debuff)
     end
     local Card_update_ref = Card.update
     function Card:update(dt)
-        if card.area == G.jokers then
-            if not card.debuff ~= not is_hidden(self) then
-                G.GAME.blind:debuff_card(card)
+        if self.area == G.jokers then
+            if not self.debuff ~= not is_hidden(self) then
+                G.GAME.blind:debuff_card(self)
             end
         end
         Card_update_ref(self, dt)
