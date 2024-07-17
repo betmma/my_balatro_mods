@@ -2623,7 +2623,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, 'eternal')
+        table.insert(info_queue, {key = 'eternal', set = 'Other'})
         return {vars={100/center.ability.extra}}
     end
     handle_register(this_v)
@@ -2646,7 +2646,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, 'perishable')
+        table.insert(info_queue, {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds, G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2744,7 +2744,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, 'rental')
+        table.insert(info_queue, {key = 'rental', set = 'Other', vars = {G.GAME.rental_rate or 1}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2767,7 +2767,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, 'pinned_left')
+        table.insert(info_queue, {key = 'pinned_left', set = 'Other'})
         return {vars={}}
     end
     handle_register(this_v)
@@ -4808,8 +4808,8 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, 'eternal')
-        table.insert(info_queue, 'perishable')
+        table.insert(info_queue, {key = 'eternal', set = 'Other'})
+        table.insert(info_queue, {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds, G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
