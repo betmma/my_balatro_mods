@@ -3017,7 +3017,7 @@ do
 
     function bargain_aisle_effect()
         G.E_MANAGER:add_event(Event({func = function()
-            if G.shop_jokers and G.shop_jokers.cards[1]~=nil then 
+            if G.shop_jokers and G.shop_jokers.cards and G.shop_jokers.cards[1]~=nil then 
                 G.shop_jokers.cards[1].ability.couponed=true
                 G.shop_jokers.cards[1]:set_cost()
             end
@@ -3025,7 +3025,7 @@ do
     end
     function clearance_aisle_effect()
         G.E_MANAGER:add_event(Event({func = function()
-            if G.shop_booster and G.shop_booster.cards[1]~=nil then 
+            if G.shop_booster and G.shop_booster.cards and G.shop_jokers.cards[1]~=nil then 
                 G.shop_booster.cards[1].ability.couponed=true
                 G.shop_booster.cards[1]:set_cost()
             end
@@ -5327,7 +5327,7 @@ end -- cryptozoology
                 {id = 'j_mime', },
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
-                {id = JOKER_MOD_PREFIX..'j_jimbow'},-- edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_housing_choice'},-- edition='phantom'},
                 {id = 'j_ceremonial', pinned = true},
             },
             consumeables = {
@@ -5355,8 +5355,8 @@ end -- cryptozoology
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = MOD_PREFIX_V.. 'stow'},
-                {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'chaos'},
+                {id = MOD_PREFIX_V.. 'bargain_aisle'},
+                {id = MOD_PREFIX_V.. 'clearance_aisle'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },
