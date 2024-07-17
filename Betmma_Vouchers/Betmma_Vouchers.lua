@@ -2313,10 +2313,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases",
+            "Permanently increase",
             "{C:blue}Bonus Card{} bonus",
             "by {C:blue}+#1#{} extra chips",
-            "{C:inactive}(e.g. +30 -> +#2#){}"
+            "{C:inactive}(+30 -> +#2#){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2336,10 +2336,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases",
-            "{C:red}Mult cards{} bonus",
+            "Permanently increase",
+            "{C:red}Mult Card{} bonus",
             "by {C:red}+#1#{} Mult",
-            "{C:inactive}(e.g. +4 -> +#2#){}"
+            "{C:inactive}(+4 -> +#2#){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2409,7 +2409,7 @@ do
             -- "{C:attention}Glass Cards{} can",
             -- "break #1# times"
             "{C:attention}Glass Cards{} lose {X:mult,C:white}X#1#{}",
-            "instead of breaking.",
+            "instead of breaking",
             "They break when",
             "they reach {X:mult,C:white}X#2#{}"
         }
@@ -2609,8 +2609,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Eternal{} Jokers.",
-            "{C:inactive,s:0.8}(Can't be sold or destroyed)",
+            "Shop can have {C:attention}Eternal{} Jokers",
             "{C:attention}Eternal{} Jokers have a {C:green}#1#%{}",
             "chance to be {C:dark_edition}Negative{}",
             "{C:inactive}(This chance can't be doubled){}"
@@ -2624,6 +2623,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, 'eternal')
         return {vars={100/center.ability.extra}}
     end
     handle_register(this_v)
@@ -2633,8 +2633,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Perishable{} Jokers.",
-            "{C:inactive,s:0.8}(Debuffed after 5 rounds)",
+            "Shop can have {C:attention}Perishable{} Jokers",
             "{C:attention}Perishable{} Jokers only",
             "take up {C:attention}#1#{} Joker slots",
         }
@@ -2647,6 +2646,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, 'perishable')
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2730,8 +2730,8 @@ do
         name = name,
         text = {
             "Shop can have {C:attention}Rental{} Jokers",
-            "{C:inactive,s:0.8}(Costs {C:money,s:0.8}$3{C:inactive,s:0.8} per round only if you",
-            "{C:attention,s:0.8}aren't in debt before round ends{C:inactive,s:0.8})",
+            "{C:attention}Rental{} Jokers don't cost money",
+            "if you're in debt",
             "Each {C:attention}Rental{} Joker increases",
             "debt limit by {C:red}-$#1#{}"
         }
@@ -2744,6 +2744,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, 'rental')
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2754,7 +2755,6 @@ do
         name = name,
         text = {
             "Shop can have {C:attention}Pinned{} Jokers",
-            "{C:inactive,s:0.8}(Stays pinned to the leftmost position)",
             "Each {C:attention}Pinned{} Joker copies",
             "ability of {C:attention}Joker{} to the right",
         }
@@ -2767,6 +2767,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, 'pinned_left')
         return {vars={}}
     end
     handle_register(this_v)
@@ -3605,7 +3606,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases {C:attention}Stone Card{}",
+            "Permanently increase {C:attention}Stone Card{}",
             "bonus by {C:blue}+#1#{} Chips",
             "Select any number of {C:attention}Stone Cards{}", 
             "when playing a hand",
@@ -4807,6 +4808,8 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, 'eternal')
+        table.insert(info_queue, 'perishable')
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
