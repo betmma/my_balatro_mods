@@ -2547,7 +2547,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn {C:money}$#1#{} more",
+            "Earn an additional {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
             "at end of round",
         }
@@ -2569,7 +2569,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn {C:money}$#1#{} more",
+            "Earn an additional {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
             "at end of round",
         }
