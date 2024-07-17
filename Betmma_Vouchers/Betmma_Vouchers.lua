@@ -2437,10 +2437,8 @@ do
     local Card_set_debuff=Card.set_debuff
     function Card:set_debuff(should_debuff)
         if used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
-            should_debuff=false
-            if self.params.debuff_by_curse then -- DX tarots mod curses that still debuff when should_debuff is false
-                self.params.debuff_by_curse=false
-            end
+            self.debuff = false
+            return
         end
         if self.area == G.jokers and is_hidden(self) then
             should_debuff = true
