@@ -107,14 +107,15 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 9 abilities
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 10 abilities
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
 - Rank Bump: (cooldown: 2 hands) Temporarily increase ranks of chosen cards by 1 for this hand.
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
 - Heal: (cooldown: 3 hands) Undebuff selected cards.
-- Zircon: (cooldown: 30 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
+- Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.05 for each hand reduced.
+- Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.
 - Midas Touch: (passive) Gain $2 when using an ability.

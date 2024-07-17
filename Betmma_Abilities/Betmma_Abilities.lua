@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.0-alpha(20240717)
+--- VERSION: 1.0.0-alpha2(20240717)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -370,6 +370,13 @@ do
         end
     end
 
+    local ease_ante_ref=ease_ante
+    -- update 'ante' cooldown
+    function ease_ante(mod)
+        update_ability_cooldown('ante')
+        ease_ante_ref(mod)
+    end
+
     local end_round_ref = end_round
     -- update 'round' cooldown
     function end_round()
@@ -396,7 +403,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.0,
+    shop_rate = 9990.0,
     default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -476,6 +483,15 @@ function ability_copy_table(card)
         card.ability=copy_table(card.ability)
         card.ability.cooldown.now=card.ability.cooldown.need
     end
+end -- useless now
+
+local Card_use_consumeable_ref=Card.use_consumeable
+-- add cooldown when ability is used
+function Card:use_consumeable(area, copier)
+    if self.ability.set=='Ability' and self.ability.cooldown and self.ability.cooldown.type~='passive' then
+        self.ability.cooldown.now=self.ability.cooldown.now+self.ability.cooldown.need
+    end
+    Card_use_consumeable_ref(self,area,copier)
 end
 
 local function get_atlas(key)
@@ -488,7 +504,6 @@ local function get_atlas(key)
 end
 function ability_cooled_down(self,card)
     if not card then card=self end
-    ability_copy_table(card)
     if card.ability.cooldown and (card.ability.cooldown.type=='passive' or card.ability.cooldown.now<=0) then
         return true
     else
@@ -496,7 +511,6 @@ function ability_cooled_down(self,card)
     end
 end
 function ability_cooled_down_percentage(card)
-    ability_copy_table(card)
     if card.ability.cooldown then
         if card.ability.cooldown.type=='passive'then return 0 end
         return math.max(card.ability.cooldown.now,0)/card.ability.cooldown.need
@@ -521,11 +535,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {}, cooldown={type='round', now=nil, need=1} },
+        config = {extra = {}, cooldown={type='round', now=1, need=1} },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type}}
         end,
         keep_on_use = function(self,card)
@@ -534,7 +547,6 @@ do
         can_use = ability_cooled_down,
         use = function(self,card,area,copier)
             -- pprint(card.ability.cooldown)
-            ability_copy_table(card)
             local allEternal=true
             for i = 1, #G.jokers.cards do
                 if not G.jokers.cards[i].ability.eternal then
@@ -545,7 +557,6 @@ do
             for i = 1, #G.jokers.cards do
                 G.jokers.cards[i].ability.eternal=not allEternal
             end
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
         end,
         -- add_to_deck=ability_copy_table
     }
@@ -567,11 +578,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = { value=2},cooldown={type='round', now=nil, need=1}, },
+        config = {extra = { value=2},cooldown={type='round', now=1, need=1}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
         end,
         keep_on_use = function(self,card)
@@ -579,9 +589,8 @@ do
         end,
         can_use = ability_cooled_down,
         use = function(self,card,area,copier)
-            ability_copy_table(card)
             pseudorandom_forced_0_count=pseudorandom_forced_0_count+card.ability.extra.value
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+            
         end
     }
 
@@ -614,11 +623,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = { },cooldown={type='hand', now=nil, need=2}, },
+        config = {extra = { },cooldown={type='hand', now=2, need=2}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',}}
         end,
         keep_on_use = function(self,card)
@@ -628,7 +636,6 @@ do
             return ability_cooled_down(self,card)and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
         end,
         use = function(self,card,area,copier)
-            ability_copy_table(card)
             
             for i=1, #G.hand.highlighted do
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
@@ -646,7 +653,7 @@ do
                     card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
                 return true end }))
             end  
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+            
         end
     }
 
@@ -712,11 +719,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = { },cooldown={type='round', now=nil, need=1}, },
+        config = {extra = { },cooldown={type='round', now=1, need=1}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
             G.GAME.last_hand_played or 'High Card',(G.GAME.betmma_cached_hand or 0)}}
         end,
@@ -727,12 +733,11 @@ do
             return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
         end,
         use = function(self,card,area,copier)
-            ability_copy_table(card)
             G.GAME.betmma_cached_hand=(G.GAME.betmma_cached_hand or 0)+1
             if #G.hand.highlighted>0 and not(G.pack_cards and G.pack_cards.cards and #G.pack_cards.cards>0) then
                 G.hand:parse_highlighted()
             end
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+            
         end
     }
     local G_FUNCS_evaluate_play_ref=G.FUNCS.evaluate_play
@@ -770,11 +775,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = { },cooldown={type='hand', now=nil, need=3}, },
+        config = {extra = { },cooldown={type='hand', now=3, need=3}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             }}
         end,
@@ -785,14 +789,61 @@ do
             return ability_cooled_down(self,card) and G.hand.highlighted and #G.hand.highlighted>0
         end,
         use = function(self,card,area,copier)
-            ability_copy_table(card)
             for i=1,#G.hand.highlighted do
                 G.hand.highlighted[i]:set_debuff(false)
             end
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+            
         end
     }
 end --heal
+do
+    local key='absorber'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Absorber',
+            text = {
+                "Reduce {C:blue}Hand{} to 1, and gain",
+                "{X:mult,C:white}X#4#{} for each hand reduced",
+                -- "Current Gain: {X:mult,C:white}X#5#{}",
+                "Current Xmult: {X:mult,C:white}X#5#{}",
+                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {add=0.05,value=1},cooldown={type='ante', now=1, need=1}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
+            card.ability.extra.add,card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and G.GAME.current_round.hands_left and G.GAME.current_round.hands_left>1
+        end,
+        use = function(self,card,area,copier)
+            card.ability.extra.value=card.ability.extra.value+card.ability.extra.add*(G.GAME.current_round.hands_left-1)
+            ease_hands_played(-G.GAME.current_round.hands_left+1)
+            
+        end,
+        calculate=function(self,card,context)
+            if context.joker_main then
+                -- ease_dollars(-card.ability.extra.lose)
+                -- card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
+                return {
+                    message = localize{type='variable',key='a_xmult',vars={card.ability.extra.value}},
+                    Xmult_mod = card.ability.extra.value
+                }
+            end
+        end
+    }
+end --absorber
 do
     local key='zircon'
     get_atlas(key)
@@ -810,11 +861,10 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {chance=50 },cooldown={type='hand', now=nil, need=30}, },
+        config = {extra = {chance=50 },cooldown={type='hand', now=25, need=25}, },
         discovered = true,
         cost = 20,
         loc_vars = function(self, info_queue, card)
-            ability_copy_table(card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             card.ability.extra.chance}}
         end,
@@ -825,7 +875,6 @@ do
             return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
         end,
         use = function(self,card,area,copier)
-            ability_copy_table(card)
             local space_left=G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)
             if space_left>0 and pseudorandom('zircon')<card.ability.extra.chance/100 then
                 G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
@@ -854,7 +903,7 @@ do
                 get_randomly_redeem_voucher()
                 randomly_redeem_voucher(key)
             end
-            -- card.ability.cooldown.now=card.ability.cooldown.now+card.ability.cooldown.need
+            
         end
     }
 end --zircon
@@ -1003,5 +1052,9 @@ do
         end
     }
 end --midas touch
+
+for k,v in pairs(betm_abilities) do
+    v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------
