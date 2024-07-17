@@ -5300,7 +5300,7 @@ do
 end -- cryptozoology
 
     -- this challenge is only for test
-    if 1 then
+    if nil then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
