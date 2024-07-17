@@ -717,7 +717,7 @@ do
         name = "Oversupply",
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
-            "after beating boss blind"
+            "after defeating {C:attention}Boss Blind{}"
         }
     }
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
@@ -741,7 +741,7 @@ do
         name = "Oversupply Plus",
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
-            "after beating every blind"
+            "after defeating each {C:attention}Blind{}"
             -- if you have both, after beating boss blind you gain only 1 voucher tag
         }
     }
@@ -777,7 +777,7 @@ do
     local gold_coin_loc_txt = {
         name = name,
         text = {
-            "Gain {C:money}$#1#{} immediately.",
+            "Earn {C:money}$#1#{} immediately",
             "{C:attention}Small Blind{} gives",
             "no reward money",
             -- yes it literally does nothing bad after white stake
@@ -805,7 +805,7 @@ do
     local gold_bar_loc_txt = {
         name = name,
         text = {
-            "Gain {C:money}$#1#{} immediately.",
+            "Earn {C:money}$#1#{} immediately",
             "{C:attention}Big Blind{} gives",
             "no reward money",
         }
@@ -963,8 +963,7 @@ do
         name = name,
         text = {
             "{C:blue}Chips{} always round up",
-            "to nearest tens",
-            "when calculating hands"
+            "to nearest 10",
         }
     }
     local this_v = SMODS.Voucher{
@@ -985,9 +984,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:red}Mult{} always round up",
-            "to nearest tens",
-            "when calculating hands"
+            "{C:red}Mult{} always rounds up",
+            "to nearest 10",
         }
     }
     local this_v = SMODS.Voucher{
@@ -1027,9 +1025,9 @@ do
         name = name,
         text = {
             "{C:green}#1# in #2#{} chance to",
-            "create a {C:spectral}Black Hole{} card",
-            "when opening a planet pack.",
-            "Create {C:attention}2{} random",
+            "create a {C:spectral}Black Hole{}",
+            "when you open a {C:planet}Celestial Pack{}",
+            "Create {C:attention}2{}",
             "{C:dark_edition}Negative{} {C:planet}Planet{} cards now",
         }
     }
@@ -1052,8 +1050,8 @@ do
         name = name,
         text = {
             "{C:green}#1# in #2#{} chance to",
-            "create a {C:spectral}Black Hole{} card",
-            "when using a planet card.",
+            "create a {C:spectral}Black Hole{}",
+            "when you use a {C:planet}Planet{} card",
             "Create a {C:spectral}Black Hole{} now",
             "{C:inactive}(Must have room)"
         }
@@ -1143,10 +1141,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are under",
-            "{C:attention}#1#%{} of required chips",
+            "If score is under",
+            "{C:attention}#1#%{} of required score",
             "at end of round,",
-            "create a random {C:attention}Joker{} card",
+            "create a random {C:attention}Joker{}",
             "{C:inactive}(Must have room)"
         }
     }
@@ -1168,11 +1166,11 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are under",
-            "{C:attention}#1#%{} of required chips",
+            "If score is under",
+            "{C:attention}#1#%{} of required score",
             "at end of round,",
             "create a random",
-            "{C:dark_edition}Negative{} {C:attention}Joker{} card"
+            "{C:dark_edition}Negative{} {C:attention}Joker{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1213,7 +1211,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:attention}#1#{} random vouchers"
+            "Redeem {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1234,7 +1232,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:attention}#1#{} random vouchers"
+            "Redeem {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1323,7 +1321,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn {C:money}$#1#{} when skipping blind"
+            "Earn {C:money}$#1#{} when you skip a {C:attention}Blind{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1344,7 +1342,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Get a {C:attention}Double Tag{} when skipping blind"
+            "Get a {C:attention}Double Tag{} when you skip a {C:attention}Blind{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1379,9 +1377,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:money}$#1#{} for each joker you have,",
-            "then randomly create {C:attention}Jokers{}",
-            "until joker slots are full"
+            "Gives {C:money}$#1#{} for each Joker you have,",
+            "then create {C:attention}Jokers{}",
+            "until Joker slots are full"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1402,7 +1400,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Randomly create {C:attention}#1#{}",
+            "Create {C:attention}#1#{}",
             "{C:dark_edition}Negative{} {C:spectral}Spectral{} cards"
         }
     }
@@ -1447,7 +1445,7 @@ do
         text = {
             "You can reserve {C:tarot}Tarot{}",
             "cards instead of using them",
-            "when opening a {C:tarot}Tarot Pack{}"
+            "when opening an {C:tarot}Arcana Pack{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1470,8 +1468,8 @@ do
         text = {
             "You can reserve {C:spectral}Spectral{}",
             "cards instead of using them",
-            "when opening a {C:spectral}Spectral Pack{}.",
-            "Also get an {C:attention}Ethereal Tag{} now"
+            "when opening a {C:spectral}Spectral Pack{}",
+            "Get an {C:attention}Ethereal Tag{} now"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1605,8 +1603,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are above",
-            "{C:attention}#1#%{} of required chips",
+            "If score is above",
+            "{C:attention}#1#%{} of required score",
             "at end of round, add",
             "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
             "{C:dark_edition}Polychrome{} edition",
@@ -1631,13 +1629,13 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are above",
-            "{X:mult,C:white}X#1#{} of required chips",
+            "If score is above",
+            "{C:attention}#1#X{} required score",
             "at end of round, add",
             "{C:dark_edition}Negative{} edition to a",
             "random {C:attention}Joker{}, and",
-            "increase the target amount",
-            "{C:inactive}(This Negative can override){}"
+            "increase this number by {C:attention}X#2#{}",
+            "{C:inactive}(Can override other editions){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1650,7 +1648,10 @@ do
     this_v.loc_vars = function(self, info_queue, center)
         if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_big_blast_count or 0
-        return {vars={center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1))}}
+        return {vars={
+            center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1)),
+            center.ability.extra.increase^(2*(count+1))
+        }}
     end
     handle_register(this_v)
     local v_big_blast=this_v
@@ -1735,10 +1736,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Rerolls apply to",
-            "{C:attention}Booster Packs{}, but",
-            "rerolled packs cost",
-            "{C:attention}$#1#{} more"
+            "Rerolls apply to {C:attention}Booster Packs{}",
+            "Rerolled {C:attention}Booster Packs{}",
+            "cost {C:attention}$#1#{} more"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1832,9 +1832,9 @@ do
         name = name,
         text = {
             "When you redeem a {C:attention}Voucher{},",
-            "have {C:green}#1#%{} chance to redeem",
+            "{C:green}#1#%{} chance to redeem",
             "a {C:attention}higher tier{} Voucher",
-            "and pay half the price",
+            "and pay half its cost",
             "{C:inactive}(This chance can't be doubled){}",
             "{C:inactive}(B1G series can't give legendaries){}"
         }
@@ -1860,7 +1860,7 @@ do
             "When you redeem a",
             "{C:attention}Voucher{}, always redeem",
             "a {C:attention}higher tier{} Voucher",
-            "and pay the price"
+            "and pay its cost"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1974,10 +1974,10 @@ do
         name = name,
         text = {
             "If you have more than",
-            "{C:money}$#1#/(Vouchers Redeemed + 1){}",
-            "that is {C:money}$#2#{}, redeeming",
+            "{C:money}$#1#/(Vouchers redeemed + 1){}",
+            "{C:inactive}(Currently {C:money}$#2#{C:inactive}){}, redeeming",
             "a voucher gives {C:dark_edition}Antimatter{}",
-            "and lets the money requirement {C:red}X#3#{}"
+            "and {C:attention}X#3#{} to requirement"
             
         }
     }
@@ -2067,7 +2067,7 @@ do
         text = {
             "{C:attention}Flipped{} cards are",
             "held in hand when scoring and",
-            "can trigger hold-in-hand effects"
+            "can trigger held-in-hand effects"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2216,8 +2216,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When blind begins, create",
-            "an {C:attention}Eternal{} {C:tarot}Tarot{} card.",
+            "When Blind begins, create",
+            "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
             "This card disappears when a",
             "new Prologue card is created",
             "{C:inactive}(Must have room)"
@@ -2240,9 +2240,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}+1{} consumable slot.",
+            "{C:attention}+1{} consumable slot",
             "When blind ends, create an",
-            "{C:attention}Eternal{} {C:spectral}Spectral{} card.",
+            "{C:attention}Eternal{} {C:spectral}Spectral{} card",
             "This card disappears when a",
             "new Epilogue card is created",
             "{C:inactive}(Must have room)"
@@ -2547,9 +2547,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "At end of each Round,",
-            "earn extra {C:money}$#1#{}",
+            "Earn {C:money}$#1#{} more",
             "per remaining {C:blue}Hand",
+            "at end of round",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2569,9 +2569,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "At end of each Round,",
-            "earn extra {C:money}$#1#{}",
+            "Earn {C:money}$#1#{} more",
             "per remaining {C:blue}Hand",
+            "at end of round",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2611,7 +2611,7 @@ do
         text = {
             "Shop can have {C:attention}Eternal{} Jokers.",
             "{C:inactive,s:0.8}(Can't be sold or destroyed)",
-            "{C:attention}Eternal{} Jokers have {C:green}#1#%{}",
+            "{C:attention}Eternal{} Jokers have a {C:green}#1#%{}",
             "chance to be {C:dark_edition}Negative{}",
             "{C:inactive}(This chance can't be doubled){}"
         }
@@ -2634,7 +2634,7 @@ do
         name = name,
         text = {
             "Shop can have {C:attention}Perishable{} Jokers.",
-            "{C:inactive,s:0.8}(Debuffed after 5 Rounds)",
+            "{C:inactive,s:0.8}(Debuffed after 5 rounds)",
             "{C:attention}Perishable{} Jokers only",
             "take up {C:attention}#1#{} Joker slots",
         }
@@ -2729,7 +2729,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Rental{} Jokers.",
+            "Shop can have {C:attention}Rental{} Jokers",
             "{C:inactive,s:0.8}(Costs {C:money,s:0.8}$3{C:inactive,s:0.8} per round only if you",
             "{C:attention,s:0.8}aren't in debt before round ends{C:inactive,s:0.8})",
             "Each {C:attention}Rental{} Joker increases",
@@ -2753,11 +2753,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Pinned{} Jokers.",
+            "Shop can have {C:attention}Pinned{} Jokers",
             "{C:inactive,s:0.8}(Stays pinned to the leftmost position)",
             "Each {C:attention}Pinned{} Joker copies",
             "ability of {C:attention}Joker{} to the right",
-            "if itself {C:attention}isn't triggered{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2871,8 +2870,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:dark_edition}+#1#{} Joker Slot.",
-            "Leftmost joker is debuffed",
+            "{C:dark_edition}+#1#{} Joker Slot",
+            "Leftmost Joker is debuffed",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2892,8 +2891,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:dark_edition}+#1#{} Joker Slot.",
-            "Rightmost joker is debuffed",
+            "{C:dark_edition}+#1#{} Joker Slot",
+            "Rightmost Joker is debuffed",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2954,7 +2953,7 @@ do
         name = name,
         text = {
             "When a {C:dark_edition}Phantom{} Joker is sold,",
-            "create a joker of same {C:attention}rarity{}",
+            "create a Joker of the same {C:attention}rarity{}",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2998,7 +2997,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "First pack in shop is {C:attention}free{}",
+            "First {C:attention}Booster Pack{} in shop is {C:attention}free{}",
         }
     }
     local this_v = SMODS.Voucher{
@@ -3126,7 +3125,7 @@ do
         name = name,
         text = {
             "You can shop",
-            "after skipping blinds",
+            "after skipping a {C:attention}Blind{}",
             "{C:inactive}(Overstock + Oversupply)"
         }
     }
@@ -3176,7 +3175,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Rerolling boss blind",
+            "Rerolling {C:attention}Boss Blind{}",
             "also rerolls tags, and",
             "gives a random tag",
             "{C:inactive}(Director's Cut + Reroll Surplus)"
@@ -3386,7 +3385,7 @@ do
         name = name,
         text = {
             "Create a random {C:planet}Planet{} card",
-            "when buying a Planet card",
+            "when buying a {C:planet}Planet{} card",
             "{C:inactive}(Must have room)",
             "{C:inactive}(Planet Merchant + B1G50%)"
         }
@@ -3418,10 +3417,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round.",
+            "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round",
             "You can spend 1 hand to discard if",
             "no discards left. {C:red}Discards{} {C:money}earn{}",
-            "as much as {C:blue}Hands{} after rounds",
+            "as much as {C:blue}Hands{} at end of round",
             "{C:inactive}(Grabber + Wasteful)"
         }
     }
@@ -3476,7 +3475,7 @@ do
         text = {
             "Earn double {C:money}interest{}", 
             "at end of round if your",
-            "money is multiples of 5",
+            "money is a multiple of 5",
             "{C:inactive}(Seed Money + Target){}"
         }
     }
@@ -3522,10 +3521,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}+#1#{} Ante to win.",
+            "{C:attention}+#1#{} Ante to win",
             "When {C:attention}Boss Blind{} is defeated,", 
-            "randomly get one of the following:",
-            "{C:blue}+#1#{} hand, {C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
+            "randomly get {C:blue}+#1#{} hand,",
+            "{C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
             "{C:inactive}(Hieroglyph + Abstract Art){}"
         }
     }
@@ -3584,7 +3583,7 @@ do
             "When you redeem a",
             "{C:attention}Voucher{}, always redeem",
             "all {C:attention}higher tier{} Vouchers",
-            "and pay their prices",
+            "and pay their costs",
             "{C:inactive}(Collector + B1G1){}"
         }
     }
@@ -3607,9 +3606,9 @@ do
         name = name,
         text = {
             "Permanently increases {C:attention}Stone Card{}",
-            "bonus by {C:blue}+#1#{} extra chips.",
-            "{C:attention}Stone Cards{} don't occupy", 
-            "space when played",
+            "bonus by {C:blue}+#1#{} Chips",
+            "Select any number of {C:attention}Stone Cards{}", 
+            "when playing a hand",
             "{C:inactive}(Petroglyph + Bonus+){}"
         }
     }
@@ -3806,8 +3805,8 @@ do
         name = name,
         text = {
             "Randomize {C:attention}Lucky Card{} effects.",
-            "Create a negative {C:attention}Magician{}",
-            "when blind begins",
+            "Create a {C:dark_edition}Negative{} {C:attention}Magician{}",
+            "when {C:attentionBlind} begins",
             "{C:inactive}(Crystal Ball + Omnicard){}"
         }
     }
@@ -4739,8 +4738,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Same kind of",
-            "{C:attention}Enhancements{} can stack",
+            "Same-type {C:attention}Enhancements{} can stack",
             "{C:inactive}(Collector + Abstract Art){}"
         }
     }
@@ -4795,8 +4793,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}Eternal{} and {C:attention}Perishable{} can stack.",
-            "Such Joker gives {C:dark_edition}+#1#{} Joker slot",
+            "{C:attention}Eternal{} and {C:attention}Perishable{} can stack",
+            "Eternal Jokers give {C:dark_edition}+#1#{} Joker slot",
             "when {C:attention}debuffed{} by Perishable",
             "{C:inactive}(Eternity + Half-life){}"
         }
@@ -4891,9 +4889,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Retrigger {C:planet}Planet Card{} once",
-            "per {C:planet}Planet Card{} held,",
-            "including the using one",
+            "Retrigger {C:planet}Planet{} cards once",
+            "per {C:planet}Planet{} card held,",
+            "including the one being used",
             "{C:inactive}(Planet Merchant + Event Horizon){}"
         }
     }
@@ -4980,9 +4978,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When no consumable slot left, buying or",
-            "reserving a {C:attention}Consumable{} card moves it to",
-            "{C:attention}Joker area{} and it acts like a Joker",
+            "When no consumable slots are left, buying or",
+            "reserving a {C:attention}consumable{} card moves it to",
+            "the {C:attention}Joker area{} and it acts like a Joker",
             "{C:inactive}(Reserve Area + Undying){}"
         }
     }
@@ -5186,8 +5184,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}Jokers{} bought directly have {C:dark_edition}#1#%{}",
-            "chance to have {C:attention}Tentacle{} edition",
+            "Bought {C:attention}Jokers{} have a {C:dark_edition}#1#%{}",
+            "chance to have {C:dark_edition}Tentacle{} edition added",
             "{C:inactive}(Crystal Ball + Undying){}"
         }
     }
