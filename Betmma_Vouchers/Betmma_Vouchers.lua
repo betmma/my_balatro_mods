@@ -1110,7 +1110,7 @@ do
     G.FUNCS.use_card =function(e, mute, nosave)
         local card = e.config.ref_table
         if card.ability.consumeable then
-            if (card.ability.set == 'Planet' or card.ability.set == "Planet_dx") and used_voucher('engulfer') and pseudorandom('engulfer') < G.GAME.probabilities.normal/get_voucher('engulfer').config.extra then
+            if card.ability.set == 'Planet' and used_voucher('engulfer') and pseudorandom('engulfer') < G.GAME.probabilities.normal/get_voucher('engulfer').config.extra then
                 create_black_hole(localize("k_engulfer_generate"))
             end
         end
@@ -3407,7 +3407,7 @@ do
     G.FUNCS.buy_from_shop = function(e)
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
-        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet') and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
@@ -4919,19 +4919,6 @@ do
             config.delay=(config.delay or 0.8)/(1+G.betmma_solar_system_times)
         end
         update_hand_text_ref(config,vals)
-    end
-
-    local level_up_hand_ref=level_up_hand
-    function level_up_hand(card,hand,instant,amount)
-        -- TarotDX forgot to add the second level for DX planets when instant is true LOL
-            amount = amount or 1
-            if instant and card and card.ability and card.ability.set and card.ability.set == "Planet_dx" then    
-                G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level + amount)
-                G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + G.GAME.hands[hand].l_mult*(amount), 1)
-                G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*(amount), 0)
-            end
-        
-        level_up_hand_ref(card,hand,instant,amount)
     end
 
     local level_up_hand_ref=level_up_hand
