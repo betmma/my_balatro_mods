@@ -115,6 +115,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
 - Heal: (cooldown: 3 hands) Undebuff selected cards.
 - Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.05 for each hand reduced.
+- Double Lift: (cooldown: 1 round) Choose 1 more card in current pack.
 - Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.

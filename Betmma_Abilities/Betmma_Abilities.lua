@@ -845,6 +845,42 @@ do
     }
 end --absorber
 do
+    local key='double_lift'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Double Lift',
+            text = {
+                "Choose {C:attention}#4#{} more card",
+                "in current pack",
+                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=1},cooldown={type='round', now=1, need=1}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G and G.pack_cards and G.pack_cards.cards and #G.pack_cards.cards>0
+        end,
+        use = function(self,card,area,copier)
+            if G.GAME.pack_choices then
+                G.GAME.pack_choices=G.GAME.pack_choices+1
+            end
+        end,
+    }
+end --double lift
+do
     local key='zircon'
     get_atlas(key)
     betm_abilities[key]=SMODS.Consumable { 
