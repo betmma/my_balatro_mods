@@ -62,8 +62,8 @@ do
             if center.set=='Ability' then
                 -- self.T.w=W*34/71
                 -- self.T.h=H*34/95
-                self.T.w=G.ABILITY_W
-                self.T.h=G.ABILITY_H
+                self.T.w=G.ABILITY_W or 0.8
+                self.T.h=G.ABILITY_H or 0.8
             end
             Card_set_ability_ref(self,center,initial,delay_sprites)
         end
@@ -73,8 +73,8 @@ do
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
             if G.P_CENTERS[cardTable.save_fields.center].set=='Ability' then
                 G.P_CENTERS[cardTable.save_fields.center].load=function()
-                    self.T.w=G.ABILITY_W
-                    self.T.h=G.ABILITY_H
+                    self.T.w=G.ABILITY_W or 0.8
+                    self.T.h=G.ABILITY_H or 0.8
                 end
             end
 
