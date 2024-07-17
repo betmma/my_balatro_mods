@@ -4912,7 +4912,7 @@ do
     handle_register(this_v)
 
     local function is_planet(card)
-        return card.ability and card.ability.consumeable and (card.ability.consumeable.hand_type or card.ability.consumeable.hand_types) -- hand_types is for cryptid planets
+        return card.ability and card.ability.set == 'Planet'
     end
 
     local update_hand_text_ref=update_hand_text
