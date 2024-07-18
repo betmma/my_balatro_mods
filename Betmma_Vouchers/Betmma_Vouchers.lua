@@ -4920,6 +4920,9 @@ do
     function level_up_hand(card, hand, instant, amount)
         if G.betmma_solar_system_times then
             instant=true
+            if card and card.ability and card.ability.set and card.ability.type == '_dx' then
+                instant = false
+            end
             level_up_hand_ref(card,hand,instant,amount)
             if G.betmma_solar_system_times > 9 then
                 return
