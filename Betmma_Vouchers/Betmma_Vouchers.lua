@@ -507,30 +507,12 @@ do
         if saveTable then -- without this, vouchers given at the start of the run (in challenge) will be calculated twice
             if used_voucher('bonus_plus') then
                 G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
-                end
             end
             if used_voucher('mult_plus') then
                 G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
-                end
             end
             if used_voucher('slate') then
                 G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
-                end
-            end
-            if used_voucher('bulletproof') then
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_glass' and v.config.center.config.Xmult~=v.ability.x_mult then 
-                        v.config.center=copy_table(v.config.center)
-                        v.config.center.config.Xmult=v.ability.x_mult
-                        -- if the x_mult has been decreased, change the number on hover UI from m_glass value to x_mult
-                    end
-                end
             end
             
             if used_voucher('real_random') then
@@ -2371,14 +2353,18 @@ do
         if center_table.name == 'Bonus+' then
             G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
+                if v.config.center_key == 'm_bonus' then
+                    v.ability.bonus = v.ability.bonus + get_voucher('bonus_plus').config.extra
+                end
             end
         
         end
         if center_table.name == 'Mult+' then
             G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
+                if v.config.center_key == 'm_mult' then 
+                    v.ability.mult = v.ability.mult + get_voucher('mult_plus').config.extra
+                end
             end
         end
         Card_apply_to_run_ref(self, center)
@@ -2486,8 +2472,6 @@ do
             self.ability.breaking_count=(self.ability.breaking_count or 0)+1
             self.ability.x_mult=self.ability.x_mult-get_voucher('bulletproof').config.extra.lose
             --print(G.P_CENTERS.m_glass.config.Xmult,self.ability.x_mult)
-            self.config.center=copy_table(self.config.center) -- prevent modifying value of G.P_CENTERS.m_glass
-            self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-get_voucher('bulletproof').config.extra.lose
             self.shattered=false
             self.destroyed=false
             card_eval_status_text(self,'extra',nil,nil,nil,{message=localize('k_bulletproof')})
@@ -3642,7 +3626,9 @@ do
         if center_table.name == 'Slate' then
             G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
+                if v.config.center_key == 'm_stone' then
+                    v.ability.bonus = v.ability.bonus + get_voucher('slate').config.extra
+                end
             end
         end
         Card_apply_to_run_ref(self, center)
