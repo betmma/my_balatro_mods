@@ -251,6 +251,14 @@ function SMODS.current_mod.process_loc_text()
     end
     G.localization.descriptions.Enhanced.ellipsis={text={'{C:inactive}(#1# abilities omitted)'}}
     G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
+    -- borrowed from SDM0
+    G.localization.descriptions.Other.perishable_no_debuff = {
+        name = "Perishable",
+        text = {
+            "Debuffed after",
+            "{C:attention}#1#{} rounds"
+        }
+    }
     for k, v in pairs(betmma_extra_data) do
         for k2, v2 in pairs(v) do
             G.localization.misc[k][k2]=v2
@@ -2547,7 +2555,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn an additional {C:money}$#1#{}",
+            "Earn an extra {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
             "at end of round",
         }
@@ -2569,7 +2577,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn an additional {C:money}$#1#{}",
+            "Earn an extra {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
             "at end of round",
         }
@@ -2646,7 +2654,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds, G.GAME.perishable_rounds}})
+        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -4809,7 +4817,7 @@ do
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
         table.insert(info_queue, {key = 'eternal', set = 'Other'})
-        table.insert(info_queue, {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds, G.GAME.perishable_rounds}})
+        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
