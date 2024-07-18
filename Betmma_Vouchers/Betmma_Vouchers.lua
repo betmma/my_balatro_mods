@@ -2936,6 +2936,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_phantom'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2957,6 +2958,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_phantom'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -5197,6 +5199,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_tentacle'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
