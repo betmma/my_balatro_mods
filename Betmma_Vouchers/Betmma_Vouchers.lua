@@ -3801,7 +3801,7 @@ do
         text = {
             "Randomize {C:attention}Lucky Card{} effects.",
             "Create a {C:dark_edition}Negative{} {C:attention}Magician{}",
-            "when {C:attentionBlind} begins",
+            "when {C:attention}Blind{} begins",
             "{C:inactive}(Crystal Ball + Omnicard){}"
         }
     }
