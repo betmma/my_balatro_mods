@@ -1328,7 +1328,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={extra=4},
+        config={extra=6},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }

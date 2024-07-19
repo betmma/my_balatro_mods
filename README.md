@@ -32,7 +32,7 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Bull's Eye: If chips scored are under 105% of required chips at end of round, create a random negative Joker card.
 - Voucher Bundle: Gives 2 random vouchers. ($15)
 - Voucher Bulk: Gives 4 random vouchers. ($25)
-- Skip: Earn $4 when skipping blind.
+- Skip: Earn $6 when skipping blind.
 - Skipper: Get a Double Tag when skipping blind.
 - Scrawl: Gives $2 for each joker you have, and then randomly create Jokers until joker slots are full.
 - Scribble: Randomly create 3 Negative Spectral cards.
@@ -107,7 +107,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 10 abilities
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 12 abilities
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
@@ -115,7 +115,8 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
 - Heal: (cooldown: 3 hands) Undebuff selected cards.
 - Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.05 for each hand reduced.
-- Double Lift: (cooldown: 1 round) Choose 1 more card in current pack.
+- Double Lift: (cooldown: 2 rounds) Choose 1 more card in current pack.
+- Recycle (cooldown: $20 used) Reduce reroll cost by $5.
 - Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.

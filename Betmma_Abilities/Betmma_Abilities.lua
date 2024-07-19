@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.0-alpha2(20240717)
+--- VERSION: 1.0.0(20240719)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -354,7 +354,8 @@ do
 end -- Cooldown shader
 
 do
-    function update_ability_cooldown(type)
+    function update_ability_cooldown(type,value)
+        if value==nil then value=1 end
         if G.betmma_abilities==nil then
             print("G.betmma_abilities doesn't exist! Maybe ability.toml isn't installed correctly.")
             return
@@ -362,7 +363,7 @@ do
         for i = 1,#G.betmma_abilities.cards do
             local card=G.betmma_abilities.cards[i]
             if card.ability.cooldown.type==type then
-                card.ability.cooldown.now=card.ability.cooldown.now-1
+                card.ability.cooldown.now=card.ability.cooldown.now-value
                 if card.ability.cooldown.now<0 then
                     card.ability.cooldown.now=0
                 end
@@ -384,6 +385,17 @@ do
         end_round_ref()
     end
 
+    local ease_dollars_ref = ease_dollars
+    -- update 'money used' and 'money gain' cooldown
+    function ease_dollars(mod, instant)
+        if mod<0 then
+            update_ability_cooldown('money used',-mod)
+        elseif mod>0 then
+            update_ability_cooldown('money gain',mod)
+        end
+        ease_dollars_ref(mod, instant)
+    end
+
     local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
     -- update 'hand' cooldown
     G.FUNCS.play_cards_from_highlighted=function(e)
@@ -395,7 +407,7 @@ end -- update cooldown in different situations
 
 SMODS.ConsumableType { -- Define Ability Consumable Type
     key = 'Ability',
-    collection_rows = { 6,4 },
+    collection_rows = { 6,6,6,6 },
     primary_colour = G.C.CHIPS,
     secondary_colour = mix_colours(G.C.SECONDARY_SET.Voucher, G.C.MULT, 0.9),
     loc_txt = {
@@ -860,11 +872,11 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {value=1},cooldown={type='round', now=1, need=1}, },
+        config = {extra = {value=1},cooldown={type='round', now=2, need=2}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
-            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             card.ability.extra.value}}
         end,
         keep_on_use = function(self,card)
@@ -880,6 +892,46 @@ do
         end,
     }
 end --double lift
+do
+    local key='recycle'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Recycle',
+            text = {
+                "Reduce reroll price by {C:money}$#4#{}",
+                'Cooldown: {C:mult}$#1#/$#2# #3#{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=5},cooldown={type='money used', now=20, need=20}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SHOP
+        end,
+        use = function(self,card,area,copier)
+            if G.GAME.round_resets.temp_reroll_cost then
+                G.GAME.round_resets.temp_reroll_cost = math.max(G.GAME.round_resets.temp_reroll_cost - G.GAME.current_round.reroll_cost, G.GAME.round_resets.temp_reroll_cost - card.ability.extra.value)
+            else
+                G.GAME.round_resets.temp_reroll_cost = math.max(G.GAME.round_resets.reroll_cost - G.GAME.current_round.reroll_cost, G.GAME.round_resets.reroll_cost - card.ability.extra.value)
+            end
+            calculate_reroll_cost(true)
+            -- G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost - card.ability.extra.value)
+            
+        end,
+    }
+end --recycle
 do
     local key='zircon'
     get_atlas(key)
