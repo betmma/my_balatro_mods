@@ -2615,7 +2615,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'eternal', set = 'Other'})
+        if IN_SMOD1 then
+            table.insert(info_queue, {key = 'eternal', set = 'Other'})
+        end
         return {vars={100/center.ability.extra}}
     end
     handle_register(this_v)
@@ -2638,7 +2640,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
+        if IN_SMOD1 then
+            table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2736,7 +2740,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'rental', set = 'Other', vars = {G.GAME.rental_rate or 1}})
+        if IN_SMOD1 then
+            table.insert(info_queue, {key = 'rental', set = 'Other', vars = {G.GAME.rental_rate or 1}})
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2759,7 +2765,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'pinned_left', set = 'Other'})
+        if IN_SMOD1 then
+            table.insert(info_queue, {key = 'pinned_left', set = 'Other'})
+        end
         return {vars={}}
     end
     handle_register(this_v)
@@ -2936,7 +2944,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, G.P_CENTERS['e_phantom'])
+        if IN_SMOD1 then
+            table.insert(info_queue, G.P_CENTERS['e_phantom'])
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2958,7 +2968,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, G.P_CENTERS['e_phantom'])
+        if IN_SMOD1 then
+            table.insert(info_queue, G.P_CENTERS['e_phantom'])
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -4804,8 +4816,10 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, {key = 'eternal', set = 'Other'})
-        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
+        if IN_SMOD1 then
+            table.insert(info_queue, {key = 'eternal', set = 'Other'})
+            table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -5196,7 +5210,9 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
-        table.insert(info_queue, G.P_CENTERS['e_tentacle'])
+        if IN_SMOD1 then
+            table.insert(info_queue, G.P_CENTERS['e_tentacle'])
+        end
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
