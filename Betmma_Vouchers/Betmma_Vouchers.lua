@@ -4711,7 +4711,7 @@ do
             trigger = 'after',
             delay =  0,
             func = function() 
-                local hand_space = math.min(#G.deck.cards, #G.hand.cards)
+                local hand_space = math.min(#G.deck.cards, G.hand.config.card_limit)
                 
                 for i=1, hand_space do --draw cards from deckL
                     draw_card(G.deck,G.hand, i*100/hand_space,'up',true)
@@ -5299,7 +5299,7 @@ do
 end -- cryptozoology
 
     -- this challenge is only for test
-    if nil then
+    if 1 then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
@@ -5333,15 +5333,7 @@ end -- cryptozoology
                 -- {id = 'c_cryptid'},
                 --{id = 'c_devil_cu'},
                 -- {id = 'c_death'},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
-                {id='c_pluto',negative=true},
+                {id='c_hanged_man',negative=true},
             },
             vouchers = {
                 {id = MOD_PREFIX_V.. 'trash_picker'},
@@ -5355,7 +5347,7 @@ end -- cryptozoology
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'bargain_aisle'},
-                {id = MOD_PREFIX_V.. 'clearance_aisle'},
+                {id = MOD_PREFIX_V.. 'recycle_area'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },
