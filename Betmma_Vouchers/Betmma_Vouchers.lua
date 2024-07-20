@@ -251,6 +251,14 @@ function SMODS.current_mod.process_loc_text()
     end
     G.localization.descriptions.Enhanced.ellipsis={text={'{C:inactive}(#1# abilities omitted)'}}
     G.localization.descriptions.Enhanced.multiples={text={'{C:inactive}(X#1#)'}}
+    -- borrowed from SDM0
+    G.localization.descriptions.Other.perishable_no_debuff = {
+        name = "Perishable",
+        text = {
+            "Debuffed after",
+            "{C:attention}#1#{} rounds"
+        }
+    }
     for k, v in pairs(betmma_extra_data) do
         for k2, v2 in pairs(v) do
             G.localization.misc[k][k2]=v2
@@ -499,30 +507,12 @@ do
         if saveTable then -- without this, vouchers given at the start of the run (in challenge) will be calculated twice
             if used_voucher('bonus_plus') then
                 G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
-                end
             end
             if used_voucher('mult_plus') then
                 G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
-                end
             end
             if used_voucher('slate') then
                 G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
-                end
-            end
-            if used_voucher('bulletproof') then
-                for k, v in pairs(G.playing_cards) do
-                    if v.config.center_key == 'm_glass' and v.config.center.config.Xmult~=v.ability.x_mult then 
-                        v.config.center=copy_table(v.config.center)
-                        v.config.center.config.Xmult=v.ability.x_mult
-                        -- if the x_mult has been decreased, change the number on hover UI from m_glass value to x_mult
-                    end
-                end
             end
             
             if used_voucher('real_random') then
@@ -717,7 +707,7 @@ do
         name = "Oversupply",
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
-            "after beating boss blind"
+            "after defeating {C:attention}Boss Blind{}"
         }
     }
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
@@ -741,7 +731,7 @@ do
         name = "Oversupply Plus",
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
-            "after beating every blind"
+            "after defeating each {C:attention}Blind{}"
             -- if you have both, after beating boss blind you gain only 1 voucher tag
         }
     }
@@ -777,7 +767,7 @@ do
     local gold_coin_loc_txt = {
         name = name,
         text = {
-            "Gain {C:money}$#1#{} immediately.",
+            "Earn {C:money}$#1#{} immediately",
             "{C:attention}Small Blind{} gives",
             "no reward money",
             -- yes it literally does nothing bad after white stake
@@ -805,7 +795,7 @@ do
     local gold_bar_loc_txt = {
         name = name,
         text = {
-            "Gain {C:money}$#1#{} immediately.",
+            "Earn {C:money}$#1#{} immediately",
             "{C:attention}Big Blind{} gives",
             "no reward money",
         }
@@ -963,8 +953,7 @@ do
         name = name,
         text = {
             "{C:blue}Chips{} always round up",
-            "to nearest tens",
-            "when calculating hands"
+            "to nearest 10",
         }
     }
     local this_v = SMODS.Voucher{
@@ -985,9 +974,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:red}Mult{} always round up",
-            "to nearest tens",
-            "when calculating hands"
+            "{C:red}Mult{} always rounds up",
+            "to nearest 10",
         }
     }
     local this_v = SMODS.Voucher{
@@ -1027,9 +1015,9 @@ do
         name = name,
         text = {
             "{C:green}#1# in #2#{} chance to",
-            "create a {C:spectral}Black Hole{} card",
-            "when opening a planet pack.",
-            "Create {C:attention}2{} random",
+            "create a {C:spectral}Black Hole{}",
+            "when you open a {C:planet}Celestial Pack{}",
+            "Create {C:attention}2{}",
             "{C:dark_edition}Negative{} {C:planet}Planet{} cards now",
         }
     }
@@ -1052,8 +1040,8 @@ do
         name = name,
         text = {
             "{C:green}#1# in #2#{} chance to",
-            "create a {C:spectral}Black Hole{} card",
-            "when using a planet card.",
+            "create a {C:spectral}Black Hole{}",
+            "when you use a {C:planet}Planet{} card",
             "Create a {C:spectral}Black Hole{} now",
             "{C:inactive}(Must have room)"
         }
@@ -1110,7 +1098,7 @@ do
     G.FUNCS.use_card =function(e, mute, nosave)
         local card = e.config.ref_table
         if card.ability.consumeable then
-            if (card.ability.set == 'Planet' or card.ability.set == "Planet_dx") and used_voucher('engulfer') and pseudorandom('engulfer') < G.GAME.probabilities.normal/get_voucher('engulfer').config.extra then
+            if card.ability.set == 'Planet' and used_voucher('engulfer') and pseudorandom('engulfer') < G.GAME.probabilities.normal/get_voucher('engulfer').config.extra then
                 create_black_hole(localize("k_engulfer_generate"))
             end
         end
@@ -1143,10 +1131,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are under",
-            "{C:attention}#1#%{} of required chips",
+            "If score is under",
+            "{C:attention}#1#%{} of required score",
             "at end of round,",
-            "create a random {C:attention}Joker{} card",
+            "create a random {C:attention}Joker{}",
             "{C:inactive}(Must have room)"
         }
     }
@@ -1168,11 +1156,11 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are under",
-            "{C:attention}#1#%{} of required chips",
+            "If score is under",
+            "{C:attention}#1#%{} of required score",
             "at end of round,",
             "create a random",
-            "{C:dark_edition}Negative{} {C:attention}Joker{} card"
+            "{C:dark_edition}Negative{} {C:attention}Joker{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1213,7 +1201,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:attention}#1#{} random vouchers"
+            "Redeem {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1234,7 +1222,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:attention}#1#{} random vouchers"
+            "Redeem {C:attention}#1#{} random vouchers"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1323,7 +1311,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Earn {C:money}$#1#{} when skipping blind"
+            "Earn {C:money}$#1#{} when you skip a {C:attention}Blind{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1344,7 +1332,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Get a {C:attention}Double Tag{} when skipping blind"
+            "Get a {C:attention}Double Tag{} when you skip a {C:attention}Blind{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1379,9 +1367,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Gives {C:money}$#1#{} for each joker you have,",
-            "then randomly create {C:attention}Jokers{}",
-            "until joker slots are full"
+            "Gives {C:money}$#1#{} for each Joker you have,",
+            "then create {C:attention}Jokers{}",
+            "until Joker slots are full"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1402,7 +1390,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Randomly create {C:attention}#1#{}",
+            "Create {C:attention}#1#{}",
             "{C:dark_edition}Negative{} {C:spectral}Spectral{} cards"
         }
     }
@@ -1447,7 +1435,7 @@ do
         text = {
             "You can reserve {C:tarot}Tarot{}",
             "cards instead of using them",
-            "when opening a {C:tarot}Tarot Pack{}"
+            "when opening an {C:tarot}Arcana Pack{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1470,8 +1458,8 @@ do
         text = {
             "You can reserve {C:spectral}Spectral{}",
             "cards instead of using them",
-            "when opening a {C:spectral}Spectral Pack{}.",
-            "Also get an {C:attention}Ethereal Tag{} now"
+            "when opening a {C:spectral}Spectral Pack{}",
+            "Get an {C:attention}Ethereal Tag{} now"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1605,8 +1593,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are above",
-            "{C:attention}#1#%{} of required chips",
+            "If score is above",
+            "{C:attention}#1#%{} of required score",
             "at end of round, add",
             "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
             "{C:dark_edition}Polychrome{} edition",
@@ -1631,13 +1619,13 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "If chips scored are above",
-            "{X:mult,C:white}X#1#{} of required chips",
+            "If score is above",
+            "{C:attention}#1#X{} required score",
             "at end of round, add",
             "{C:dark_edition}Negative{} edition to a",
             "random {C:attention}Joker{}, and",
-            "increase the target amount",
-            "{C:inactive}(This Negative can override){}"
+            "increase this number by {C:attention}X#2#{}",
+            "{C:inactive}(Can override other editions){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1650,7 +1638,10 @@ do
     this_v.loc_vars = function(self, info_queue, center)
         if not center then center={ability=this_v.config} end
         local count=G and G.GAME and G.GAME.v_big_blast_count or 0
-        return {vars={center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1))}}
+        return {vars={
+            center.ability.extra.multiplier*center.ability.extra.increase^(count*(count+1)),
+            center.ability.extra.increase^(2*(count+1))
+        }}
     end
     handle_register(this_v)
     local v_big_blast=this_v
@@ -1735,10 +1726,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Rerolls apply to",
-            "{C:attention}Booster Packs{}, but",
-            "rerolled packs cost",
-            "{C:attention}$#1#{} more"
+            "Rerolls apply to {C:attention}Booster Packs{}",
+            "Rerolled {C:attention}Booster Packs{}",
+            "cost {C:attention}$#1#{} more"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1832,9 +1822,9 @@ do
         name = name,
         text = {
             "When you redeem a {C:attention}Voucher{},",
-            "have {C:green}#1#%{} chance to redeem",
+            "{C:green}#1#%{} chance to redeem",
             "a {C:attention}higher tier{} Voucher",
-            "and pay half the price",
+            "and pay half its cost",
             "{C:inactive}(This chance can't be doubled){}",
             "{C:inactive}(B1G series can't give legendaries){}"
         }
@@ -1860,7 +1850,7 @@ do
             "When you redeem a",
             "{C:attention}Voucher{}, always redeem",
             "a {C:attention}higher tier{} Voucher",
-            "and pay the price"
+            "and pay its cost"
         }
     }
     local this_v = SMODS.Voucher{
@@ -1974,10 +1964,10 @@ do
         name = name,
         text = {
             "If you have more than",
-            "{C:money}$#1#/(Vouchers Redeemed + 1){}",
-            "that is {C:money}$#2#{}, redeeming",
+            "{C:money}$#1#/(Vouchers redeemed + 1){}",
+            "{C:inactive}(Currently {C:money}$#2#{C:inactive}){}, redeeming",
             "a voucher gives {C:dark_edition}Antimatter{}",
-            "and lets the money requirement {C:red}X#3#{}"
+            "and {C:attention}X#3#{} to requirement"
             
         }
     }
@@ -2067,7 +2057,7 @@ do
         text = {
             "{C:attention}Flipped{} cards are",
             "held in hand when scoring and",
-            "can trigger hold-in-hand effects"
+            "can trigger held-in-hand effects"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2216,8 +2206,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When blind begins, create",
-            "an {C:attention}Eternal{} {C:tarot}Tarot{} card.",
+            "When Blind begins, create",
+            "an {C:attention}Eternal{} {C:tarot}Tarot{} card",
             "This card disappears when a",
             "new Prologue card is created",
             "{C:inactive}(Must have room)"
@@ -2240,9 +2230,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}+1{} consumable slot.",
+            "{C:attention}+1{} consumable slot",
             "When blind ends, create an",
-            "{C:attention}Eternal{} {C:spectral}Spectral{} card.",
+            "{C:attention}Eternal{} {C:spectral}Spectral{} card",
             "This card disappears when a",
             "new Epilogue card is created",
             "{C:inactive}(Must have room)"
@@ -2313,10 +2303,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases",
+            "Permanently increase",
             "{C:blue}Bonus Card{} bonus",
             "by {C:blue}+#1#{} extra chips",
-            "{C:inactive}(e.g. +30 -> +#2#){}"
+            "{C:inactive}(+30 -> +#2#){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2336,10 +2326,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases",
-            "{C:red}Mult cards{} bonus",
+            "Permanently increase",
+            "{C:red}Mult Card{} bonus",
             "by {C:red}+#1#{} Mult",
-            "{C:inactive}(e.g. +4 -> +#2#){}"
+            "{C:inactive}(+4 -> +#2#){}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2363,14 +2353,18 @@ do
         if center_table.name == 'Bonus+' then
             G.P_CENTERS.m_bonus.config.bonus=G.P_CENTERS.m_bonus.config.bonus+get_voucher('bonus_plus').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_bonus' then v:set_ability(G.P_CENTERS['m_bonus']) end
+                if v.config.center_key == 'm_bonus' then
+                    v.ability.bonus = v.ability.bonus + get_voucher('bonus_plus').config.extra
+                end
             end
         
         end
         if center_table.name == 'Mult+' then
             G.P_CENTERS.m_mult.config.mult=G.P_CENTERS.m_mult.config.mult+get_voucher('mult_plus').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_mult' then v:set_ability(G.P_CENTERS['m_mult']) end
+                if v.config.center_key == 'm_mult' then 
+                    v.ability.mult = v.ability.mult + get_voucher('mult_plus').config.extra
+                end
             end
         end
         Card_apply_to_run_ref(self, center)
@@ -2409,7 +2403,7 @@ do
             -- "{C:attention}Glass Cards{} can",
             -- "break #1# times"
             "{C:attention}Glass Cards{} lose {X:mult,C:white}X#1#{}",
-            "instead of breaking.",
+            "instead of breaking",
             "They break when",
             "they reach {X:mult,C:white}X#2#{}"
         }
@@ -2437,10 +2431,8 @@ do
     local Card_set_debuff=Card.set_debuff
     function Card:set_debuff(should_debuff)
         if used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
-            should_debuff=false
-            if self.params.debuff_by_curse then -- DX tarots mod curses that still debuff when should_debuff is false
-                self.params.debuff_by_curse=false
-            end
+            self.debuff = false
+            return
         end
         if self.area == G.jokers and is_hidden(self) then
             should_debuff = true
@@ -2480,8 +2472,6 @@ do
             self.ability.breaking_count=(self.ability.breaking_count or 0)+1
             self.ability.x_mult=self.ability.x_mult-get_voucher('bulletproof').config.extra.lose
             --print(G.P_CENTERS.m_glass.config.Xmult,self.ability.x_mult)
-            self.config.center=copy_table(self.config.center) -- prevent modifying value of G.P_CENTERS.m_glass
-            self.config.center.config.Xmult=self.ability.x_mult--self.config.center.config.Xmult-get_voucher('bulletproof').config.extra.lose
             self.shattered=false
             self.destroyed=false
             card_eval_status_text(self,'extra',nil,nil,nil,{message=localize('k_bulletproof')})
@@ -2549,9 +2539,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "At end of each Round,",
-            "earn extra {C:money}$#1#{}",
+            "Earn an extra {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
+            "at end of round",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2571,9 +2561,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "At end of each Round,",
-            "earn extra {C:money}$#1#{}",
+            "Earn an extra {C:money}$#1#{}",
             "per remaining {C:blue}Hand",
+            "at end of round",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2611,9 +2601,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Eternal{} Jokers.",
-            "{C:inactive,s:0.8}(Can't be sold or destroyed)",
-            "{C:attention}Eternal{} Jokers have {C:green}#1#%{}",
+            "Shop can have {C:attention}Eternal{} Jokers",
+            "{C:attention}Eternal{} Jokers have a {C:green}#1#%{}",
             "chance to be {C:dark_edition}Negative{}",
             "{C:inactive}(This chance can't be doubled){}"
         }
@@ -2626,6 +2615,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, {key = 'eternal', set = 'Other'})
         return {vars={100/center.ability.extra}}
     end
     handle_register(this_v)
@@ -2635,8 +2625,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Perishable{} Jokers.",
-            "{C:inactive,s:0.8}(Debuffed after 5 Rounds)",
+            "Shop can have {C:attention}Perishable{} Jokers",
             "{C:attention}Perishable{} Jokers only",
             "take up {C:attention}#1#{} Joker slots",
         }
@@ -2649,6 +2638,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2731,9 +2721,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Rental{} Jokers.",
-            "{C:inactive,s:0.8}(Costs {C:money,s:0.8}$3{C:inactive,s:0.8} per round only if you",
-            "{C:attention,s:0.8}aren't in debt before round ends{C:inactive,s:0.8})",
+            "Shop can have {C:attention}Rental{} Jokers",
+            "{C:attention}Rental{} Jokers don't cost money",
+            "if you're in debt",
             "Each {C:attention}Rental{} Joker increases",
             "debt limit by {C:red}-$#1#{}"
         }
@@ -2746,6 +2736,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, {key = 'rental', set = 'Other', vars = {G.GAME.rental_rate or 1}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2755,11 +2746,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Shop can have {C:attention}Pinned{} Jokers.",
-            "{C:inactive,s:0.8}(Stays pinned to the leftmost position)",
+            "Shop can have {C:attention}Pinned{} Jokers",
             "Each {C:attention}Pinned{} Joker copies",
             "ability of {C:attention}Joker{} to the right",
-            "if itself {C:attention}isn't triggered{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2770,6 +2759,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, {key = 'pinned_left', set = 'Other'})
         return {vars={}}
     end
     handle_register(this_v)
@@ -2873,8 +2863,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:dark_edition}+#1#{} Joker Slot.",
-            "Leftmost joker is debuffed",
+            "{C:dark_edition}+#1#{} Joker Slot",
+            "Leftmost Joker is debuffed",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2894,8 +2884,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:dark_edition}+#1#{} Joker Slot.",
-            "Rightmost joker is debuffed",
+            "{C:dark_edition}+#1#{} Joker Slot",
+            "Rightmost Joker is debuffed",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2946,6 +2936,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_phantom'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -2956,7 +2947,7 @@ do
         name = name,
         text = {
             "When a {C:dark_edition}Phantom{} Joker is sold,",
-            "create a joker of same {C:attention}rarity{}",
+            "create a Joker of the same {C:attention}rarity{}",
         }
     }
     local this_v = SMODS.Voucher{
@@ -2967,6 +2958,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_phantom'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -3000,7 +2992,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "First pack in shop is {C:attention}free{}",
+            "First {C:attention}Booster Pack{} in shop is {C:attention}free{}",
         }
     }
     local this_v = SMODS.Voucher{
@@ -3128,7 +3120,7 @@ do
         name = name,
         text = {
             "You can shop",
-            "after skipping blinds",
+            "after skipping a {C:attention}Blind{}",
             "{C:inactive}(Overstock + Oversupply)"
         }
     }
@@ -3178,7 +3170,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Rerolling boss blind",
+            "Rerolling {C:attention}Boss Blind{}",
             "also rerolls tags, and",
             "gives a random tag",
             "{C:inactive}(Director's Cut + Reroll Surplus)"
@@ -3388,7 +3380,7 @@ do
         name = name,
         text = {
             "Create a random {C:planet}Planet{} card",
-            "when buying a Planet card",
+            "when buying a {C:planet}Planet{} card",
             "{C:inactive}(Must have room)",
             "{C:inactive}(Planet Merchant + B1G50%)"
         }
@@ -3409,7 +3401,7 @@ do
     G.FUNCS.buy_from_shop = function(e)
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
-        if c1.ability.consumeable and (c1.config.center.set == 'Planet' or c1.config.center.set =="Planet_dx") and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- "Planet_dx" is for deluxe consumable mod, (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
+        if c1.ability.consumeable and (c1.config.center.set == 'Planet') and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
     end
@@ -3420,10 +3412,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round.",
+            "{C:blue}+#1#{} hand and {C:red}+#1#{} discard per round",
             "You can spend 1 hand to discard if",
             "no discards left. {C:red}Discards{} {C:money}earn{}",
-            "as much as {C:blue}Hands{} after rounds",
+            "as much as {C:blue}Hands{} at end of round",
             "{C:inactive}(Grabber + Wasteful)"
         }
     }
@@ -3478,7 +3470,7 @@ do
         text = {
             "Earn double {C:money}interest{}", 
             "at end of round if your",
-            "money is multiples of 5",
+            "money is a multiple of 5",
             "{C:inactive}(Seed Money + Target){}"
         }
     }
@@ -3524,10 +3516,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}+#1#{} Ante to win.",
+            "{C:attention}+#1#{} Ante to win",
             "When {C:attention}Boss Blind{} is defeated,", 
-            "randomly get one of the following:",
-            "{C:blue}+#1#{} hand, {C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
+            "randomly get {C:blue}+#1#{} hand,",
+            "{C:red}+#1#{} discard or {C:attention}-#1#{} Ante",
             "{C:inactive}(Hieroglyph + Abstract Art){}"
         }
     }
@@ -3586,7 +3578,7 @@ do
             "When you redeem a",
             "{C:attention}Voucher{}, always redeem",
             "all {C:attention}higher tier{} Vouchers",
-            "and pay their prices",
+            "and pay their costs",
             "{C:inactive}(Collector + B1G1){}"
         }
     }
@@ -3608,10 +3600,10 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Permanently increases {C:attention}Stone Card{}",
-            "bonus by {C:blue}+#1#{} extra chips.",
-            "{C:attention}Stone Cards{} don't occupy", 
-            "space when played",
+            "Permanently increase {C:attention}Stone Card{}",
+            "bonus by {C:blue}+#1#{} Chips",
+            "Select any number of {C:attention}Stone Cards{}", 
+            "when playing a hand",
             "{C:inactive}(Petroglyph + Bonus+){}"
         }
     }
@@ -3636,7 +3628,9 @@ do
         if center_table.name == 'Slate' then
             G.P_CENTERS.m_stone.config.bonus=G.P_CENTERS.m_stone.config.bonus+get_voucher('slate').config.extra
             for k, v in pairs(G.playing_cards) do
-                if v.config.center_key == 'm_stone' then v:set_ability(G.P_CENTERS['m_stone']) end
+                if v.config.center_key == 'm_stone' then
+                    v.ability.bonus = v.ability.bonus + get_voucher('slate').config.extra
+                end
             end
         end
         Card_apply_to_run_ref(self, center)
@@ -3808,8 +3802,8 @@ do
         name = name,
         text = {
             "Randomize {C:attention}Lucky Card{} effects.",
-            "Create a negative {C:attention}Magician{}",
-            "when blind begins",
+            "Create a {C:dark_edition}Negative{} {C:attention}Magician{}",
+            "when {C:attention}Blind{} begins",
             "{C:inactive}(Crystal Ball + Omnicard){}"
         }
     }
@@ -4741,8 +4735,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Same kind of",
-            "{C:attention}Enhancements{} can stack",
+            "Same-type {C:attention}Enhancements{} can stack",
             "{C:inactive}(Collector + Abstract Art){}"
         }
     }
@@ -4797,8 +4790,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}Eternal{} and {C:attention}Perishable{} can stack.",
-            "Such Joker gives {C:dark_edition}+#1#{} Joker slot",
+            "{C:attention}Eternal{} and {C:attention}Perishable{} can stack",
+            "Eternal Jokers give {C:dark_edition}+#1#{} Joker slot",
             "when {C:attention}debuffed{} by Perishable",
             "{C:inactive}(Eternity + Half-life){}"
         }
@@ -4811,6 +4804,8 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, {key = 'eternal', set = 'Other'})
+        table.insert(info_queue, {key = 'perishable_no_debuff', set = 'Other', vars = {G.GAME.perishable_rounds}})
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)
@@ -4893,9 +4888,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Retrigger {C:planet}Planet Card{} once",
-            "per {C:planet}Planet Card{} held,",
-            "including the using one",
+            "Retrigger {C:planet}Planet{} cards once",
+            "per {C:planet}Planet{} card held,",
+            "including the one being used",
             "{C:inactive}(Planet Merchant + Event Horizon){}"
         }
     }
@@ -4912,7 +4907,7 @@ do
     handle_register(this_v)
 
     local function is_planet(card)
-        return card.ability and card.ability.consumeable and (card.ability.consumeable.hand_type or card.ability.consumeable.hand_types) -- hand_types is for cryptid planets
+        return card.ability and card.ability.set == 'Planet'
     end
 
     local update_hand_text_ref=update_hand_text
@@ -4921,19 +4916,6 @@ do
             config.delay=(config.delay or 0.8)/(1+G.betmma_solar_system_times)
         end
         update_hand_text_ref(config,vals)
-    end
-
-    local level_up_hand_ref=level_up_hand
-    function level_up_hand(card,hand,instant,amount)
-        -- TarotDX forgot to add the second level for DX planets when instant is true LOL
-            amount = amount or 1
-            if instant and card and card.ability and card.ability.set and card.ability.set == "Planet_dx" then    
-                G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level + amount)
-                G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + G.GAME.hands[hand].l_mult*(amount), 1)
-                G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*(amount), 0)
-            end
-        
-        level_up_hand_ref(card,hand,instant,amount)
     end
 
     local level_up_hand_ref=level_up_hand
@@ -4995,9 +4977,9 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "When no consumable slot left, buying or",
-            "reserving a {C:attention}Consumable{} card moves it to",
-            "{C:attention}Joker area{} and it acts like a Joker",
+            "When no consumable slots are left, buying or",
+            "reserving a {C:attention}consumable{} card moves it to",
+            "the {C:attention}Joker area{} and it acts like a Joker",
             "{C:inactive}(Reserve Area + Undying){}"
         }
     }
@@ -5201,8 +5183,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:attention}Jokers{} bought directly have {C:dark_edition}#1#%{}",
-            "chance to have {C:attention}Tentacle{} edition",
+            "Bought {C:attention}Jokers{} have a {C:dark_edition}#1#%{}",
+            "chance to have {C:dark_edition}Tentacle{} edition added",
             "{C:inactive}(Crystal Ball + Undying){}"
         }
     }
@@ -5214,6 +5196,7 @@ do
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
+        table.insert(info_queue, G.P_CENTERS['e_tentacle'])
         return {vars={center.ability.extra}}
     end
     handle_register(this_v)

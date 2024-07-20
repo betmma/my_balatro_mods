@@ -7,7 +7,7 @@
             loc_txt={
                 name = 'Phantom',
                 text = {
-                    "{C:dark_edition}+1{} Joker Slot.", 
+                    "{C:dark_edition}+1{} Joker Slot", 
                     "{C:red}50% chance to trigger",
                     -- "When destroyed, lose {C:dark_edition}Phantom{}",
                     -- "and {C:attention}duplicate{} itself twice"
@@ -20,7 +20,7 @@
             loc_txt={
                 name = 'Tentacle',
                 text = {
-                    "When {C:attention}Blind{} is selected",
+                    "When {C:attention}Blind{} is selected,",
                     "destroy Joker to the",
                     "right and add its value",
                     "to this joker's value",

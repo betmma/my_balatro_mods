@@ -68,17 +68,17 @@ local localization = {
         name = "JJookkeerr",
         text = {
             "Jokers with \"Joker\"",
-            "in their names",
-            "each gives {X:mult,C:white} X#1# {} Mult",
+            "in their name",
+            "each give {X:mult,C:white} X#1# {} Mult",
             -- if I count right there are 24 common, 6 uncommon and 3 rare jokers that satisfy this condition
         }
     },
     ascension = {
         name = "Ascension",
         text = {
-            "Increase the tier of",
-            "played poker hand by 1 ",
-            "(e.g. High Card counts as One Pair)",
+            "Played poker hand counts",
+            "as next higher poker hand",
+            "(ex. High Card counts as One Pair)",
             -- How the poker hand "contained" is calculated should be clarified:
             -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
         }
@@ -87,23 +87,24 @@ local localization = {
         name = "Hasty Joker",
         text = {
             "Earn {C:money}$#1#{} if round",
-        "ends after first hand",
+            "ends after first hand",
         }
     },
     errorr = {
         name = "ERRORR",
         text = {
-            "Discarded cards have",
-        "{C:green}#1# in #2#{} chance to",
-        "become random rank"
+            "Discarded cards have a",
+            "{C:green}#1# in #2#{} chance to",
+            "become random rank"
         }
     },
     piggy_bank = {
         name = " Piggy Bank ",
         text = {
-            "Put half of earned dollars",
-            "into it and gain {C:red}+#2#{} Mult",
-            "for each dollar",
+            "Put half of earned money",
+            "into this Joker",
+            "{C:red}+#2#{} Mult for",
+            "each {C:money}$1{} inside",
             "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
             -- dollar in it adds to its sold price
         }
@@ -111,12 +112,10 @@ local localization = {
     housing_choice = {
         name = "Housing Choice",
         text = {
-            "Get a random {C:attention}Voucher{}",
+            "Once per Ante, get a random {C:attention}Voucher{}",
             "if played hand contains",
-            "a {C:attention}Full House{}. This can",
-            "only trigger 1 time per ante",
+            "a {C:attention}Full House{}",
             "{C:inactive}(#1#)"
-            -- dollar in it adds to its sold price
         }
     },
     jimbow = {
