@@ -1015,10 +1015,10 @@ do
         name = name,
         text = {
             "{C:green}#1# in #2#{} chance to",
-            "create a {C:spectral}Black Hole{}",
-            "when you open a {C:planet}Celestial Pack{}",
-            "Create {C:attention}2{}",
-            "{C:dark_edition}Negative{} {C:planet}Planet{} cards now",
+            "create a {C:spectral}Black Hole{} when",
+            "you open a {C:planet}Celestial Pack{}",
+            "Create {C:attention}2{} {C:dark_edition}Negative{}",
+            "{C:planet}Planet{} cards now",
         }
     }
     local this_v = SMODS.Voucher{

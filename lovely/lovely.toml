@@ -68,6 +68,13 @@ position = "at"
 payload = "assembled_string = assembled_string..(type(subpart) == 'string' and subpart or tostring(args.vars[tonumber(subpart[1])]))"
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.x_mult <= 1 then return 0 end"
+position = "before"
+payload = "if self.ability.x_mult == nil then return 0 end"
+match_indent = true
 
 # Half-life changing displayed joker limit in CardArea:draw()
 [[patches]]
