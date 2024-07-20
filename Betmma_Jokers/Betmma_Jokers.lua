@@ -78,7 +78,7 @@ local localization = {
         text = {
             "Played poker hand counts",
             "as next higher poker hand",
-            "(e.g. High Card counts as One Pair)",
+            "(ex. High Card counts as One Pair)",
             -- How the poker hand "contained" is calculated should be clarified:
             -- If you play a Straight Flush, originally it contains Straight Flush, Flush, Straight and High Card. After triggering ascension it is counted as 5oak and contains 5oak, Straight Flush, Flush, Straight and High Card. Though a real 5oak contains 4oak and 3oak, this 5oak from ascension doesn't contain them.
         }
