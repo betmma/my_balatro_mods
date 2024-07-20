@@ -4,11 +4,12 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.0(20240719)
+--- VERSION: 1.0.1(20240720)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+--[[ todo: compatibility with hammerspace]]
 MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
 betm_abilities={}
@@ -394,6 +395,13 @@ do
             update_ability_cooldown('money gain',mod)
         end
         ease_dollars_ref(mod, instant)
+    end
+    
+    local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
+    -- update 'blind skip' cooldown
+    G.FUNCS.skip_blind = function(e)
+        update_ability_cooldown('blind skip')
+        G_FUNCS_skip_blind_ref(e)
     end
 
     local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
@@ -932,6 +940,40 @@ do
         end,
     }
 end --recycle
+do
+    local key='glyph'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Glyph',
+            text = {
+                "{C:attention}-#4#{} Ante, {C:money}-$#5#",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=1,cost=10},cooldown={type='blind skip', now=4, need=4}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
+            card.ability.extra.value,card.ability.extra.cost}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card)
+        end,
+        use = function(self,card,area,copier)
+            ease_ante(-card.ability.extra.value)
+            ease_dollars(-card.ability.extra.cost)
+        end,
+    }
+end --glyph
 do
     local key='zircon'
     get_atlas(key)
