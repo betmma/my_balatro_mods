@@ -826,7 +826,7 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {add=0.05,value=1},cooldown={type='ante', now=1, need=1}, },
+        config = {extra = {add=0.1,value=1},cooldown={type='ante', now=1, need=1}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)

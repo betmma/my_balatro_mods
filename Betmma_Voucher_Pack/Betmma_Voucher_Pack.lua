@@ -286,6 +286,9 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
 
     local create_UIBox_celestial_pack_ref=create_UIBox_celestial_pack
     function create_UIBox_celestial_pack()
+        if G.InBetmmaVoucherPack and not G.GAME.BetmmaVoucherPackKey then
+            G.InBetmmaVoucherPack=false
+        end
         if G.InBetmmaVoucherPack and G.GAME.BetmmaVoucherPackKey then
             local _size = G.GAME.pack_size
             G.pack_cards = CardArea(
