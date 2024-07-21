@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.1(20240720)
+--- VERSION: 1.0.2(20240721)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -974,6 +974,104 @@ do
         end,
     }
 end --glyph
+do
+    local key='colour'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Colour',
+            text = {
+                "Create a random ability", 
+                    "{C:inactive}(Must have room)",
+                -- "(Cooldown is higher before first use)",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {},cooldown={type='round', now=2, need=2}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and #G.betmma_abilities.cards < G.betmma_abilities.config.card_limit
+        end,
+        use = function(self,card,area,copier)
+            local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('abilities'))
+            local card = create_card('Ability', nil, nil, nil, nil, nil, nil, 'colour')
+            -- card:start_materialize()
+            -- card:set_edition({negative=true}) negative edition on abilities is buggy
+            G.betmma_abilities:emplace(card)
+        end,
+    }
+end --colour
+do
+    local key='extract'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Extract',
+            text = {
+                "Downgrade current hand",
+                "and create a {C:dark_edition}Negative", 
+                "{C:planet}Planet{} card of it", 
+                -- "(Cooldown is higher before first use)",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {},cooldown={type='hand', now=2, need=2}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
+        end,
+        use = function(self,card,area,copier)
+            local card_type = 'Planet'
+            local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
+            
+            level_up_hand(nil, text, nil, -1)
+            G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+            G.E_MANAGER:add_event(Event({
+                trigger = 'before',
+                delay = 0.0,
+                func = (function()
+                    if text then
+                        local _planet = 0
+                        for k, v in pairs(G.P_CENTER_POOLS.Planet) do
+                            if v.config.hand_type == text then
+                                _planet = v.key
+                            end
+                        end
+                        local card2 = create_card(card_type,G.consumeables, nil, nil, nil, nil, _planet, 'blusl')
+                        card2:set_edition({negative=true})
+                        card2:add_to_deck()
+                        G.consumeables:emplace(card2)
+                        G.GAME.consumeable_buffer = 0
+                    end
+                    return true
+                end)}))
+            card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_plus_planet'), colour = G.C.SECONDARY_SET.Planet})
+            -- card:start_materialize()
+        end,
+    }
+end --extract
 do
     local key='zircon'
     get_atlas(key)

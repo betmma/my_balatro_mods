@@ -44,7 +44,7 @@ if G.shop_abilities then
     else
         for i = 1, G.GAME.shop.ability_max - #G.shop_abilities.cards do
             local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('shop_abilities'))
-            local card = create_card('Ability', area, nil, nil, nil, nil, nil, 'sho')
+            local card = create_card('Ability', nil, nil, nil, nil, nil, nil, 'sho')
             --local card = Card(G.shop_abilities.T.x + G.shop_abilities.T.w/2,
             --G.shop_abilities.T.y+G.ABILITY_W*(i-1), G.ABILITY_W, G.ABILITY_H, G.P_CARDS.empty, center,{bypass_discovery_center = true, bypass_discovery_ui = true})
             if cry_misprintize then
@@ -53,7 +53,7 @@ if G.shop_abilities then
                 if G.GAME.modifiers.cry_enable_flipped_in_shop and pseudorandom('cry_flip_'..G.GAME.round_resets.ante) > 0.7 then
                     card.cry_flipped = true
                 end
-            create_shop_card_ui(card, 'Ability', area)
+            create_shop_card_ui(card, 'Ability', nil)
             --card:start_materialize()
             G.shop_abilities:emplace(card)
         end
