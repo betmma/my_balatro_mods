@@ -107,7 +107,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 15 abilities
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 16 abilities
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
@@ -124,6 +124,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.
 - Midas Touch: (passive) Gain $2 when using an ability.
+- Thumb: (passive) If played hand has less than 5 cards, +0.2 hands per card below 5. (Can only trigger once per hand)
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.

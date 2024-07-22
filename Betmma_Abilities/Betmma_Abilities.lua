@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2(20240721)
+--- VERSION: 1.0.2.1(20240722)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -407,6 +407,7 @@ do
     local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
     -- update 'hand' cooldown
     G.FUNCS.play_cards_from_highlighted=function(e)
+        G.thumb_triggered=false -- thumb can only trigger once
         update_ability_cooldown('hand')
         local ret= G_FUNCS_play_cards_from_highlighted_ref(e)
         return ret
@@ -1280,6 +1281,47 @@ do
         end
     }
 end --midas touch
+do
+    local key='thumb'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Thumb',
+            text = {
+                "If played hand has less then 5 cards,", 
+                "{C:attention}+#1#{} hands per card below {C:attention}5",
+                "(Can only trigger once per hand)",
+                '{C:blue}Passive{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=0.2},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+            if context.joker_main and not G.thumb_triggered then
+                local card_count=#G.play.cards
+                if card_count<5 then
+                    G.thumb_triggered=true
+                    ease_hands_played(card.ability.extra.value*(5-card_count))
+                end
+            end
+        end
+    }
+end --thumb
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("
