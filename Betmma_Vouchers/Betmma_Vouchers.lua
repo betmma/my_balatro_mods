@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 48 Vouchers and 24 Fusion Vouchers! v2.2.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.0.1(20240722)
+--- VERSION: 2.2.0.1(20240723)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3374,15 +3374,15 @@ do
     handle_register(this_v)
 
     local poll_edition_ref=poll_edition
-    function poll_edition(_key, _mod, _no_neg, _guaranteed)
+    function poll_edition(_key, _mod, _no_neg, _guaranteed, _options)
         _mod=_mod or 1
         if used_voucher('darkness') then
-            local ret=poll_edition_ref(_key, _mod*(get_voucher('darkness').config.extra-1), _no_neg, _guaranteed)
+            local ret=poll_edition_ref(_key, _mod*(get_voucher('darkness').config.extra-1), _no_neg, _guaranteed, _options)
             if ret and ret.negative then
                 return ret
             end
         end
-        return poll_edition_ref(_key, _mod, _no_neg, _guaranteed)
+        return poll_edition_ref(_key, _mod, _no_neg, _guaranteed, _options)
     end
 
 end -- darkness
@@ -5198,8 +5198,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Bought {C:attention}Jokers{} have a {C:dark_edition}#1#%{}",
-            "chance to have {C:dark_edition}Tentacle{} edition added",
+            "Bought {C:attention}Jokers{} have a {C:dark_edition}#1#%{} chance",
+            "to have {C:dark_edition}Tentacle{} edition added",
             "{C:inactive}(Crystal Ball + Undying){}"
         }
     }
@@ -5223,7 +5223,7 @@ do
         local c1 = e.config.ref_table
         local ret=G_FUNCS_buy_from_shop_ref(e)
         
-        if c1.ability.set == 'Joker' and used_voucher('cryptozoology') and pseudorandom('cryptozoology')*100 < get_voucher('cryptozoology').config.extra then -- buying a joker
+        if c1.ability.set == 'Joker' and G.FUNCS.check_for_buy_space(c1) and used_voucher('cryptozoology') and pseudorandom('cryptozoology')*100 < get_voucher('cryptozoology').config.extra then -- buying a joker
             c1:set_edition('e_tentacle')
         end
     end
@@ -5401,7 +5401,7 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'reroll_aisle'},
-                {id = MOD_PREFIX_V.. 'recycle_area'},
+                {id = MOD_PREFIX_V.. 'cryptozoology'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },
