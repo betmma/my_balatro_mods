@@ -15,7 +15,7 @@ A collection of mods made by me for Balatro.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 - Jimbow: This Joker gains +15 Chips when {context}. Context changes when achieved.
 
-# Betmma Vouchers: Adds 48 Vouchers and 23 fusion Vouchers.
+# Betmma Vouchers: Adds 48 Vouchers and 24 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
@@ -94,7 +94,7 @@ Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear ra
 - Voucher Tycoon (Oversupply + Planet Tycoon): Vouchers appear in the shop.
 - Cryptozoology (Crystal Ball + Undying): Jokers bought directly have 15% chance to have Tentacle edition.
 (Tentacle Edition: When Blind is selected, destroy Joker to the right and add its value to this joker's value)
-
+- Reroll Aisle (Reroll Surplus + Clearance Aisle): First item and Booster Pack in shop are free after rerolls.
 # Betmma Voucher Pack: Adds 3 Voucher Packs.
 - Voucher Pack: redeem 1 of 3 vouchers.
 - Uncommon Voucher Pack: redeem 1 of 3 uncommon vouchers.
