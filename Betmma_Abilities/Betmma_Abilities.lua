@@ -9,7 +9,9 @@
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
---[[ todo: compatibility with hammerspace]]
+--[[ todo: compatibility with hammerspace (CCD) or in consumable slots
+current progress: abilities are able to cooldown in everywhere, but passive calculations (using calculate function) don't work in other areas. Active abilities can work.
+]]
 MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
 betm_abilities={}
@@ -334,7 +336,7 @@ do
 
     local Card_draw_ref=Card.draw
     function Card:draw(layer)
-        if self.ability.set=='Ability' and self.area==G.betmma_abilities and not ability_cooled_down(self) then
+        if self.ability.set=='Ability' and self.area~=G.shop_abilities and self.area~=G.shop_jokers and not ability_cooled_down(self) then --and self.area==G.betmma_abilities
             Card_draw_ref(self,layer)
             local _send=self.ARGS.send_to_shader
             _send={betmma=true,extra={{name='percentage',val=ability_cooled_down_percentage(self)}},vanilla=_send}
@@ -355,21 +357,28 @@ do
 end -- Cooldown shader
 
 do
-    function update_ability_cooldown(type,value)
-        if value==nil then value=1 end
-        if G.betmma_abilities==nil then
-            print("G.betmma_abilities doesn't exist! Maybe ability.toml isn't installed correctly.")
-            return
-        end
-        for i = 1,#G.betmma_abilities.cards do
-            local card=G.betmma_abilities.cards[i]
-            if card.ability.cooldown.type==type then
+    function update_ability_cooldown_single_area(cardarea,type,value)
+        if cardarea==nil or cardarea.cards==nil then return end
+        for i=1,#cardarea.cards do
+            local card=cardarea.cards[i]
+            if card.ability and card.ability.cooldown and card.ability.cooldown.type==type then
                 card.ability.cooldown.now=card.ability.cooldown.now-value
                 if card.ability.cooldown.now<0 then
                     card.ability.cooldown.now=0
                 end
             end
         end
+    end
+    function update_ability_cooldown(type,value)
+        if value==nil then value=1 end
+        if G.betmma_abilities==nil then
+            print("G.betmma_abilities doesn't exist! Maybe ability.toml isn't installed correctly.")
+            return
+        end
+        update_ability_cooldown_single_area(G.betmma_abilities,type,value)
+        update_ability_cooldown_single_area(G.jokers,type,value)
+        update_ability_cooldown_single_area(G.consumeables,type,value)
+        update_ability_cooldown_single_area(G.deck,type,value)
     end
 
     local ease_ante_ref=ease_ante
@@ -816,7 +825,7 @@ do
             
         end
     }
-end --heal
+end --heal (need fix if it's redebuffed, maybe change it to not be able to be debuffed for this hand)
 do
     local key='absorber'
     get_atlas(key)
