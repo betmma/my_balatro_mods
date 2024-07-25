@@ -100,6 +100,6 @@ jd_def['betm_jokers_j_jimbow'] = { -- Jimbow
     text_config = { colour = G.C.CHIPS },
     calc_function = function (card)
         -- There should probably be extra localization text for this, normal text is too long
-        card.joker_display_values.context = card.ability.extra.context:gsub("%_", " ")
+        card.joker_display_values.context = card.ability.extra.context and card.ability.extra.context:gsub("%_", " ") or "-"
     end
 }
