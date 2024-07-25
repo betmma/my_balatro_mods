@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 48 Vouchers and 24 Fusion Vouchers! v2.2.0
+--- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.0.1(20240723)
+--- VERSION: 2.2.0.2(20240725)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -100,6 +100,8 @@ config = {
     v_reincarnate=true,
     v_bargain_aisle=true,
     v_clearance_aisle=true,
+    v_rich_boss=true,
+    v_richer_boss=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -139,7 +141,7 @@ function used_voucher(raw_key)
     return G.GAME.used_vouchers[MOD_PREFIX_V..raw_key]
 end
 -- example: get_voucher('slate').config.extra
-local function get_voucher(raw_key)
+function get_voucher(raw_key)
     return G.P_CENTERS[MOD_PREFIX_V..raw_key]
 end
 
@@ -3057,6 +3059,74 @@ do
    
 
 end -- bargain aisle
+do 
+    local name="Rich Boss"
+    local id="rich_boss"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Boss Blinds give {C:money}$#1#{} more",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=10},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Richer Boss"
+    local id="richer_boss"
+    local loc_txt = {
+        name = name,
+        text = {
+            "Boss Blinds give {C:money}$#1#{} more per ante",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=4},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'bargain_aisle'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    function betmma_rich_boss_bonus(ante_mod)
+        local ans=0
+        if used_voucher('rich_boss') then
+            ans=ans+get_voucher('rich_boss').config.extra
+        end
+        if used_voucher('richer_boss') then
+            ans=ans+get_voucher('richer_boss').config.extra*(G.GAME.round_resets.ante+(ante_mod or 0))
+        end
+        return ans
+    end 
+
+    -- other visual effects are in lovely.toml
+
+    local G_FUNCS_evaluate_round_ref=G.FUNCS.evaluate_round
+    G.FUNCS.evaluate_round=function()
+        local money_bonus=0
+        if G.GAME.blind:get_type()=='Boss' then
+            money_bonus=money_bonus+betmma_rich_boss_bonus(-1)--ante has been risen one
+        end
+        G.GAME.blind.dollars=G.GAME.blind.dollars+money_bonus
+        G_FUNCS_evaluate_round_ref()
+        G.GAME.blind.dollars=G.GAME.blind.dollars-money_bonus
+
+    end
+   
+
+end -- rich boss
 
 
     -- ################
@@ -3777,6 +3847,9 @@ do
 
     local eval_card_ref=eval_card
     function eval_card(card, context)
+        if G.GAME.probabilities and G.GAME.probabilities.normal==nil then
+            G.GAME.probabilities.normal=1 -- someone reported G.GAME.probabilities.normal became nil and crashed. just override it to 1 if it's nil.
+        end
         local ret=eval_card_ref(card, context)
         if used_voucher('mirror') and not context.repetition_only and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
             local index=1
@@ -5395,9 +5468,9 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'trash_picker'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
-                {id = MOD_PREFIX_V.. 'eternity'},
+                {id = MOD_PREFIX_V.. 'rich_boss'},
                 {id = MOD_PREFIX_V.. 'half_life'},
-                {id = MOD_PREFIX_V.. 'heat_death'},
+                {id = MOD_PREFIX_V.. 'richer_boss'},
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},

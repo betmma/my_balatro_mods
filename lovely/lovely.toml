@@ -129,4 +129,69 @@ payload = '''
 '''
 match_indent = true
 
+# Rich/Richer Boss effect
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "G.GAME.orbital_choices = G.GAME.orbital_choices or {}"
+position = "before"
+payload = '''
+    local betmma_extra_blind_money=0
+    if type=='Boss' then
+        betmma_extra_blind_money=betmma_extra_blind_money+betmma_rich_boss_bonus()
+    end
+    local function string_rep(string,times)
+        local ans=""
+        if times<=8 then
+            for i=1,times do
+                ans=ans..string
+            end
+        else
+            ans=string..times
+        end
+        return ans
+    end
+'''
+match_indent = true
+
+# Rich/Richer Boss effect
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''{n=G.UIT.T, config={text = string.rep(localize("$"), blind_choice.config.dollars)..'+', scale = 0.35, colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.MONEY, shadow = not disabled}}'''
+position = "at"
+payload = '''
+    {n=G.UIT.T, config={text = string_rep(localize("$"), blind_choice.config.dollars+betmma_extra_blind_money)..'+', scale = 0.35, colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.MONEY, shadow = not disabled}}
+'''
+match_indent = true
+
+# Rich/Richer Boss effect
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = '''G.GAME.current_round.dollars_to_be_earned = self.dollars > 0 and (string.rep(localize('$'), self.dollars)..'') or ('')'''
+position = "at"
+payload = '''
+    if self.boss then
+        self.dollars=self.dollars+betmma_rich_boss_bonus()
+    end
+    local function string_rep(string,times)
+        local ans=""
+        if times<=8 then
+            for i=1,times do
+                ans=ans..string
+            end
+        else
+            ans=string..times
+        end
+        return ans
+    end
+    G.GAME.current_round.dollars_to_be_earned = self.dollars > 0 and (string_rep(localize('$'), self.dollars)..'') or ('')
+    if self.boss then
+        self.dollars=self.dollars-betmma_rich_boss_bonus()
+    end
+'''
+match_indent = true
+
+
 

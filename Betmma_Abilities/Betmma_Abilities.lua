@@ -336,7 +336,7 @@ do
 
     local Card_draw_ref=Card.draw
     function Card:draw(layer)
-        if self.ability.set=='Ability' and self.area~=G.shop_abilities and self.area~=G.shop_jokers and not ability_cooled_down(self) then --and self.area==G.betmma_abilities
+        if self.ability.set=='Ability' and (self.area==G.betmma_abilities or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not ability_cooled_down(self) then --if i wrote self.area~=shop_abilities then in collection menu it's still grayed
             Card_draw_ref(self,layer)
             local _send=self.ARGS.send_to_shader
             _send={betmma=true,extra={{name='percentage',val=ability_cooled_down_percentage(self)}},vanilla=_send}
@@ -559,7 +559,7 @@ do
                 'If all jokers are {C:attention}Eternal{}, remove',
                 '{C:attention}Eternal{} from all jokers. Otherwise,',
                 'set all jokers to be {C:attention}Eternal{}.',
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -602,7 +602,7 @@ do
                 'Next #5# {C:attention}random events',
                 'are guaranteed success', 
                 '(#4# times left)',
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -647,7 +647,7 @@ do
             text = {
                 'Temporarily increase ranks of',
                 'chosen cards by 1 for this hand',
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -743,7 +743,7 @@ do
                 'set to the last hand',
                 'that is {C:attention}#4#',
                 '(#5# hands left)',
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -799,7 +799,7 @@ do
             name = 'Heal',
             text = {
                 "Undebuff selected cards",
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -838,7 +838,7 @@ do
                 "{X:mult,C:white}X#4#{} for each hand reduced",
                 -- "Current Gain: {X:mult,C:white}X#5#{}",
                 "Current Xmult: {X:mult,C:white}X#5#{}",
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -884,7 +884,7 @@ do
             text = {
                 "Choose {C:attention}#4#{} more card",
                 "in current pack",
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
@@ -1093,7 +1093,7 @@ do
                 '{C:green}#4#%{} chance to create a', 
                 '{C:legendary,E:1}Legendary{} Joker, otherwise',
                 'create a {C:legendary,E:1}Legendary{} Voucher',
-                'Cooldown: {C:mult}#1#/#2# #3# left{}'
+                'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
         set = 'Ability',
