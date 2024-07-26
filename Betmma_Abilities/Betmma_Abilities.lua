@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.1(20240722)
+--- VERSION: 1.0.2.2(20240726)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -508,12 +508,18 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
     end
 }
 
-function ability_copy_table(card)
-    if card.ability.cooldown.now ==nil then
-        card.ability=copy_table(card.ability)
-        card.ability.cooldown.now=card.ability.cooldown.need
+function has_ability(key)
+    if G.betmma_abilities and G.betmma_abilities.cards then
+        for i=1,#G.betmma_abilities.cards do
+            print(G.betmma_abilities.cards[i].config.center.key)
+            print(betm_abilities[key].key)
+            if G.betmma_abilities.cards[i].config.center.key==betm_abilities[key].key then
+                return true
+            end
+        end 
     end
-end -- useless now
+    return false
+end 
 
 local Card_use_consumeable_ref=Card.use_consumeable
 -- add cooldown when ability is used
@@ -1330,6 +1336,52 @@ do
             end
         end
     }
+end --thumb
+do
+    local key='shield'
+    get_atlas(key)
+    betm_abilities[key]=SMODS.Consumable { 
+        key = key,
+        loc_txt = {
+            name = 'Shield',
+            text = { 
+                "{C:attention}Hand Size{} can't", 
+                "go below {C:attention}#1#",
+                '{C:blue}Passive{}'
+        }
+        },
+        set = 'Ability',
+        pos = {x = 0,y = 0}, 
+        atlas = key, 
+        config = {extra = {value=6},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        keep_on_use = function(self,card)
+            return true
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+        end,
+        add_to_deck = function(self,card,area,copier) -- inject into G.hand:change_size when getting a shield
+            if not G.GAME.has_betmma_shield then
+                local G_hand_change_size_ref=G.hand.change_size
+                G.hand.change_size=function(self,delta)
+                    if has_ability('shield') then
+                        delta=math.max(delta,card.ability.extra.value-G.hand.config.card_limit)
+                    end
+                    G_hand_change_size_ref(self,delta)
+                end
+                G.GAME.has_betmma_shield=true
+            end
+        end,
+    }
+
 end --thumb
 
 for k,v in pairs(betm_abilities) do

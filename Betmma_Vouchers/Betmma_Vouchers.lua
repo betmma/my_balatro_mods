@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.0
+--- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.0.2(20240725)
+--- VERSION: 2.2.1(20240725)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2758,6 +2758,7 @@ do
             "Shop can have {C:attention}Pinned{} Jokers",
             "Each {C:attention}Pinned{} Joker copies",
             "ability of {C:attention}Joker{} to the right",
+            "if itself {C:attention}isn't triggered{}"
         }
     }
     local this_v = SMODS.Voucher{
@@ -5474,7 +5475,9 @@ end -- reroll aisle
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
-                {id = MOD_PREFIX_V.. 'stow'},
+                {id = 'v_overstock_norm'},
+                {id = 'v_overstock_plus'},
+                -- {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'reroll_aisle'},
                 {id = MOD_PREFIX_V.. 'cryptozoology'},
                 {id = 'v_retcon'},
