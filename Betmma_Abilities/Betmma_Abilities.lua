@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.2(20240726)
+--- VERSION: 1.0.2.2(20240727)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -508,17 +508,18 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
     end
 }
 
+-- return first ability (card) whose key is key. If none return nil.
 function has_ability(key)
     if G.betmma_abilities and G.betmma_abilities.cards then
         for i=1,#G.betmma_abilities.cards do
-            print(G.betmma_abilities.cards[i].config.center.key)
-            print(betm_abilities[key].key)
+            -- print(G.betmma_abilities.cards[i].config.center.key)
+            -- print(betm_abilities[key].key)
             if G.betmma_abilities.cards[i].config.center.key==betm_abilities[key].key then
-                return true
+                return G.betmma_abilities.cards[i]
             end
         end 
     end
-    return false
+    return nil
 end 
 
 local Card_use_consumeable_ref=Card.use_consumeable
@@ -1368,20 +1369,17 @@ do
         end,
         calculate=function(self,card,context)
         end,
-        add_to_deck = function(self,card,area,copier) -- inject into G.hand:change_size when getting a shield
-            if not G.GAME.has_betmma_shield then
-                local G_hand_change_size_ref=G.hand.change_size
-                G.hand.change_size=function(self,delta)
-                    if has_ability('shield') then
-                        delta=math.max(delta,card.ability.extra.value-G.hand.config.card_limit)
-                    end
-                    G_hand_change_size_ref(self,delta)
-                end
-                G.GAME.has_betmma_shield=true
-            end
-        end,
     }
-
+    local CardArea_update_ref=CardArea.update
+    function CardArea:update(dt)
+        CardArea_update_ref(self,dt)
+        if self == G.hand then
+            local shield=has_ability('shield')
+            if shield~=nil and G.hand.config.card_limit<shield.ability.extra.value then
+                G.hand.config.card_limit=shield.ability.extra.value
+            end
+        end
+    end
 end --thumb
 
 for k,v in pairs(betm_abilities) do
