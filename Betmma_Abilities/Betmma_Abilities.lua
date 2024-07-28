@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.2(20240727)
+--- VERSION: 1.0.2.2(20240728)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -290,6 +290,18 @@ do
         end
         end_round_ref()
     end
+
+    local function multilines_text_ui(texts)
+        local t={n=G.UIT.R, config={minh=3, align = "cm", padding = 0, r=0.2, colour = G.C.L_BLACK, emboss = 0, minw = 1}, nodes={}
+            }
+        for k, v in pairs(texts) do
+            t.nodes[#t.nodes+1]={n=G.UIT.R, config={minh=0.4,align = "cm", colour = G.C.L_BLACK}, nodes={
+                {n=G.UIT.T, config={text = v, scale = 0.6, colour = G.C.WHITE}}
+            }}
+        end
+        return t
+    end
+
     local G_FUNCS_skip_blind_ref=G.FUNCS.skip_blind
     -- set create_ability_shop to false when skipping blind (deal with overshopping)
     G.FUNCS.skip_blind = function(e)
@@ -314,6 +326,24 @@ do
             row2[#row2+1]={n=G.UIT.C, config={align = "cm", padding = 0.2, r=0.2, colour = G.C.L_BLACK, emboss = 0.05, maxw = abilities_w}, nodes={
                 {n=G.UIT.O, config={object = G.shop_abilities}},
             }}
+            if not G.betmma_abilities then
+                G.shop_vouchers.T.w=G.shop_vouchers.T.w-abilities_w
+                row2[#row2].config.padding=0
+                row2[#row2].config.minw=abilities_w*3.5
+                row2[#row2].config.maxw=abilities_w*3.5
+                row2[#row2].nodes[1]=multilines_text_ui(
+                    {
+                        'ability.toml',
+                        'not found!',
+                        'should be under',
+                        'Mods/betmma_mods', 
+                        '(secondary folder',
+                        'where my mods are)',
+                        '/lovely instead',
+                        'of Mods/lovely',
+                    }
+                )
+            end
         else
             G.shop_abilities=nil
         end
@@ -1380,7 +1410,7 @@ do
             end
         end
     end
-end --thumb
+end --shield
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("

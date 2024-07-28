@@ -4428,7 +4428,7 @@ do
 
     local localize_ref=localize
     function localize(args, misc_cat)
-        if args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.type == 'descriptions' and not args.loc_vars and args~=G.P_CENTERS.m_lucky then return end
+        if args and args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.type == 'descriptions' and not args.loc_vars and args~=G.P_CENTERS.m_lucky then return end
         return localize_ref(args,misc_cat)
     end
 
