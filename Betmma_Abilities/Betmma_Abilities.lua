@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.2(20240728)
+--- VERSION: 1.0.2.2(20240729)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -538,6 +538,14 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
     end
 }
 
+local function ability_prototype(data)
+    data.keep_on_use = function(self,card)
+        return true
+    end
+    data.config.cardarea='betmma_abilities'
+    return SMODS.Consumable(data)
+end
+
 -- return first ability (card) whose key is key. If none return nil.
 function has_ability(key)
     if G.betmma_abilities and G.betmma_abilities.cards then
@@ -588,7 +596,7 @@ end
 do
     local key='GIL'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { --GIL
+    betm_abilities[key]=ability_prototype { --GIL
         key = key,
         loc_txt = {
             name = 'Global Interpreter Lock',
@@ -607,9 +615,6 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = ability_cooled_down,
         use = function(self,card,area,copier)
@@ -631,7 +636,7 @@ end --GIL
 do
     local key='glitched_seed'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { --glitched seed
+    betm_abilities[key]=ability_prototype { --glitched seed
         key = key,
         loc_txt = {
             name = 'Glitched Seed',
@@ -650,9 +655,6 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,pseudorandom_forced_0_count,card.ability.extra.value}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = ability_cooled_down,
         use = function(self,card,area,copier)
@@ -677,7 +679,7 @@ end --glitched seed
 do
     local key='rank_bump'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { --rank bump
+    betm_abilities[key]=ability_prototype { --rank bump
         key = key,
         loc_txt = {
             name = 'Rank Bump',
@@ -695,9 +697,6 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card)and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
@@ -771,7 +770,7 @@ end --rank bump
 do
     local key='cached_hand'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Cached Hand',
@@ -792,9 +791,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
             G.GAME.last_hand_played or 'High Card',(G.GAME.betmma_cached_hand or 0)}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
@@ -830,7 +826,7 @@ end --cached hand
 do
     local key='heal'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Heal',
@@ -849,9 +845,6 @@ do
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             }}
         end,
-        keep_on_use = function(self,card)
-            return true
-        end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and G.hand.highlighted and #G.hand.highlighted>0
         end,
@@ -866,7 +859,7 @@ end --heal (need fix if it's redebuffed, maybe change it to not be able to be de
 do
     local key='absorber'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Absorber',
@@ -887,9 +880,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
             card.ability.extra.add,card.ability.extra.value}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and G.GAME.current_round.hands_left and G.GAME.current_round.hands_left>1
@@ -914,7 +904,7 @@ end --absorber
 do
     local key='double_lift'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Double Lift',
@@ -934,9 +924,6 @@ do
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             card.ability.extra.value}}
         end,
-        keep_on_use = function(self,card)
-            return true
-        end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and G and G.pack_cards and G.pack_cards.cards and #G.pack_cards.cards>0
         end,
@@ -950,7 +937,7 @@ end --double lift
 do
     local key='recycle'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Recycle',
@@ -968,9 +955,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,
             card.ability.extra.value}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SHOP
@@ -990,7 +974,7 @@ end --recycle
 do
     local key='glyph'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Glyph',
@@ -1009,9 +993,6 @@ do
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             card.ability.extra.value,card.ability.extra.cost}}
         end,
-        keep_on_use = function(self,card)
-            return true
-        end,
         can_use = function(self,card)
             return ability_cooled_down(self,card)
         end,
@@ -1024,7 +1005,7 @@ end --glyph
 do
     local key='colour'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Colour',
@@ -1038,14 +1019,11 @@ do
         set = 'Ability',
         pos = {x = 0,y = 0}, 
         atlas = key, 
-        config = {extra = {},cooldown={type='round', now=2, need=2}, },
+        config = {extra = {},cooldown={type='round', now=0, need=0}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and #G.betmma_abilities.cards < G.betmma_abilities.config.card_limit
@@ -1054,7 +1032,8 @@ do
             local center=pseudorandom_element(G.P_CENTER_POOLS['Ability'],pseudoseed('abilities'))
             local card = create_card('Ability', nil, nil, nil, nil, nil, nil, 'colour')
             -- card:start_materialize()
-            -- card:set_edition({negative=true}) negative edition on abilities is buggy
+            -- card:set_edition({negative=true}) --negative edition on abilities is buggy
+            card:add_to_deck()
             G.betmma_abilities:emplace(card)
         end,
     }
@@ -1062,7 +1041,7 @@ end --colour
 do
     local key='extract'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Extract',
@@ -1082,9 +1061,6 @@ do
         cost = 6,
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and #G.hand.highlighted>0 and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
@@ -1122,7 +1098,7 @@ end --extract
 do
     local key='zircon'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Zircon',
@@ -1142,9 +1118,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',
             card.ability.extra.chance}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
@@ -1185,7 +1158,7 @@ end --zircon
 do
     local key='rental_slot'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Rental Slot',
@@ -1204,9 +1177,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {
             card.ability.extra.value,card.ability.extra.lose}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return false
@@ -1246,7 +1216,7 @@ end --rental slot
 do
     local key='philosophy'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Philosophy',
@@ -1264,9 +1234,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {
             card.ability.extra.value}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return false
@@ -1290,7 +1257,7 @@ end --philosophy
 do
     local key='midas_touch'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Midas Touch',
@@ -1310,9 +1277,6 @@ do
             return {vars = {
             card.ability.extra.value}}
         end,
-        keep_on_use = function(self,card)
-            return true
-        end,
         can_use = function(self,card)
             return false
         end,
@@ -1330,14 +1294,14 @@ end --midas touch
 do
     local key='thumb'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Thumb',
             text = {
                 "If played hand has less then 5 cards,", 
                 "{C:attention}+#1#{} hands per card below {C:attention}5",
-                "(Can only trigger once per hand)",
+                "(Capped at +0.8 per hand)",
                 '{C:blue}Passive{}'
         }
         },
@@ -1351,9 +1315,6 @@ do
             return {vars = {
             card.ability.extra.value}}
         end,
-        keep_on_use = function(self,card)
-            return true
-        end,
         can_use = function(self,card)
             return false
         end,
@@ -1362,7 +1323,7 @@ do
                 local card_count=#G.play.cards
                 if card_count<5 then
                     G.thumb_triggered=true
-                    ease_hands_played(card.ability.extra.value*(5-card_count))
+                    ease_hands_played(math.min(card.ability.extra.value*(5-card_count),0.8))
                 end
             end
         end
@@ -1371,7 +1332,7 @@ end --thumb
 do
     local key='shield'
     get_atlas(key)
-    betm_abilities[key]=SMODS.Consumable { 
+    betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
             name = 'Shield',
@@ -1390,9 +1351,6 @@ do
         loc_vars = function(self, info_queue, card)
             return {vars = {
             card.ability.extra.value}}
-        end,
-        keep_on_use = function(self,card)
-            return true
         end,
         can_use = function(self,card)
             return false

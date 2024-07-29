@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.1(20240725)
+--- VERSION: 2.2.1(20240729)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3033,7 +3033,7 @@ do
     end
     function clearance_aisle_effect()
         G.E_MANAGER:add_event(Event({func = function()
-            if G.shop_booster and G.shop_booster.cards and G.shop_jokers.cards[1]~=nil then 
+            if G.shop_booster and G.shop_booster.cards and G.shop_booster.cards[1]~=nil then 
                 G.shop_booster.cards[1].ability.couponed=true
                 G.shop_booster.cards[1]:set_cost()
             end
