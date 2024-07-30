@@ -746,23 +746,34 @@ do
         end
     end
 
-    local function cancel_bump_all()
-        cancel_bump(G.play)
-        cancel_bump(G.hand)
-        cancel_bump(G.discard)
-        cancel_bump(G.deck)
+    local function remove_temp_antidebuff(area)
+        for k,v in ipairs(area.cards) do
+            v.ability.heal_ability_temp_antidebuff=nil
+        end
+    end
+
+    
+    local function apply_to_all_cards(func)
+        func(G.play)
+        func(G.hand)
+        func(G.discard)
+        func(G.deck)
+    end
+    local function all_functions_to_all_cards()
+        apply_to_all_cards(cancel_bump)
+        apply_to_all_cards(remove_temp_antidebuff)
     end
 
     local G_FUNCS_draw_from_play_to_discard_ref=G.FUNCS.draw_from_play_to_discard
     G.FUNCS.draw_from_play_to_discard = function(e)
-        cancel_bump_all()
+        all_functions_to_all_cards()
         G_FUNCS_draw_from_play_to_discard_ref(e)
     end
 
     local G_FUNCS_discard_cards_from_highlighted=G.FUNCS.discard_cards_from_highlighted
     G.FUNCS.discard_cards_from_highlighted = function(e, hook)
         if not hook then
-            cancel_bump_all()
+            all_functions_to_all_cards()
         end
         G_FUNCS_discard_cards_from_highlighted(e,hook)
     end
@@ -832,6 +843,7 @@ do
             name = 'Heal',
             text = {
                 "Undebuff selected cards",
+                "for this hand",
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
@@ -851,11 +863,12 @@ do
         use = function(self,card,area,copier)
             for i=1,#G.hand.highlighted do
                 G.hand.highlighted[i]:set_debuff(false)
+                G.hand.highlighted[i].ability.heal_ability_temp_antidebuff=true
             end
             
         end
     }
-end --heal (need fix if it's redebuffed, maybe change it to not be able to be debuffed for this hand)
+end --heal
 do
     local key='absorber'
     get_atlas(key)
