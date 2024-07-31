@@ -1014,7 +1014,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {},cooldown={type='round', now=0, need=0}, },
+        config = {extra = {},cooldown={type='round', now=2, need=2}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
