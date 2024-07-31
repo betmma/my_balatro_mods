@@ -4,13 +4,13 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.2(20240729)
+--- VERSION: 1.0.2.3(20240731)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
 --[[ todo: compatibility with hammerspace (CCD) or in consumable slots
-current progress: abilities are able to cooldown in everywhere, but passive calculations (using calculate function) don't work in other areas. Active abilities can work.
+current progress: abilities are able to cooldown everywhere, but passive calculations (using calculate function) don't work in other areas. Active abilities can work.
 ]]
 MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
@@ -543,6 +543,8 @@ local function ability_prototype(data)
         return true
     end
     data.config.cardarea='betmma_abilities'
+    data.set="Ability"
+    data.pos={x=0,y=0}
     return SMODS.Consumable(data)
 end
 
@@ -607,8 +609,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {}, cooldown={type='round', now=1, need=1} },
         discovered = true,
@@ -647,8 +647,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = { value=2},cooldown={type='round', now=1, need=1}, },
         discovered = true,
@@ -689,8 +687,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = { },cooldown={type='hand', now=2, need=2}, },
         discovered = true,
@@ -793,8 +789,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = { },cooldown={type='round', now=1, need=1}, },
         discovered = true,
@@ -847,8 +841,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = { },cooldown={type='hand', now=3, need=3}, },
         discovered = true,
@@ -884,8 +876,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {add=0.1,value=1},cooldown={type='ante', now=1, need=1}, },
         discovered = true,
@@ -927,8 +917,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=1},cooldown={type='round', now=2, need=2}, },
         discovered = true,
@@ -959,8 +947,6 @@ do
                 'Cooldown: {C:mult}$#1#/$#2# #3#{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=5},cooldown={type='money used', now=20, need=20}, },
         discovered = true,
@@ -996,8 +982,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=1,cost=10},cooldown={type='blind skip', now=4, need=4}, },
         discovered = true,
@@ -1029,8 +1013,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {},cooldown={type='round', now=0, need=0}, },
         discovered = true,
@@ -1066,8 +1048,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {},cooldown={type='hand', now=2, need=2}, },
         discovered = true,
@@ -1122,8 +1102,6 @@ do
                 'Cooldown: {C:mult}#1#/#2# #3# {}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {chance=50 },cooldown={type='hand', now=25, need=25}, },
         discovered = true,
@@ -1181,8 +1159,6 @@ do
                 '{C:blue}Passive{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=1,lose=4},cooldown={type='passive'}, },
         discovered = true,
@@ -1238,8 +1214,6 @@ do
                 '{C:blue}Passive{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=1},cooldown={type='passive'}, },
         discovered = true,
@@ -1280,8 +1254,6 @@ do
                 '{C:blue}Passive{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=2},cooldown={type='passive'}, },
         discovered = true,
@@ -1314,12 +1286,10 @@ do
             text = {
                 "If played hand has less then 5 cards,", 
                 "{C:attention}+#1#{} hands per card below {C:attention}5",
-                "(Capped at +0.8 per hand)",
+                "(Capped at {C:attention}+0.80{} per hand)",
                 '{C:blue}Passive{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=0.2},cooldown={type='passive'}, },
         discovered = true,
@@ -1355,8 +1325,6 @@ do
                 '{C:blue}Passive{}'
         }
         },
-        set = 'Ability',
-        pos = {x = 0,y = 0}, 
         atlas = key, 
         config = {extra = {value=6},cooldown={type='passive'}, },
         discovered = true,
@@ -1382,6 +1350,34 @@ do
         end
     end
 end --shield
+do
+    local key='shuffle'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Shuffle',
+            text = { 
+                "If no cards remain, shuffle", 
+                "all cards back into deck",
+                '{C:blue}Passive{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=6},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+        end,
+    }
+end --shuffle
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("

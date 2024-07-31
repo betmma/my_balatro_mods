@@ -280,3 +280,30 @@ if G.betmma_abilities then
 end
 '''
 match_indent = true
+
+
+# shuffle cards if having shuffle ability
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then'''
+position = "at"
+payload = '''
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 and #G.discard.cards > 0 and has_ability('shuffle')then
+    G.FUNCS.draw_from_discard_to_deck()
+elseif #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then
+'''
+match_indent = true
+
+# shuffle cards if having shuffle ability
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if #G.hand.cards < 1 and #G.deck.cards < 1 then'''
+position = "at"
+payload = '''
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.discard.cards > 0 and has_ability('shuffle')then
+    G.FUNCS.draw_from_discard_to_deck()
+elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
+'''
+match_indent = true
