@@ -1378,6 +1378,70 @@ do
         end,
     }
 end --shuffle
+do
+    local key='dead_branch'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Dead Branch',
+            text = { 
+                "When a card is {C:attention}destroyed{}, add", 
+                "a random card with {C:attention}enhancement{},", 
+                "{C:attention}seal{} and {C:attention}edition{} into deck",
+                '{C:blue}Passive{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=6},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            card.ability.extra.value}}
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+            if context.remove_playing_cards then
+                for i = 1, #context.removed do
+                    -- print(i)
+                    card = create_card("Enhanced", G.deck, nil, nil, nil, true, nil, 'dead_branch')
+                    local edition = poll_edition('std_dead_branch_edition'..G.GAME.round_resets.ante, nil,nil,true)
+                    card:set_edition(edition)
+                    local seal_type = pseudorandom(pseudoseed('std_dead_branch'..G.GAME.round_resets.ante))
+                    card:set_seal(SMODS.Seal.rng_buffer[math.ceil(seal_type*#SMODS.Seal.rng_buffer) or 1])
+                    -- std is to prevent glitched seed working
+                            card:add_to_deck()
+                            G.deck.config.card_limit = G.deck.config.card_limit + 1
+                            table.insert(G.playing_cards, card)
+                            G.deck:emplace(card)
+                end
+            end
+        end,
+    }
+    local Card_shatter_ref=Card.shatter
+    function Card:shatter()
+        if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
+            for i = 1, #G.betmma_abilities.cards do
+                G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
+            end
+        end
+        Card_shatter_ref(self)
+    end
+    
+    local Card_start_dissolve_ref=Card.start_dissolve
+    function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
+        if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
+            for i = 1, #G.betmma_abilities.cards do
+                G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
+            end
+        end
+        Card_start_dissolve_ref(self,dissolve_colours, silent, dissolve_time_fac, no_juice)
+    end
+    -- patching in calculating hand and using consumable doesn't work for incantation and other 2 random destroy. I gave up calling calculate_joker in ability.toml
+end --dead branch 
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("
