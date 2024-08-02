@@ -1417,7 +1417,7 @@ do
         }
         if center_table.name == 'Scrawl' then
             ease_dollars(get_voucher('scrawl').config.extra*#G.jokers.cards)
-            randomly_create_joker(math.ceil(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)),nil,nil)
+            randomly_create_joker(math.min(math.ceil(G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer)),100),nil,nil)
         end
         if center_table.name == 'Scribble' then
             for i=1, get_voucher('scribble').config.extra do
