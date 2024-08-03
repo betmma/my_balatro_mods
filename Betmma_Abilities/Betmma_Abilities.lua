@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.3(20240731)
+--- VERSION: 1.0.2.4(20240803)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -16,6 +16,23 @@ MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
 betm_abilities={}
 betm_abilities_atlases={}
+local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
+function TalismanCompat(num)
+    local using=usingTalisman()
+    if not using then return num end
+    if using=='omeganum'then
+        return to_big(num)
+    end
+    if (using==true or using=='bignumber')then
+        return to_big(num)
+    end
+	return num
+end
+
+function SMODS.current_mod.process_loc_text()
+    G.localization.misc.dictionary.k_decay = "Decay!"
+end
+
 function get_randomly_redeem_voucher()
     if not randomly_redeem_voucher then
         function randomly_redeem_voucher(no_random_please) -- xD
@@ -1442,6 +1459,100 @@ do
     end
     -- patching in calculating hand and using consumable doesn't work for incantation and other 2 random destroy. I gave up calling calculate_joker in ability.toml
 end --dead branch 
+do
+    local function after_event(func)
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            blockable=true,
+            blocking=true,
+            delay=0.1,
+            func = (function()
+                func()
+                return true
+            end)
+        }))
+    end
+    local key='decay'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Decay',
+            text = { 
+                "{X:mult,C:white}X#2#{C:attention} blind size{} if played hand", 
+                "scores {C:attention}less then #1#% of blind{}", 
+                '{C:blue}Passive{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=50,range=10},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            local value=card.ability.extra.value
+            value=math.ceil(math.min(value,95))
+            local range=card.ability.extra.range
+            range=math.ceil(math.min(range,95))
+            return {vars = {
+            range,(value)/100}}
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+            local value=card.ability.extra.value
+            value=math.ceil(math.min(value,95))
+            local range=card.ability.extra.range
+            range=math.ceil(math.min(range,95))
+            if context.after then 
+                local chips_this_hand = hand_chips*mult or TalismanCompat(0)
+                if chips_this_hand <= TalismanCompat(G.GAME.blind.chips) * range/100 then
+                    after_event(function()
+                        G.GAME.blind:wiggle()
+                        G.GAME.blind.chips=TalismanCompat(G.GAME.blind.chips)*value/100 -- if current hand ends the round the displayed blind chips won't change and I don't know why
+                        -- pprint(G.GAME.blind.chips)
+                        card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_decay')})
+                    end)
+                end
+            end
+        end,
+    }
+    local G_FUNCS_evaluate_play_ref=G.FUNCS.evaluate_play
+    G.FUNCS.evaluate_play=function(e)
+        G_FUNCS_evaluate_play_ref(e)
+        if not G.betmma_abilities then
+            return
+        end
+        local percent=0.3
+        local percent_delta=0.08
+        for i=1, #G.betmma_abilities.cards do
+            --calculate the joker after hand played effects
+            local effects = eval_card(G.betmma_abilities.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, after = true})
+            if effects and effects.jokers and effects.jokers.joker_repetitions then
+                rep_list = effects.jokers.joker_repetitions
+                for z=1, #rep_list do
+                    if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
+                        for r=1, rep_list[z].repetitions do
+                            card_eval_status_text(rep_list[z].card, 'jokers', nil, nil, nil, rep_list[z])
+                            if percent then percent = percent+percent_delta end
+                            local ef = eval_card(G.betmma_abilities.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, after = true, retrigger_joker = true})
+            
+                            --Any Joker effects
+                            if ef.jokers then
+                                card_eval_status_text(G.betmma_abilities.cards[i], 'jokers', nil, percent, nil, ef.jokers)
+                                if percent then percent = percent+percent_delta end
+                            end
+                        end
+                    end
+                end
+            end
+            if effects.jokers then
+                card_eval_status_text(G.jokers.cards[i], 'jokers', nil, percent, nil, effects.jokers)
+                percent = percent + percent_delta
+            end
+        end
+    end
+end -- decay
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("
