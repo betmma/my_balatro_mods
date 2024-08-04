@@ -5454,7 +5454,7 @@ end -- reroll aisle
                 {id = 'j_mime', },
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
-                {id = JOKER_MOD_PREFIX..'j_housing_choice'},-- edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_housing_choice', edition='phantom'},
                 {id = 'j_lobc_mosb', pinned = true},
             },
             consumeables = {
@@ -5484,7 +5484,7 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'clearance_aisle'},
                 {id = MOD_PREFIX_V.. 'bargain_aisle'},
                 {id = MOD_PREFIX_V.. 'reroll_aisle'},
-                {id = MOD_PREFIX_V.. 'cryptozoology'},
+                {id = MOD_PREFIX_V.. 'reincarnate'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },

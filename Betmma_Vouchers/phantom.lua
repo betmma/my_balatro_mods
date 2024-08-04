@@ -140,6 +140,9 @@
                         if jokers_to_create==0 then
                             card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_no_room_ex')})
                         end
+                        if G.P_JOKER_RARITY_POOLS[rarity]==nil then
+                            return true
+                        end
                         for i = 1, jokers_to_create do
                             local card = create_card('Joker', G.jokers, rarity, 0, nil, nil, nil, 'BetmmaAssigningRarity')
                             card:add_to_deck()

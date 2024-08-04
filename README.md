@@ -15,7 +15,7 @@ A collection of mods made by me for Balatro.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 - Jimbow: This Joker gains +15 Chips when {context}. Context changes when achieved.
 
-# Betmma Vouchers: Adds 48 Vouchers and 24 fusion Vouchers.
+# Betmma Vouchers: Adds 50 Vouchers and 24 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
@@ -116,7 +116,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Rank Bump: (cooldown: 2 hands) Temporarily increase ranks of chosen cards by 1 for this hand.
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
 - Heal: (cooldown: 3 hands) Undebuff selected cards for this handd.
-- Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.05 for each hand reduced.
+- Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.1 for each hand reduced.
 - Double Lift: (cooldown: 2 rounds) Choose 1 more card in current pack.
 - Recycle (cooldown: $20 used) Reduce reroll cost by $5.
 - Glyph (cooldown: 4 blind skips) -1 Ante, -$10.
