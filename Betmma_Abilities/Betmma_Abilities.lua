@@ -370,7 +370,7 @@ end -- add Ability area in shop (only appear after a boss blind)
 
 do
     function GET_PATH_COMPAT()
-        return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaVouchers').path
+        return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaAbilities').path
     end
 
     function betmma_load_shader(v)
@@ -458,6 +458,14 @@ do
     G.FUNCS.skip_blind = function(e)
         update_ability_cooldown('blind skip')
         G_FUNCS_skip_blind_ref(e)
+    end
+
+    
+    local Card_use_consumeable_ref=Card.use_consumeable
+    -- update 'consumables used' cooldown
+    function Card:use_consumeable(area, copier)
+        update_ability_cooldown('consumables used')
+        Card_use_consumeable_ref(self,area,copier)
     end
 
     local G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
@@ -1106,6 +1114,35 @@ do
     }
 end --extract
 do
+    local key='endoplasm'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Endoplasm',
+            text = { 
+                "Set a random {C:attention}consumable{}",
+                "to be {C:dark_edition}Negative{}", 
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {},cooldown={type='consumables used', now=5, need=5}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and #G.consumeables.cards>0
+        end,
+        use = function(self,card,area,copier)
+            local index=math.ceil(pseudorandom('std_endoplasm')*#G.consumeables.cards)
+            G.consumeables.cards[index]:set_edition({negative=true})
+        end,
+    }
+end --endoplasm
+do
     local key='zircon'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { 
@@ -1552,7 +1589,7 @@ do
             end
         end
     end
-end -- decay
+end --decay
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("

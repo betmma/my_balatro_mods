@@ -41,9 +41,9 @@ function SMODS.current_mod.process_loc_text()
         ['end_of_round'] = "when round ends",
         ['discard'] = "when you discard",
         ['debuffed_hand'] = "when hand is debuffed",
-        ['using_consumeable'] = "when using consumeable",
+        ['using_consumeable'] = "when using consumable",
         ['remove_playing_cards'] = "when removing playing cards",
-        ['cards_destroyed'] = "when destroying card", -- destroying_card is true for every card played to test if a joker can destroy it lol
+        -- ['cards_destroyed'] = "when destroying card during a hand", -- destroying_card is true for every card played to test if a joker can destroy it lol and i'm not sure what does cards_destroyed do. It seems only counts cards destroyed when calculating a hand but in a latest test it doesn't trigger on mosb and even glass cards breaking. just remove it then
         ['setting_blind'] = "when setting blind",
         ['first_hand_drawn'] = "when first hand drawn",
         ['playing_card_added'] = "when playing card added",

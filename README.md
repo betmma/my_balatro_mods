@@ -122,6 +122,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Glyph (cooldown: 4 blind skips) -1 Ante, -$10.
 - Colour (cooldown: 2 rounds) Create a random ability.
 - Extract (cooldown: 2 hands) Downgrade current hand and create a negative planet of it.
+- Endoplasm (cooldown: 5 consumables used) Set a random consumable to be Negative.
 - Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.
