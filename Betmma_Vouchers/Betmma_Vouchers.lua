@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.1
+--- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.1(20240729)
+--- VERSION: 2.2.2(20240807)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -1393,8 +1393,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "Create {C:attention}#1#{}",
-            "{C:dark_edition}Negative{} {C:spectral}Spectral{} cards"
+            "Create {C:attention}#1#{} {C:dark_edition}Negative{}",
+            "{C:spectral}Spectral{} cards"
         }
     }
     local this_v = SMODS.Voucher{
@@ -5470,9 +5470,6 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'trash_picker'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
-                {id = MOD_PREFIX_V.. 'rich_boss'},
-                {id = MOD_PREFIX_V.. 'half_life'},
-                {id = MOD_PREFIX_V.. 'richer_boss'},
                 {id = 'v_paint_brush'},
                 -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
@@ -5482,7 +5479,9 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'clearance_aisle'},
                 {id = MOD_PREFIX_V.. 'bargain_aisle'},
                 {id = MOD_PREFIX_V.. 'reroll_aisle'},
-                {id = MOD_PREFIX_V.. 'reincarnate'},
+                {id = 'v_betm_abilities_able'},
+                {id = 'v_betm_abilities_cooled_down'},
+                {id = 'v_betm_abilities_cooled_below'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
             },

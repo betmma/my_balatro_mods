@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.4(20240803)
+--- VERSION: 1.0.2.5(20240807)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -410,17 +410,20 @@ do
             local card=cardarea.cards[i]
             if card.ability and card.ability.cooldown and card.ability.cooldown.type==type then
                 card.ability.cooldown.now=card.ability.cooldown.now-value
-                if card.ability.cooldown.now<0 then
+                if not used_abilvoucher('cooled_below') and card.ability.cooldown.now<0 then
                     card.ability.cooldown.now=0
                 end
             end
         end
     end
     function update_ability_cooldown(type,value)
-        if value==nil then value=1 end
         if G.betmma_abilities==nil then
             print("G.betmma_abilities doesn't exist! Maybe ability.toml isn't installed correctly.")
             return
+        end
+        if value==nil then value=1 end
+        if G.GAME.cooldown_mult~=nil then
+            value=value*G.GAME.cooldown_mult
         end
         update_ability_cooldown_single_area(G.betmma_abilities,type,value)
         update_ability_cooldown_single_area(G.jokers,type,value)
@@ -596,12 +599,22 @@ function Card:use_consumeable(area, copier)
     Card_use_consumeable_ref(self,area,copier)
 end
 
-local function get_atlas(key)
+local function get_atlas(key,type)
+    local px,py,prefix
+    if type==nil or type=='ability' then
+        px=34
+        py=34
+        prefix='a_'
+    elseif type=='voucher' then
+        px=71
+        py=95
+        prefix='v_'
+    end
     betm_abilities_atlases[key]=SMODS.Atlas {  
         key = key,
-        px = 34,
-        py = 34,
-        path = 'a_'..key..'.png'
+        px = px,
+        py = py,
+        path = prefix..key..'.png'
     }
 end
 function ability_cooled_down(self,card)
@@ -1542,7 +1555,7 @@ do
             local range=card.ability.extra.range
             range=math.ceil(math.min(range,95))
             if context.after then 
-                local chips_this_hand = hand_chips*mult or TalismanCompat(0)
+                local chips_this_hand = TalismanCompat(hand_chips*mult) or TalismanCompat(0)
                 if chips_this_hand <= TalismanCompat(G.GAME.blind.chips) * range/100 then
                     after_event(function()
                         G.GAME.blind:wiggle()
@@ -1594,5 +1607,108 @@ end --decay
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("
 end
+
+
+-- vouchers --
+betm_abilvouchers={}
+local function voucher_prototype(data)
+    data.unlocked=true
+    data.discovered=true
+    data.available=true
+    data.pos={x=0,y=0}
+    data.atlas=data.key
+    get_atlas(data.key,'voucher')
+    data.cost=data.cost or 10
+    local raw_key=data.key
+    local obj=SMODS.Voucher(data)
+    betm_abilvouchers[raw_key]=obj
+    return obj
+end
+function get_betmma_abilvouchers_key(voucher_raw_key)
+    return betm_abilvouchers[voucher_raw_key].key
+end
+function used_abilvoucher(raw_key)
+    return G.GAME.used_vouchers[get_betmma_abilvouchers_key(raw_key)]
+end
+do
+    voucher_prototype{
+        key='able',
+        loc_txt = {
+            name = 'Able',
+            text = { 
+                "{C:attention}+#1#{} Ability Slot",
+            }
+        },
+        config={extra=1},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra}}
+        end,
+        redeem=function(self,card)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_abilities then 
+                    G.betmma_abilities.config.card_limit = G.betmma_abilities.config.card_limit + self.config.extra
+                end
+                return true end }))
+        end
+    }
+    voucher_prototype{
+        key='capable',
+        loc_txt = {
+            name = 'Capable',
+            text = { 
+                "{C:attention}+#1#{} Ability Slot",
+            }
+        },
+        config={extra=1},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra}}
+        end,
+        redeem=function(self,card)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_abilities then 
+                    G.betmma_abilities.config.card_limit = G.betmma_abilities.config.card_limit + self.config.extra
+                end
+                return true end }))
+        end,
+        requires={get_betmma_abilvouchers_key('able')}
+    }
+end --able/capable
+do
+    voucher_prototype{
+        key='cooled_down',
+        loc_txt = {
+            name = 'Cooled Down',
+            text = { 
+                "Abilities cool down",
+                "{C:green}#1#%{} faster"
+            }
+        },
+        config={extra=50},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra}}
+        end,
+        redeem=function(self,card)
+            G.GAME.cooldown_mult=(G.GAME.cooldown_mult or 1)*((100+self.config.extra)/100)
+        end
+    }
+    voucher_prototype{
+        key='cooled_below',
+        loc_txt = {
+            name = 'Cooled Below',
+            text = { 
+                "Abilities can cool down",
+                "into {C:attention}negative values",
+                "{C:inactive}(e.g. -2/1 round)"
+            }
+        },
+        config={extra=1},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra}}
+        end,
+        redeem=function(self,card)
+        end,
+        requires={get_betmma_abilvouchers_key('cooled_down')}
+    }
+end --cooled down/cooled below
 ----------------------------------------------
 ------------MOD CODE END----------------------
