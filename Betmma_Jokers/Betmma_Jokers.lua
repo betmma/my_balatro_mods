@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 7 More Jokers!
+--- MOD_DESCRIPTION: 8 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
@@ -127,6 +127,16 @@ local localization = {
             "{C:inactive}(Currently {C:chips}#1#{C:inactive} Chips)",
             
         }
+    },
+    gameplay_update = {
+        name = "Gameplay Update",
+        text = {
+            "If played hand has exactly",
+            "{C:attention}2 Diamonds{}, {C:attention}0 Spades{},",
+            "{C:attention}2 Hearts{} or {C:attention}5 Clubs{},",
+            "increase value of joker to its right",
+            "by {C:attention}#1#% for each condition satisfied",
+        }
     }
 }
 
@@ -137,7 +147,32 @@ local localization = {
     rarity, cost, unlocked, discovered, blueprint_compat, eternal_compat
 )
 ]]
-
+function betmma_inc_joker_value(self,multi)
+    G.E_MANAGER:add_event(Event({func = function()
+        local possibleKeys={'bonus','h_mult','mult','t_mult','h_dollars','x_mult','extra_value','h_size','perma_bonus','p_dollars','h_x_mult','t_chips','d_size'}
+        local self_ability=self.ability
+        -- pprint(sliced_ability)
+        -- pprint(self_ability)
+        for k, v in pairs(possibleKeys) do
+            if self_ability[v] and self_ability[v]~=0 then
+                self_ability[v]=self_ability[v]*multi
+            end
+        end
+        if self_ability.extra then
+            if type(self_ability.extra)=='table' then
+                for k, v in pairs(self_ability.extra) do
+                    if type(v)=='number' then
+                        self_ability.extra[k]=self_ability.extra[k]*multi
+                    end
+                end
+            elseif type(self_ability.extra)=='number' then
+                self_ability.extra=self_ability.extra*multi
+            end
+        end
+        self:juice_up(0.8, 0.8)
+    return true end }))
+    card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.RED, no_juice = true})
+end
 local function INIT()
     local jokers = {
         jjookkeerr = SMODS.Joker{
@@ -264,6 +299,66 @@ local function INIT()
                         chip_mod = card.ability.extra.chips, 
                         colour = G.C.CHIPS
                     }
+                end
+            end
+        },
+        gameplay_update = SMODS.Joker{
+            name="Gameplay Update", key="gameplay_update",
+            config={extra=2},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=3, 
+            cost=10, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra}}
+            end,
+            calculate=function(self,card,context)
+                if context.joker_main then
+                    local my_pos = nil
+                    for i = 1, #G.jokers.cards do
+                        if G.jokers.cards[i] == card then my_pos = i; break end
+                    end
+                    if my_pos>=#G.jokers.cards then
+                        return
+                    end
+                    local suits = {
+                        ['Diamonds'] = 0,
+                        ['Spades'] = 0,
+                        ['Hearts'] = 0,
+                        ['Clubs'] = 0
+                    }
+                    local suits_need={
+                        ['Diamonds'] = 2,
+                        ['Spades'] = 0,
+                        ['Hearts'] = 2,
+                        ['Clubs'] = 5
+                    }
+                    for i = 1, #context.scoring_hand do
+                        if context.scoring_hand[i].ability.name ~= 'Wild Card' and not context.scoring_hand[i].config.center.any_suit then
+                            for k, v in pairs(suits) do
+                                if context.scoring_hand[i]:is_suit(k) then suits[k] = suits[k] + 1 end
+                            end
+                        end
+                    end
+                    for i = 1, #context.scoring_hand do
+                        if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit then
+                            for k, v in pairs(suits) do
+                                if context.scoring_hand[i]:is_suit(k) and suits[k]<suits_need[k] then
+                                    suits[k] = suits[k] + 1
+                                end
+                            end
+                        end
+                    end
+                    for k, v in pairs(suits) do
+                        -- print('suits '..k.." "..v..' '..suits_need[k])
+                        if suits[k]==suits_need[k] then
+                            betmma_inc_joker_value(G.jokers.cards[my_pos+1],(100+card.ability.extra)/100)
+                        end
+                    end
                 end
             end
         },
