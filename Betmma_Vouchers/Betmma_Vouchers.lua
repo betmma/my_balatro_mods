@@ -3184,7 +3184,7 @@ do
     handle_register(this_v)
     local ease_dollars_ref = ease_dollars
     function ease_dollars(mod, instant)
-        if used_voucher('gold_round_up') then
+        if used_voucher('gold_round_up') and mod then
             local original=G.GAME.dollars+mod
             local new=math.ceil(original)
             if new % 2 == 1 then

@@ -446,11 +446,11 @@ do
     end
 
     local ease_dollars_ref = ease_dollars
-    -- update 'money used' and 'money gain' cooldown
+    -- update 'money spent' and 'money gain' cooldown
     function ease_dollars(mod, instant)
-        if mod<0 then
-            update_ability_cooldown('money used',-mod)
-        elseif mod>0 then
+        if mod and mod<0 then
+            update_ability_cooldown('money spent',-mod)
+        elseif mod and mod>0 then
             update_ability_cooldown('money gain',mod)
         end
         ease_dollars_ref(mod, instant)
@@ -987,7 +987,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {value=5},cooldown={type='money used', now=20, need=20}, },
+        config = {extra = {value=5},cooldown={type='money spent', now=20, need=20}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)

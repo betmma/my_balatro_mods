@@ -538,7 +538,7 @@ end
 local ease_dollars_ref = ease_dollars
 function ease_dollars(mod, instant)
     ease_dollars_ref(mod, instant)
-    if mod > 0 then
+    if mod and mod > 0 then
         local Piggy_Banks = find_joker(' Piggy Bank ')
         -- local Piggy_Bank_number = #Piggy_Banks
         --local saved_dollars = 0
