@@ -112,9 +112,9 @@ local localization = {
     housing_choice = {
         name = "Housing Choice",
         text = {
-            "Once per Ante, get a random {C:attention}Voucher{}",
-            "if played hand contains",
-            "a {C:attention}Full House{}",
+            "Once per Ante, get a random",
+            "{C:attention}Voucher{} if played hand",
+            "contains a {C:attention}Full House{}",
             "{C:inactive}(#1#)"
         }
     },

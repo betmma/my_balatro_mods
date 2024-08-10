@@ -600,7 +600,7 @@ end
                 if v~='UNAVAILABLE' then
                     local card= G.P_CENTERS[v]
                     local rarity=card.config and normalize_rarity(card.config.rarity)
-                    if (pseudorandom(v) < 1/RARITY_VOUCHER_PROBABILITY[rarity]) then
+                    if (pseudorandom('std_'..v) < 1/RARITY_VOUCHER_PROBABILITY[rarity]) then
                         new_pool[#new_pool+1]=v
                         _pool_size=_pool_size+1
                     end
