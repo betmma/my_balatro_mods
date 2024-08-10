@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.5(20240807)
+--- VERSION: 1.0.2.6(20240810)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -644,7 +644,7 @@ do
                 'If all jokers are {C:attention}Eternal{}, remove',
                 '{C:attention}Eternal{} from all jokers. Otherwise,',
                 'set all jokers to be {C:attention}Eternal{}.',
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -682,7 +682,7 @@ do
                 'Next #5# {C:attention}random events',
                 'are guaranteed success', 
                 '(#4# times left)',
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -702,7 +702,8 @@ do
     pseudorandom_forced_0_count=0
     local pseudorandom_ref=pseudorandom
     function pseudorandom(seed, min, max)
-        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random'then
+        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random' and seed~='confusion_side'then
+            print(seed)
             pseudorandom_forced_0_count=pseudorandom_forced_0_count-1
             if min and max then
                 return min
@@ -722,7 +723,7 @@ do
             text = {
                 'Temporarily increase ranks of',
                 'chosen cards by 1 for this hand',
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -824,7 +825,7 @@ do
                 'set to the last hand',
                 'that is {C:attention}#4#',
                 '(#5# hands left)',
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -876,7 +877,7 @@ do
             text = {
                 "Undebuff selected cards",
                 "for this hand",
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -911,7 +912,7 @@ do
                 "{X:mult,C:white}X#4#{} for each hand reduced",
                 -- "Current Gain: {X:mult,C:white}X#5#{}",
                 "Current Xmult: {X:mult,C:white}X#5#{}",
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -952,7 +953,7 @@ do
             text = {
                 "Choose {C:attention}#4#{} more card",
                 "in current pack",
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -1079,9 +1080,9 @@ do
         loc_txt = {
             name = 'Extract',
             text = {
-                "Downgrade current hand",
-                "and create a {C:dark_edition}Negative", 
-                "{C:planet}Planet{} card of it", 
+                -- "Downgrade current hand",
+                "Create a {C:dark_edition}Negative {C:planet}Planet{}", 
+                "card of current hand", 
                 -- "(Cooldown is higher before first use)",
                 'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
@@ -1100,7 +1101,7 @@ do
             local card_type = 'Planet'
             local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.hand.highlighted)
             
-            level_up_hand(nil, text, nil, -1)
+            -- level_up_hand(nil, text, nil, -0.5)
             G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
             G.E_MANAGER:add_event(Event({
                 trigger = 'before',
@@ -1156,6 +1157,43 @@ do
     }
 end --endoplasm
 do
+    local key='pay2win'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Pay2Win',
+            text = { 
+                "Pay {C:money}$#1#{} to let",
+                "blind size {X:mult,C:white}X#2#{C:attention}", 
+                'Cooldown: None'
+        }
+        },
+        atlas = key, 
+        config = {extra = {cost=5,value=60},cooldown={type='none', now=0, need=0}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            local value=card.ability.extra.value
+            value=math.ceil(math.min(value,95))
+            return {vars = {card.ability.extra.cost,value/100}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and (G.GAME.dollars-G.GAME.bankrupt_at)>=card.ability.extra.cost
+        end,
+        use = function(self,card,area,copier)
+            local value=card.ability.extra.value
+            value=math.ceil(math.min(value,95))
+            after_event(function()
+                ease_dollars(-card.ability.extra.cost)
+                G.GAME.blind:wiggle()
+                G.GAME.blind.chips=TalismanCompat(G.GAME.blind.chips)*value/100 -- if current hand ends the round the displayed blind chips won't change and I don't know why
+                -- pprint(G.GAME.blind.chips)
+            end)
+        end,
+    }
+end --pay2win
+do
     local key='zircon'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { 
@@ -1166,7 +1204,7 @@ do
                 '{C:green}#4#%{} chance to create a', 
                 '{C:legendary,E:1}Legendary{} Joker, otherwise',
                 'create a {C:legendary,E:1}Legendary{} Voucher',
-                'Cooldown: {C:mult}#1#/#2# #3# {}'
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
         }
         },
         atlas = key, 
@@ -1535,7 +1573,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {value=50,range=10},cooldown={type='passive'}, },
+        config = {extra = {value=50,range=5},cooldown={type='passive'}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)

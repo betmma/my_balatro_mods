@@ -122,8 +122,9 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Recycle (cooldown: $20 used) Reduce reroll cost by $5.
 - Glyph (cooldown: 4 blind skips) -1 Ante, -$10.
 - Colour (cooldown: 2 rounds) Create a random ability.
-- Extract (cooldown: 2 hands) Downgrade current hand and create a negative planet of it.
+- Extract (cooldown: 2 hands) Create a negative planet card of current hand.
 - Endoplasm (cooldown: 5 consumables used) Set a random consumable to be Negative.
+- Pay2Win (cooldown: none) Pay $5 to let blind size X0.6.
 - Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.
@@ -132,7 +133,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Shield: (passive) Hand Size can't go below 6.
 - Shuffle: (passive) If no cards remain, shuffle all cards back into deck.
 - Dead Branch: (passive) When a card is destroyed, add a random card with enhancement, seal and edition into deck.
-- Decay: (passive) X0.5 blind size if played hand scores less than 10% of blind size.
+- Decay: (passive) X0.5 blind size if played hand scores less than 5% of blind size.
 
 Vouchers:
 - Able: +1 Ability Slot.
