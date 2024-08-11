@@ -110,7 +110,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 21 abilities and 4 vouchers
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 23 abilities and 4 vouchers
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
@@ -125,6 +125,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Extract (cooldown: 2 hands) Create a negative planet card of current hand.
 - Endoplasm (cooldown: 5 consumables used) Set a random consumable to be Negative.
 - Pay2Win (cooldown: none) Pay $5 to let blind size X0.6.
+- Number (cooldown: 3 hands) Select a Number card to be destroyed and draw X cards, where X equals to its rank.
 - Zircon: (cooldown: 25 hands) 50% chance to create a Legendary Joker, otherwise create a Legendary Voucher.
 - Rental Slot: (passive) +1 Joker Slot. Lose $4 after each round.
 - Philosophy: (passive) +1 Ability Slot.

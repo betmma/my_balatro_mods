@@ -1194,6 +1194,70 @@ do
     }
 end --pay2win
 do
+    local key='number'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Number',
+            text = { 
+                "Select a {C:attention}Number{} card to be",
+                "destroyed and draw {C:attention}X{} cards",
+                "where {C:attention}X{} equals to its rank", 
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {},cooldown={type='hand', now=3, need=3}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and G.hand.highlighted and #G.hand.highlighted==1 and G.hand.highlighted[1].base.face_nominal==0 and type(G.hand.highlighted[1].base.nominal)=='number'
+        end,
+        use = function(self,card,area,copier)
+            local destroyed_cards = {}
+            for i=#G.hand.highlighted, 1, -1 do
+                destroyed_cards[#destroyed_cards+1] = G.hand.highlighted[i]
+            end
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.2,
+                func = function() 
+                    for i=#G.hand.highlighted, 1, -1 do
+                        local card = G.hand.highlighted[i]
+                        local hand_space = math.min(#G.deck.cards, card.base.nominal)
+                        if card.ability.name == 'Glass Card' then 
+                            card:shatter()
+                        else
+                            card:start_dissolve(nil, i == #G.hand.highlighted)
+                        end
+                        for i=1, hand_space do --draw cards from deckL
+                            draw_card(G.deck,G.hand, i*100/hand_space,'up',true)
+                        end
+                    end
+                return true end }))
+            for i = 1, #G.jokers.cards do
+                local effects = G.jokers.cards[i]:calculate_joker({remove_playing_cards = true, removed = destroyed_cards})
+                if effects and effects.joker_repetitions then
+                    rep_list = effects.joker_repetitions
+                    for z=1, #rep_list do
+                        if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
+                            for r=1, rep_list[z].repetitions do
+                                card_eval_status_text(rep_list[z].card, 'jokers', nil, nil, nil, rep_list[z])
+                                if percent then percent = percent+percent_delta end
+                                G.jokers.cards[i]:calculate_joker({remove_playing_cards = true, removed = destroyed_cards, retrigger_joker = true})
+                            end
+                        end
+                    end
+                end
+            end
+        end,
+    }
+end --number
+do
     local key='zircon'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { 
