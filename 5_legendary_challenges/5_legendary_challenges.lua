@@ -224,6 +224,19 @@ local function INIT()
 end
 
 
+-- Talisman big number compat for faster blind scaling
+local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
+function TalismanCompat(num)
+    local using=usingTalisman()
+    if not using then return num end
+    if using=='omeganum'then
+        return to_big(num)
+    end
+    if (using==true or using=='bignumber')then
+        return to_big(num)
+    end
+	return num
+end
 
 --[[ how to inject into a function:
 local something_ref = something -- copy the original function
@@ -246,7 +259,7 @@ function get_blind_amount(ante)
         local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
         local amount = math.floor(a*(b+(k*c)^d)^c)
         amount = amount - amount%(10^math.floor(math.log10(amount)-1))
-        return amount
+        return TalismanCompat(amount)
     end
     return get_blind_amount_ref(ante)
 end
