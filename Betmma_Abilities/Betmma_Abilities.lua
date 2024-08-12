@@ -894,6 +894,8 @@ do
         use = function(self,card,area,copier)
             for i=1,#G.hand.highlighted do
                 G.hand.highlighted[i]:set_debuff(false)
+                G.hand.highlighted[i].debuff=false
+                G.hand.highlighted[i].debuffed_by_blind = false
                 G.hand.highlighted[i].ability.heal_ability_temp_antidebuff=true
             end
             
@@ -1201,7 +1203,7 @@ do
         loc_txt = {
             name = 'Number',
             text = { 
-                "Select a {C:attention}Number{} card to be",
+                "Select a {C:attention}Numbered{} card to be",
                 "destroyed and draw {C:attention}X{} cards",
                 "where {C:attention}X{} equals to its rank", 
                 'Cooldown: {C:mult}#1#/#2# #3#{}'

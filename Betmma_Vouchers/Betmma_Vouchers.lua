@@ -50,7 +50,7 @@ MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 USING_BETMMA_VOUCHERS=true
 
 -- Config: DISABLE UNWANTED VOUCHERS HERE
-config = {
+betmma_config = {
     -- normal vouchers
     v_oversupply=true,
     v_oversupply_plus=true,
@@ -129,10 +129,10 @@ config = {
     v_reroll_aisle=true
 }
 if not IN_SMOD1 then
-    config.v_undying=false
-    config.v_reincarnate=false
-    config.v_voucher_tycoon=false
-    config.v_cryptozoology=false
+    betmma_config.v_undying=false
+    betmma_config.v_reincarnate=false
+    betmma_config.v_voucher_tycoon=false
+    betmma_config.v_cryptozoology=false
 end
 
 -- example: if used_voucher('slate') then ... end 
@@ -184,7 +184,7 @@ if IN_SMOD1 then
     SMODS.Center.inject =function(self)
         -- print(SMODS.current_mod+"....."+self.set)
         if self.key:find(MOD_PREFIX_V) and self.set=='Voucher'then
-            if not config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
+            if not betmma_config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
             self.mod_name='Betmma Vouchers'
             if self.requires and #self.requires>1 and not self.config.weight then 
                 self.config.weight=fusion_voucher_weight
@@ -196,7 +196,7 @@ else
     local SMODS_Voucher_register=SMODS.Voucher.register
     function SMODS.Voucher:register()
         if SMODS._MOD_NAME=='Betmma Vouchers' then
-            if not config[self.slug] then return false end
+            if not betmma_config[self.slug] then return false end
             if self.loc_vars then
                 self.loc_def=function(self2)
                     local loc_vars=self.loc_vars
@@ -457,7 +457,7 @@ end
 
 local function INIT()
     local PATH=GET_PATH_COMPAT()
-    if config.v_undying or config.v_reincarnate then
+    if betmma_config.v_undying or betmma_config.v_reincarnate then
         NFS.load(PATH .. "phantom.lua")()
     end
     -- NFS.load(PATH .. 'Betmma_Abilities.lua')
@@ -2448,6 +2448,10 @@ do
             if not self.debuff ~= not is_hidden(self) then
                 G.GAME.blind:debuff_card(self)
             end
+        end
+        if self.ability.heal_ability_temp_antidebuff then -- betmma heal ability
+            self.debuff = false
+            self.debuffed_by_blind=false
         end
         Card_update_ref(self, dt)
     end
