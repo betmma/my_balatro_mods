@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.2.6(20240810)
+--- VERSION: 1.0.3(20240813)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -934,7 +934,7 @@ do
             
         end,
         calculate=function(self,card,context)
-            if context.joker_main then
+            if context.joker_main and card.ability.extra.value>1 then
                 -- ease_dollars(-card.ability.extra.lose)
                 -- card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
                 return {
@@ -1259,6 +1259,54 @@ do
         end,
     }
 end --number
+do
+    local key='fog'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Fog',
+            text = { 
+                "During current round, {X:mult,C:white}X#4#{} Mult",
+                "but cards are drawn {C:attention}face down",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=2},cooldown={type='hand', now=2, need=2}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',card.ability.extra.value}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK)
+        end,
+        use = function(self,card,area,copier)
+            G.GAME.betmma_fog=true
+            G.GAME.modifiers.prev_flipped_cards = G.GAME.modifiers.flipped_cards
+            G.GAME.modifiers.flipped_cards = 1
+        end,
+        calculate=function(self,card,context)
+            if context.joker_main and G.GAME.betmma_fog and card.ability.extra.value>1 then
+                -- ease_dollars(-card.ability.extra.lose)
+                -- card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
+                return {
+                    message = localize{type='variable',key='a_xmult',vars={card.ability.extra.value}},
+                    Xmult_mod = card.ability.extra.value
+                }
+            end
+        end
+    }
+    local end_round_ref = end_round
+    function end_round()
+        G.GAME.betmma_fog=nil
+        if G.GAME.modifiers.flipped_cards==1 then
+            G.GAME.modifiers.flipped_cards=G.GAME.modifiers.prev_flipped_cards
+        end
+        end_round_ref()
+    end
+end --fog
 do
     local key='zircon'
     get_atlas(key)
