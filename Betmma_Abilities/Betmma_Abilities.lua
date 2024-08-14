@@ -1166,19 +1166,20 @@ do
         loc_txt = {
             name = 'Pay2Win',
             text = { 
-                "Pay {C:money}$#1#{} to let",
-                "blind size {X:mult,C:white}X#2#{C:attention}", 
+                "Pay {C:money}$#1#{} to let blind size {X:mult,C:white}X#2#{C:attention}",
+                "and increase price by {C:money}$#3#{}", 
+                "price resets when round ends",
                 'Cooldown: None'
         }
         },
         atlas = key, 
-        config = {extra = {cost=5,value=60},cooldown={type='none', now=0, need=0}, },
+        config = {extra = {cost_base=2,cost=2,increment=1,value=80},cooldown={type='none', now=0, need=0}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
             local value=card.ability.extra.value
             value=math.ceil(math.min(value,95))
-            return {vars = {card.ability.extra.cost,value/100}}
+            return {vars = {card.ability.extra.cost,value/100,card.ability.extra.increment}}
         end,
         can_use = function(self,card)
             return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and (G.GAME.dollars-G.GAME.bankrupt_at)>=card.ability.extra.cost
@@ -1188,11 +1189,18 @@ do
             value=math.ceil(math.min(value,95))
             after_event(function()
                 ease_dollars(-card.ability.extra.cost)
+                card.ability.extra.cost=card.ability.extra.cost+card.ability.extra.increment
                 G.GAME.blind:wiggle()
                 G.GAME.blind.chips=TalismanCompat(G.GAME.blind.chips)*value/100 -- if current hand ends the round the displayed blind chips won't change and I don't know why
                 -- pprint(G.GAME.blind.chips)
             end)
         end,
+        calculate=function(self,card,context)
+            if context.end_of_round and card.ability.extra.cost~=card.ability.extra.cost_base then 
+                card.ability.extra.cost=card.ability.extra.cost_base
+                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_reset')})
+            end
+        end
     }
 end --pay2win
 do
