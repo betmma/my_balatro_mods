@@ -348,3 +348,44 @@ if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.discard.cards > 0 and has_abil
 elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
 '''
 match_indent = true
+
+
+# try to add seals to jokers but they can't work at all
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''if (v.type == 'Base' or v.type == 'Enhanced') and G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.8 then nope'''
+position = "before"
+payload = '''
+if (v.type == 'Joker') then
+    local seal=SMODS.poll_seal({mod=30})
+    card:set_seal(seal)
+end
+'''
+match_indent = true
+
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''if next(eval) then nope'''
+position = "after"
+payload = '''
+if eval.jokers==nil and eval.seals and eval.seals.repetitions then
+    eval.jokers={
+                    message = localize('k_again_ex'),
+                    repetitions = eval.seals.repetitions,
+                    card = eval.seals.card
+                }
+elseif eval.seals==nil and eval.jokers and eval.jokers.repetitions then
+    eval.seals={
+                    message = localize('k_again_ex'),
+                    repetitions = eval.jokers.repetitions,
+                    card = eval.jokers.card
+                }
+else
+    eval.jokers={repetitions=0}
+    eval.seals={repetitions=0}
+end
+'''
+match_indent = true

@@ -3075,7 +3075,7 @@ do
     }
     local this_v = SMODS.Voucher{
         name=name, key=id,
-        config={rarity=1,extra=10},
+        config={rarity=1,extra=8},
         pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true, discovered=true, available=true
     }
@@ -5324,7 +5324,7 @@ do
                     local values={}
                     local possibleKeys={'bonus','h_mult','mult','t_mult','h_dollars','x_mult','extra_value','h_size','perma_bonus','p_dollars','h_x_mult','t_chips','d_size'}
                     for k, v in pairs(possibleKeys) do
-                        if sliced_ability[v] and sliced_ability[v]~=0 then
+                        if sliced_ability[v] and sliced_ability[v]~=(v=='x_mult' and 1 or 0) then
                             values[#values+1]=sliced_ability[v]
                         end
                     end
@@ -5347,7 +5347,7 @@ do
                     -- pprint(self_ability)
                     local valueIndex=1
                     for k, v in pairs(possibleKeys) do
-                        if self_ability[v] and self_ability[v]~=0 then
+                        if self_ability[v] and self_ability[v]~=(v=='x_mult' and 1 or 0) then
                             self_ability[v]=self_ability[v]+values[valueIndex]
                             valueIndex=(valueIndex) % #values + 1
                         end
@@ -5431,7 +5431,7 @@ do
 end -- reroll aisle
 
     -- this challenge is only for test
-    if nil then
+    if 1 then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",

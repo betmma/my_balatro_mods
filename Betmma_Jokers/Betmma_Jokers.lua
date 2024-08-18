@@ -154,7 +154,7 @@ function betmma_inc_joker_value(self,multi)
         -- pprint(sliced_ability)
         -- pprint(self_ability)
         for k, v in pairs(possibleKeys) do
-            if self_ability[v] and self_ability[v]~=0 then
+            if self_ability[v] and (self_ability[v]~=(v=='x_mult' and 1 or 0)) then
                 self_ability[v]=self_ability[v]*multi
             end
         end

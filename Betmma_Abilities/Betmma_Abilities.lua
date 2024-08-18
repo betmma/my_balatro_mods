@@ -14,6 +14,7 @@ current progress: abilities are able to cooldown everywhere, but passive calcula
 ]]
 MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
+IN_SMOD1=MODDED_VERSION>='1.0.0'
 betm_abilities={}
 betm_abilities_atlases={}
 local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
@@ -709,7 +710,7 @@ do
     pseudorandom_forced_0_count=0
     local pseudorandom_ref=pseudorandom
     function pseudorandom(seed, min, max)
-        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random' and seed~='confusion_side'then
+        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and not string.match(seed,'^edi') and not string.match(seed,'^rarity') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random' and seed~='confusion_side'then
             print(seed)
             pseudorandom_forced_0_count=pseudorandom_forced_0_count-1
             if min and max then
@@ -1518,7 +1519,7 @@ do
         loc_txt = {
             name = 'Thumb',
             text = {
-                "If played hand has less then 5 cards,", 
+                "If played hand has less than 5 cards,", 
                 "{C:attention}+#1#{} hands per card below {C:attention}5",
                 "(Capped at {C:attention}+0.80{} per hand)",
                 '{C:blue}Passive{}'

@@ -69,7 +69,7 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 Undying and Reincarnation are unavailable on Steamodded 0.9.8 version.
 - Bargain Aisle: First item in shop is free.
 - Clearance Aisle: First pack in shop is free.
-- Rich Boss: Boss Blinds give $10 more.
+- Rich Boss: Boss Blinds give $8 more.
 - Richer Boss: Boss Blinds give $4 more per ante.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
@@ -111,6 +111,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
 # Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 24 abilities and 4 vouchers
+This mod can't work on Steamodded 0.9.8.
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
