@@ -251,7 +251,7 @@ local function INIT()
             unlocked=true, 
             discovered=true, 
             blueprint_compat=false, 
-            eternal_compat=false,
+            eternal_compat=true,
             loc_vars=function(self,info_queue,center)
                 return {vars={center.ability.extra.triggered and "inactive" or "active"}}
             end,
@@ -271,8 +271,8 @@ local function INIT()
             cost=2, 
             unlocked=true, 
             discovered=true, 
-            blueprint_compat=false, 
-            eternal_compat=false,
+            blueprint_compat=true, 
+            eternal_compat=true,
             loc_vars=function(self,info_queue,center)
                 if center.ability.extra.context==nil then
                     center.ability.extra.context=select(2,pseudorandom_element(G.localization.misc.contexts,pseudoseed('jimbow')))

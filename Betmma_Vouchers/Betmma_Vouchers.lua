@@ -5431,7 +5431,7 @@ do
 end -- reroll aisle
 
     -- this challenge is only for test
-    if 1 then
+    if nil then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
@@ -5449,14 +5449,14 @@ end -- reroll aisle
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_oops'},
-                {id = 'j_baron', },
-                {id = 'j_blueprint', },
-                {id = JOKER_MOD_PREFIX..'j_gameplay_update'},
-                {id = JOKER_MOD_PREFIX..'j_gameplay_update'},
+                {id = 'j_baron',  edition='phantom'},
+                {id = 'j_brainstorm', edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
-                {id = JOKER_MOD_PREFIX..'j_jimbow'},--, edition='phantom'},
-                {id = 'j_lobc_mosb', pinned = true},
+                {id = JOKER_MOD_PREFIX..'j_jimbow', edition='phantom'},
+                {id = 'j_lobc_fotdb', pinned = true},
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
@@ -5479,11 +5479,11 @@ end -- reroll aisle
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
                 -- {id = MOD_PREFIX_V.. 'stow'},
-                {id = MOD_PREFIX_V.. 'clearance_aisle'},
-                {id = MOD_PREFIX_V.. 'bargain_aisle'},
+                {id = MOD_PREFIX_V.. 'reincarnate'},
+                {id = MOD_PREFIX_V.. 'undying'},
                 {id = MOD_PREFIX_V.. 'cryptozoology'},
                 {id = 'v_betm_abilities_able'},
-                {id = 'v_betm_abilities_cooled_down'},
+                {id = MOD_PREFIX_V.. 'real_random'},
                 {id = 'v_betm_abilities_cooled_below'},
                 {id = 'v_retcon'},
                 -- {id = 'v_event_horizon'},
