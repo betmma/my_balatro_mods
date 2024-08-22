@@ -5456,7 +5456,7 @@ end -- reroll aisle
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_jimbow', edition='phantom'},
-                {id = 'j_lobc_fotdb', pinned = true},
+                {id = 'j_lobc_fotdb'}--, pinned = true},
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
@@ -5478,7 +5478,7 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
-                -- {id = MOD_PREFIX_V.. 'stow'},
+                {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'reincarnate'},
                 {id = MOD_PREFIX_V.. 'undying'},
                 {id = MOD_PREFIX_V.. 'cryptozoology'},

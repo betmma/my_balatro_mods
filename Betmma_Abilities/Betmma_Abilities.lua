@@ -710,7 +710,7 @@ do
     pseudorandom_forced_0_count=0
     local pseudorandom_ref=pseudorandom
     function pseudorandom(seed, min, max)
-        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and not string.match(seed,'^edi') and not string.match(seed,'^rarity') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random' and seed~='confusion_side'then
+        if pseudorandom_forced_0_count>0 and type(seed) == 'string' and not string.match(seed,'^std') and not string.match(seed,'^soul_') and not string.match(seed,'^cry_et') and not string.match(seed,'^cry_bp') and not string.match(seed,'^cry_vet') and not string.match(seed,'^cry_per') and not string.match(seed,'^cry_pin') and not string.match(seed,'^cry_flip') and not string.match(seed,'^d6_joker') and not string.match(seed,'^consumable_type') and not string.match(seed,'^edi') and not string.match(seed,'^rarity') and seed~='wheel' and seed~='shy_today' and seed~='certsl' and seed~='real_random' and seed~='confusion_side'then
             print(seed)
             pseudorandom_forced_0_count=pseudorandom_forced_0_count-1
             if min and max then
@@ -719,6 +719,13 @@ do
             return 0
         end
         return pseudorandom_ref(seed, min, max)
+    end
+
+    -- Prevent inheriting forced_0_count
+    local Game_start_run_ref = Game.start_run
+    function Game.start_run(self, args)
+        pseudorandom_forced_0_count=0
+        Game_start_run_ref(self, args)
     end
 end --glitched seed
 do

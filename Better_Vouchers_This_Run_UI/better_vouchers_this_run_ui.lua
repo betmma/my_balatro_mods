@@ -2,6 +2,7 @@
 --- MOD_NAME: Better Vouchers This Run UI
 --- MOD_ID: BetterVouchersThisRunUI
 --- MOD_AUTHOR: [Betmma]
+--- PREFIX: betm_better
 --- MOD_DESCRIPTION: Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers. 
 
 ----------------------------------------------
