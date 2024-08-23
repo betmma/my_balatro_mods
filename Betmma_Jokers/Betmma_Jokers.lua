@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 8 More Jokers!
+--- MOD_DESCRIPTION: 9 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
@@ -137,7 +137,17 @@ local localization = {
             "increase value of joker to its right",
             "by {C:attention}#1#% for each condition satisfied",
         }
-    }
+    },
+    flying_cards = {
+        name = "Flying Cards",
+        text = {
+            "This Joker gains {X:mult,C:white} X(n+#2#)^-#1# {} Mult",
+            "per {C:attention}card{} played or discarded, where",
+            "{C:attention}n{} equals number of cards left in deck",
+            -- "{C:inactive}(if no cards left n is considered 1)",
+            "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
+        }
+    },
 }
 
 --[[SMODS.Joker:new(
@@ -359,6 +369,28 @@ local function INIT()
                             betmma_inc_joker_value(G.jokers.cards[my_pos+1],(100+card.ability.extra)/100)
                         end
                     end
+                end
+            end
+        },
+        flying_cards = SMODS.Joker{
+            name="Flying Cards", key="flying_cards",
+            config={extra={power=1,add=4},x_mult=1},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=2, 
+            cost=8, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={center.ability.extra.power,center.ability.extra.add,center.ability.x_mult,}}
+            end,
+            calculate=function(self,card,context)
+                if context.discard or context.individual then
+                    local n=#G.deck.cards
+                    card.ability.x_mult=card.ability.x_mult+(n+card.ability.extra.add)^(-card.ability.extra.power)
+                    card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.MULT})
                 end
             end
         },

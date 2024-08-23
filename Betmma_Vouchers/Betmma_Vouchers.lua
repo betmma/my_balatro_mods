@@ -5455,7 +5455,7 @@ end -- reroll aisle
                 {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
-                {id = JOKER_MOD_PREFIX..'j_jimbow', edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_flying_cards'},
                 {id = 'j_lobc_fotdb'}--, pinned = true},
             },
             consumeables = {
