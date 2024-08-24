@@ -142,7 +142,7 @@ local localization = {
         name = "Flying Cards",
         text = {
             "This Joker gains {X:mult,C:white} X(n+#2#)^-#1# {} Mult",
-            "per {C:attention}card{} played or discarded, where",
+            "per {C:attention}card{} scored or discarded, where",
             "{C:attention}n{} equals number of cards left in deck",
             -- "{C:inactive}(if no cards left n is considered 1)",
             "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
@@ -374,7 +374,7 @@ local function INIT()
         },
         flying_cards = SMODS.Joker{
             name="Flying Cards", key="flying_cards",
-            config={extra={power=1,add=4},x_mult=1},
+            config={extra={power=2,add=2},x_mult=1},
             spritePos={x=0,y=0}, 
             loc_txt="",
             rarity=2, 

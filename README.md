@@ -15,7 +15,7 @@ A collection of mods made by me for Balatro.
 - Housing Choice: Get a random voucher if played hand contains Full House. This can only trigger once per ante.
 - Jimbow: This Joker gains +15 Chips when {context}. Context changes when achieved.
 - Gameplay Update: If played hand has exactly 2 Diamonds, 0 Spades, 2 Hearts or 5 Clubs, increase value of joker to its right by 2% for each condition satisfied.
-- Flying Cards: This Joker gains X(n+4)^-1 Mult per card played or discarded, where n equals number of cards left in deck.
+- Flying Cards: This Joker gains X(n+2)^-2 Mult per card played or discarded, where n equals number of cards left in deck.
 
 # Betmma Vouchers: Adds 50 Vouchers and 24 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
@@ -111,12 +111,13 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 24 abilities and 4 vouchers
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 25 abilities and 4 vouchers
 This mod can't work on Steamodded 0.9.8.
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
 - Glitched Seed: (cooldown: 1 round) Next 2 random events are guaranteed success.
 - Rank Bump: (cooldown: 2 hands) Temporarily increase ranks of chosen cards by 1 for this hand.
+- Variable: (cooldown: 2 hands) Select some cards, let X be the rank of rightmost card, and then increase ranks of other cards by X.
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
 - Heal: (cooldown: 3 hands) Undebuff selected cards for this handd.
 - Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.1 for each hand reduced.

@@ -11,6 +11,7 @@
 ------------MOD CODE -------------------------
 --[[ todo: compatibility with hammerspace (CCD) or in consumable slots
 current progress: abilities are able to cooldown everywhere, but passive calculations (using calculate function) don't work in other areas. Active abilities can work.
+    discard unselected cards
 ]]
 MOD_PREFIX='betm_abilities'
 USING_BETMMA_ABILITIES=true
@@ -484,7 +485,7 @@ end -- update cooldown in different situations
 
 SMODS.ConsumableType { -- Define Ability Consumable Type
     key = 'Ability',
-    collection_rows = { 6,6,6,6 },
+    collection_rows = { 9,9,9,9 },
     primary_colour = G.C.CHIPS,
     secondary_colour = mix_colours(G.C.SECONDARY_SET.Voucher, G.C.MULT, 0.9),
     loc_txt = {
@@ -729,6 +730,23 @@ do
     end
 end --glitched seed
 do
+    function betmma_bump_rank(card,amount,temp)
+        for i = 1, amount do
+            if temp then
+                card.ability.rank_bumped=(card.ability.rank_bumped or 0)+1
+            end
+            local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+            local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
+            if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+            elseif rank_suffix == 10 then rank_suffix = 'T'
+            elseif rank_suffix == 11 then rank_suffix = 'J'
+            elseif rank_suffix == 12 then rank_suffix = 'Q'
+            elseif rank_suffix == 13 then rank_suffix = 'K'
+            elseif rank_suffix == 14 then rank_suffix = 'A'
+            end
+            card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+        end
+    end
     local key='rank_bump'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { --rank bump
@@ -755,18 +773,7 @@ do
             
             for i=1, #G.hand.highlighted do
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
-                    local card = G.hand.highlighted[i]
-                    card.ability.rank_bumped=(card.ability.rank_bumped or 0)+1
-                    local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-                    local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
-                    if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
-                    elseif rank_suffix == 10 then rank_suffix = 'T'
-                    elseif rank_suffix == 11 then rank_suffix = 'J'
-                    elseif rank_suffix == 12 then rank_suffix = 'Q'
-                    elseif rank_suffix == 13 then rank_suffix = 'K'
-                    elseif rank_suffix == 14 then rank_suffix = 'A'
-                    end
-                    card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+                    betmma_bump_rank(G.hand.highlighted[i],1,true)
                 return true end }))
             end  
             
@@ -828,6 +835,42 @@ do
         G_FUNCS_discard_cards_from_highlighted(e,hook)
     end
 end --rank bump
+do
+    local key='variable'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Variable',
+            text = {
+                "Select {C:attention}some{} cards, let {C:attention}X{}",
+                'be the rank of {C:attention}rightmost card{}, then',
+                'increase ranks of other cards by {C:attention}X{}',
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = { },cooldown={type='hand', now=2, need=2}, },
+        discovered = true,
+        cost = 10,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s',}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card)and #G.hand.highlighted>1 
+        end,
+        use = function(self,card,area,copier)
+            local rank=G.hand.highlighted[#G.hand.highlighted].base.id
+            for i=1,rank do
+                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                    for i=1, #G.hand.highlighted-1 do
+                        betmma_bump_rank(G.hand.highlighted[i],1,false)
+                        end  
+                return true end }))
+            end
+        end
+    }
+end --variable
 do
     local key='cached_hand'
     get_atlas(key)
