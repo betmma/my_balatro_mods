@@ -111,7 +111,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 25 abilities and 4 vouchers
+# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 26 abilities and 4 vouchers
 This mod can't work on Steamodded 0.9.8.
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
@@ -139,6 +139,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Shuffle: (passive) If no cards remain, shuffle all cards back into deck.
 - Dead Branch: (passive) When a card is destroyed, add a random card with enhancement, seal and edition into deck.
 - Decay: (passive) X0.5 blind size if played hand scores less than 5% of blind size.
+- Echo: (passive) When first card of hand scores, put a temporary Negative copy into hand.
 
 Vouchers:
 - Able: +1 Ability Slot.

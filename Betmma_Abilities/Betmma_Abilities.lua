@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3(20240813)
+--- VERSION: 1.0.3.1(20240825)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -33,6 +33,7 @@ end
 
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_decay = "Decay!"
+    G.localization.misc.dictionary.k_echo = "Echo!"
 end
 
 function get_randomly_redeem_voucher()
@@ -585,7 +586,7 @@ local function ability_prototype(data)
     return SMODS.Consumable(data)
 end
 
--- return first ability (card) whose key is key. If none return nil.
+-- return first ability (card) whose key is key (e.g. 'shield'). If none return nil.
 function has_ability(key)
     if G.betmma_abilities and G.betmma_abilities.cards then
         for i=1,#G.betmma_abilities.cards do
@@ -598,6 +599,21 @@ function has_ability(key)
     end
     return nil
 end 
+
+-- return a table including ability cards whose key is key. If none return empty table.
+function find_abilities(key)
+    local ret={}
+    if G.betmma_abilities and G.betmma_abilities.cards then
+        for i=1,#G.betmma_abilities.cards do
+            -- print(G.betmma_abilities.cards[i].config.center.key)
+            -- print(betm_abilities[key].key)
+            if G.betmma_abilities.cards[i].config.center.key==betm_abilities[key].key then
+                table.insert(ret,G.betmma_abilities.cards[i])
+            end
+        end 
+    end
+    return ret
+end
 
 local Card_use_consumeable_ref=Card.use_consumeable
 -- add cooldown when ability is used
@@ -1821,6 +1837,76 @@ do
         end
     end
 end --decay
+do
+    local key='echo'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Echo',
+            text = { 
+                "When {C:attention}first card{} of hand scores, put", 
+                "a temporary {C:dark_edition}Negative{} copy into hand", 
+                '{C:blue}Passive{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {},cooldown={type='passive'}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {}}
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        calculate=function(self,card,context)
+        end,
+    }
+    
+    --Code copied from TWEWY which was copied from Codex Arcanum
+    local update_round_evalref = Game.update_round_eval
+    function Game:update_round_eval(dt)
+        update_round_evalref(self, dt)
+        if G.deck.config.wonderMagnum_betmma then
+            local _first_dissolve = false
+            for _, wax_id in ipairs(G.deck.config.wonderMagnum_betmma) do
+                for k, card in ipairs(G.playing_cards) do
+                    if card.unique_val == wax_id then
+                    card:start_dissolve(nil, _first_dissolve)
+                    _first_dissolve = true
+                    end
+                end
+            end
+            G.deck.config.wonderMagnum_betmma = {}
+        end
+    end
+
+    local eval_card_ref=eval_card
+    function eval_card(card, context)
+        local ret=eval_card_ref(card, context)
+        if G.play.cards[1]==card and not context.repetition_only then
+            local find=find_abilities('echo')
+            for i=1,#find do
+                G.deck.config.wonderMagnum_betmma = G.deck.config.wonderMagnum_betmma or {}
+                card_eval_status_text(find[i], 'extra', nil, nil, nil, {message = localize('k_echo')})
+                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function()
+                    local _card = copy_card(card, nil, nil, 1)
+                    _card:set_edition({negative=true})
+                    _card:add_to_deck()
+                    G.deck.config.card_limit = G.deck.config.card_limit + 1
+                    table.insert(G.playing_cards, _card)
+                    G.hand:emplace(_card)
+                    _card:start_materialize(nil, _first_dissolve)
+                    table.insert(G.deck.config.wonderMagnum_betmma, _card.unique_val)
+                    playing_card_joker_effects(new_cards)
+                return true end }))
+                
+            end
+        end
+        return ret
+    end
+end --echo
 
 for k,v in pairs(betm_abilities) do
     v.config.extra.local_d6_sides="cryptid compat to prevent it reset my config upon use ;( ;("

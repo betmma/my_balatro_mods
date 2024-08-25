@@ -387,7 +387,7 @@ local function INIT()
                 return {vars={center.ability.extra.power,center.ability.extra.add,center.ability.x_mult,}}
             end,
             calculate=function(self,card,context)
-                if context.discard or context.individual then
+                if context.discard or context.individual and context.cardarea == G.play then
                     local n=#G.deck.cards
                     card.ability.x_mult=card.ability.x_mult+(n+card.ability.extra.add)^(-card.ability.extra.power)
                     card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.MULT})
