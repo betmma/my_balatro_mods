@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.1(20240825)
+--- VERSION: 1.0.3.1(20240826)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1873,8 +1873,12 @@ do
             for _, wax_id in ipairs(G.deck.config.wonderMagnum_betmma) do
                 for k, card in ipairs(G.playing_cards) do
                     if card.unique_val == wax_id then
-                    card:start_dissolve(nil, _first_dissolve)
-                    _first_dissolve = true
+                        card:start_dissolve(nil, _first_dissolve)
+                        _first_dissolve = true
+                        if card.edition.card_limit then --SMOD doesn't handle it correctly
+                            G.jokers.config.card_limit = G.jokers.config.card_limit + card.edition.card_limit
+                            G.hand:change_size(- card.edition.card_limit)
+                        end
                     end
                 end
             end

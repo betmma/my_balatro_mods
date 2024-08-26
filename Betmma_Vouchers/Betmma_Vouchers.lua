@@ -5481,7 +5481,7 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'reincarnate'},
                 {id = MOD_PREFIX_V.. 'undying'},
-                {id = MOD_PREFIX_V.. 'cryptozoology'},
+                {id = MOD_PREFIX_V.. 'flipped_card'},
                 {id = 'v_betm_abilities_able'},
                 {id = MOD_PREFIX_V.. 'real_random'},
                 {id = 'v_betm_abilities_cooled_below'},
