@@ -586,29 +586,32 @@ local function ability_prototype(data)
     return SMODS.Consumable(data)
 end
 
--- return first ability (card) whose key is key (e.g. 'shield'). If none return nil.
+-- return first ability (card) whose key is key (e.g. 'shield'). If none return nil. Search in ability slots, consumable slots and deck.
 function has_ability(key)
-    if G.betmma_abilities and G.betmma_abilities.cards then
-        for i=1,#G.betmma_abilities.cards do
-            -- print(G.betmma_abilities.cards[i].config.center.key)
-            -- print(betm_abilities[key].key)
-            if G.betmma_abilities.cards[i].config.center.key==betm_abilities[key].key then
-                return G.betmma_abilities.cards[i]
-            end
-        end 
+    local ret=find_abilities(key)
+    if #ret>=1 then
+        return ret[1]
     end
     return nil
 end 
 
--- return a table including ability cards whose key is key. If none return empty table.
+-- return a table including ability cards whose key is key. If none return empty table. Search in ability slots, consumable slots and deck.
 function find_abilities(key)
     local ret={}
     if G.betmma_abilities and G.betmma_abilities.cards then
         for i=1,#G.betmma_abilities.cards do
-            -- print(G.betmma_abilities.cards[i].config.center.key)
-            -- print(betm_abilities[key].key)
             if G.betmma_abilities.cards[i].config.center.key==betm_abilities[key].key then
                 table.insert(ret,G.betmma_abilities.cards[i])
+            end
+        end 
+        for i=1,#G.consumeables.cards do
+            if G.consumeables.cards[i].config.center.key==betm_abilities[key].key then
+                table.insert(ret,G.consumeables.cards[i])
+            end
+        end 
+        for i=1,#G.deck.cards do
+            if G.deck.cards[i].config.center.key==betm_abilities[key].key then
+                table.insert(ret,G.deck.cards[i])
             end
         end 
     end

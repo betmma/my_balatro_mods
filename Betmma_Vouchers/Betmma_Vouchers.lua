@@ -5463,11 +5463,7 @@ end -- reroll aisle
                 --{id = 'c_devil_cu'},
                 -- {id = 'c_death'},
                 {id='c_betm_abilities_rental_slot',negative=true},
-                {id='c_betm_abilities_absorber',negative=true},
-                {id='c_hanged_man',negative=true},
-                {id='c_immolate',negative=true},
-                {id='c_grim',negative=true},
-                {id='c_grim',negative=true},
+                {id='c_betm_abilities_shield',negative=true},
             },
             vouchers = {
                 {id = MOD_PREFIX_V.. 'trash_picker'},
