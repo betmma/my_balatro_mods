@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.1(20240826)
+--- VERSION: 1.0.3.2(20240827)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1390,6 +1390,44 @@ do
     end
 end --fog
 do
+    local key='antinomy'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Antinomy',
+            text = { 
+                "Create a temporary {C:dark_edition}Negative {C:attention}eternal{}",
+                "copy of selected joker for this round",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=2},cooldown={type='ante', now=1, need=1}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,card.ability.extra.value}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and #G.jokers.highlighted == 1
+        end,
+        use = function(self,card,area,copier) -- thanks to Antimony code from Codex Arcanum
+            G.jokers.config.antinomy_betmma = G.jokers.config.antinomy_betmma or {} --removing code is in echo ability
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                local chosen_joker = G.jokers.highlighted[1]
+                local card = copy_card(chosen_joker, nil, nil, nil, chosen_joker.edition and chosen_joker.edition.negative)
+                card:set_edition({negative = true}, true)
+                card:set_eternal(true)
+                if card.ability.invis_rounds then card.ability.invis_rounds = 0 end
+                card:add_to_deck()
+                G.jokers:emplace(card)
+                table.insert(G.jokers.config.antinomy_betmma, card.unique_val)
+            return true end }))
+        end
+    }
+end --antinomy
+do
     local key='zircon'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { 
@@ -1883,6 +1921,22 @@ do
                 end
             end
             G.deck.config.wonderMagnum_betmma = {}
+        end
+        if G.jokers.config.antinomy_betmma then
+            local _first_dissolve = false
+            for _, wax_id in ipairs(G.jokers.config.antinomy_betmma) do
+                for k, joker in ipairs(G.jokers.cards) do
+                    if joker.unique_val == wax_id then
+                        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.3, blockable = false,
+                        func = function()
+                          G.jokers:remove_card(joker)
+                          joker:remove()
+                          joker = nil
+                        return true; end})) 
+                    end
+                end
+            end
+            G.jokers.config.antinomy_betmma = {}
         end
     end
 
