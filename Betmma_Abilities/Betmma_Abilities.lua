@@ -1918,7 +1918,7 @@ do
                         _first_dissolve = true
                         if card.edition.card_limit then --SMOD doesn't handle it correctly
                             G.jokers.config.card_limit = G.jokers.config.card_limit + card.edition.card_limit
-                            G.hand:change_size(- card.edition.card_limit)
+                            -- G.hand:change_size(- card.edition.card_limit)
                         end
                     end
                 end

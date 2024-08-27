@@ -5474,6 +5474,8 @@ end -- reroll aisle
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
+                {id = 'v_overstock_plus'},
+                {id = 'v_overstock_plus'},
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'reincarnate'},
                 {id = MOD_PREFIX_V.. 'undying'},
