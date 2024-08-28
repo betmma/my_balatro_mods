@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 9 More Jokers!
+--- MOD_DESCRIPTION: 10 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
