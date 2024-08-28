@@ -5452,7 +5452,7 @@ end -- reroll aisle
                 {id = 'j_baron',  edition='phantom'},
                 {id = 'j_brainstorm', edition='phantom'},
                 {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
-                {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
+                {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
                 -- {id = 'j_cry_universum', },
                 -- {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_flying_cards'},

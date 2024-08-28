@@ -32,6 +32,24 @@ SMODS_Joker_fake=function(table)
     end
 end
 
+
+do
+    if after_event==nil then
+        function after_event(func)
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                blockable=true,
+                blocking=true,
+                delay=0.1,
+                func = (function()
+                    func()
+                    return true
+                end)
+            }))
+        end
+    end
+end -- add after_event function
+
 local MOD_PREFIX="betm_jokers_"
 SMODS.current_mod=SMODS.current_mod or {}
 function SMODS.current_mod.process_loc_text()
@@ -146,6 +164,15 @@ local localization = {
             "{C:attention}n{} equals number of cards left in deck",
             -- "{C:inactive}(if no cards left n is considered 1)",
             "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
+        }
+    },
+    friends_of_jimbo = {
+        name = "Friends of Jimbo",
+        text = {
+            "For each {C:attention}King of Spades{}, {C:attention}Queen of Diamonds{},",
+            "{C:attention}Jack of Hearts{} or {C:attention}King of Clubs{} scored,",
+            "generate a {C:attention}Jimbo{}",
+            "{C:inactive}(Must have room)",
         }
     },
 }
@@ -391,6 +418,44 @@ local function INIT()
                     local n=#G.deck.cards
                     card.ability.x_mult=card.ability.x_mult+(n+card.ability.extra.add)^(-card.ability.extra.power)
                     card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.MULT})
+                end
+            end
+        },
+        friends_of_jimbo = SMODS.Joker{
+            name="Friends of Jimbo", key="friends_of_jimbo",
+            config={},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=1, 
+            cost=3, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                return {vars={}}
+            end,
+            calculate=function(self,card,context)
+                if context.individual and context.cardarea == G.play then
+                    local card=context.other_card
+                    local matches={{suit="Spades",rank=13},
+                                    {suit="Diamonds",rank=12},
+                                    {suit="Hearts",rank=11},
+                                    {suit="Clubs",rank=13},}
+                    for k, v in pairs(matches) do
+                        if card:is_suit(v.suit) and card:get_id()==v.rank then
+                            after_event(function()
+                                local createjoker = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
+                                G.GAME.joker_buffer = G.GAME.joker_buffer + createjoker
+                                if createjoker==1 then
+                                    local card2 = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_joker')
+                                    card2:add_to_deck()
+                                    G.jokers:emplace(card2)
+                                end
+                                G.GAME.joker_buffer = 0
+                            end)
+                        end
+                    end
                 end
             end
         },

@@ -484,6 +484,23 @@ do
     end
 end -- update cooldown in different situations
 
+do
+    if after_event==nil then
+        function after_event(func)
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                blockable=true,
+                blocking=true,
+                delay=0.1,
+                func = (function()
+                    func()
+                    return true
+                end)
+            }))
+        end
+    end
+end -- add after_event function
+
 SMODS.ConsumableType { -- Define Ability Consumable Type
     key = 'Ability',
     collection_rows = { 9,9,9,9 },
@@ -1785,18 +1802,6 @@ do
     -- patching in calculating hand and using consumable doesn't work for incantation and other 2 random destroy. I gave up calling calculate_joker in ability.toml
 end --dead branch 
 do
-    local function after_event(func)
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            blockable=true,
-            blocking=true,
-            delay=0.1,
-            func = (function()
-                func()
-                return true
-            end)
-        }))
-    end
     local key='decay'
     get_atlas(key)
     betm_abilities[key]=ability_prototype { 
