@@ -16,7 +16,7 @@ A collection of mods made by me for Balatro.
 - Jimbow: This Joker gains +15 Chips when {context}. Context changes when achieved.
 - Gameplay Update: If played hand has exactly 2 Diamonds, 0 Spades, 2 Hearts or 5 Clubs, increase value of joker to its right by 2% for each condition satisfied.
 - Flying Cards: This Joker gains X(n+2)^-2 Mult per card played or discarded, where n equals number of cards left in deck.
-- Friends of Jimbo: For each King of Spades, Queen of Diamonds, Jack of Hearts or King of Clubs scored, generate a Jimbo.
+- Friends of Jimbo: For each King of Spades, Queen of Diamonds, Jack of Hearts or King of Clubs scored, generate a Jimbo. (No need to have room)
 
 # Betmma Vouchers: Adds 50 Vouchers and 24 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.

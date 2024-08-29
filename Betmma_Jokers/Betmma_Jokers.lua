@@ -169,10 +169,10 @@ local localization = {
     friends_of_jimbo = {
         name = "Friends of Jimbo",
         text = {
-            "For each {C:attention}King of Spades{}, {C:attention}Queen of Diamonds{},",
-            "{C:attention}Jack of Hearts{} or {C:attention}King of Clubs{} scored,",
+            "For each {C:spades}King of Spades{}, {C:diamonds}Queen of Diamonds{},",
+            "{C:hearts}Jack of Hearts{} or {C:clubs}King of Clubs{} scored,",
             "generate a {C:attention}Jimbo{}",
-            "{C:inactive}(Must have room)",
+            "{C:inactive}(No need to have room)",
         }
     },
 }
@@ -427,7 +427,7 @@ local function INIT()
             spritePos={x=0,y=0}, 
             loc_txt="",
             rarity=1, 
-            cost=3, 
+            cost=4, 
             unlocked=true, 
             discovered=true, 
             blueprint_compat=true, 
@@ -447,7 +447,7 @@ local function INIT()
                             after_event(function()
                                 local createjoker = math.min(1, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                                 G.GAME.joker_buffer = G.GAME.joker_buffer + createjoker
-                                if createjoker==1 then
+                                if true then--createjoker==1 then
                                     local card2 = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_joker')
                                     card2:add_to_deck()
                                     G.jokers:emplace(card2)
