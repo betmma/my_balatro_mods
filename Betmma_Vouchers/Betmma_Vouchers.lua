@@ -3213,7 +3213,7 @@ do
             if used_voucher('gravitational_wave') then 
                 for _,k in pairs(G.handlist) do
                     if k~=hand and k~=last and k~=next and G.GAME.hands[k] then
-                        upgrade_hand_and_display(card,k,true,amount/5)
+                        upgrade_hand_and_display(card,k,true,amount*get_voucher('gravitational_wave').config.extra)
                     end
                 end
             end
@@ -5261,7 +5261,7 @@ do
                 print('end')
                 G_FUNCS_play_cards_from_highlighted_ref(e)
                 unmark_highlighted_cards()
-                G.hand.config.highlighted_limit=5
+                G.hand.config.highlighted_limit=G.hand.config.highlighted_limit-G.hand.config.card_limit
             end)
             return
         end
@@ -5277,8 +5277,8 @@ do
                     self.config.center.keep_on_use=function(center,card)return true end -- SMOD supports keep on use by setting this function
                 end
                 if max_highlighted then
-                    self.ability.consumeable.max_highlighted=999
-                    self.ability.consumeable.mod_num=999
+                    self.ability.consumeable.max_highlighted=G.hand.config.card_limit
+                    self.ability.consumeable.mod_num=G.hand.config.card_limit
                 end
                 if self:can_use_consumeable(nil,true) then
                     G.FUNCS.use_card({config={ref_table=self}})
@@ -5313,7 +5313,7 @@ do
     G_FUNCS_play_cards_from_highlighted_ref=G.FUNCS.play_cards_from_highlighted
     G.FUNCS.play_cards_from_highlighted = function(e)
         if used_voucher('forbidden_area') then
-            G.hand.config.highlighted_limit=999
+            G.hand.config.highlighted_limit=G.hand.config.highlighted_limit+G.hand.config.card_limit
             mark_highlighted_cards()
             recursion_play_cards(#G.jokers.cards,1,e)
         else

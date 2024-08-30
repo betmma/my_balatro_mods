@@ -1921,8 +1921,8 @@ do
                     if card.unique_val == wax_id then
                         card:start_dissolve(nil, _first_dissolve)
                         _first_dissolve = true
-                        if card.edition.card_limit then --SMOD doesn't handle it correctly
-                            G.jokers.config.card_limit = G.jokers.config.card_limit + card.edition.card_limit
+                        if card.edition.card_limit then --SMOD handles it correctly now
+                            -- G.jokers.config.card_limit = G.jokers.config.card_limit + card.edition.card_limit
                             -- G.hand:change_size(- card.edition.card_limit)
                         end
                     end
