@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 50 Vouchers and 24 Fusion Vouchers! v2.2.3
+--- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.1
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3(20240813)
+--- VERSION: 2.2.3.1(20240830)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -102,6 +102,8 @@ betmma_config = {
     v_clearance_aisle=true,
     v_rich_boss=true,
     v_richer_boss=true,
+    v_gravity_assist=true,
+    v_gravitational_wave=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -3132,6 +3134,103 @@ do
    
 
 end -- rich boss
+do 
+    local name="Gravity Assist"
+    local id="gravity_assist"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:planet}Planet{} cards also upgrade",
+            "adjacent poker hands",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=8},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Gravitational Wave"
+    local id="gravitational_wave"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:planet}Planet{} cards also upgrade",
+            "non-adjacent poker hands by {C:attention}#1#{} levels",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=0.2},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'gravity_assist'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+    local level_up_hand_ref=level_up_hand
+    local function upgrade_hand_and_display(card, hand, immediate, amount)
+        local delaydiv=G.betmma_solar_system_times or 1
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.1/delaydiv}, {handname=localize(hand, 'poker_hands'),chips = G.GAME.hands[hand].chips, mult = G.GAME.hands[hand].mult, level=G.GAME.hands[hand].level})
+        level_up_hand_ref(card, hand, immediate, amount)
+    end
+    function level_up_hand(card, hand, instant, amount)
+        level_up_hand_ref(card, hand, instant, amount)
+        if not G.betmma_gravity_voucher_rep then --this doesn't seem to work. maybe it's because repeated calls are after events so must call _ref
+            G.betmma_gravity_voucher_rep=true
+            local last=nil
+            local next=nil
+            local find=false
+            for _,k in pairs(G.handlist) do -- only G.handlist is the same order as hand list in game
+                local v=G.GAME.hands[k]
+                -- print(k,last,next,find)
+                if find==true and v.visible == true then
+                    next=k;break
+                end
+                if k==hand then
+                    find=true
+                end
+                if find==false and v.visible == true then
+                    last=k
+                end
+            end
+            if used_voucher('gravity_assist') then 
+                if last~=nil then
+                    upgrade_hand_and_display(card,last,true,amount)
+                end
+                if next~=nil then
+                    upgrade_hand_and_display(card,next,true,amount)
+                end
+            end
+            if used_voucher('gravitational_wave') then 
+                for _,k in pairs(G.handlist) do
+                    if k~=hand and k~=last and k~=next and G.GAME.hands[k] then
+                        upgrade_hand_and_display(card,k,true,amount/5)
+                    end
+                end
+            end
+            G.betmma_gravity_voucher_rep=false
+        end
+    end
+    
+    local UIElement_draw_self_ref=UIElement.draw_self
+    -- prevent crash when upgrading a decimal level hand (i think it's because its color is nil)
+    function UIElement:draw_self()
+        if not self.config.colour then
+            self.config.colour=G.C.UI.BACKGROUND_DARK
+        end
+        UIElement_draw_self_ref(self)
+    end
+
+end -- gravity assist
 
 
     -- ################
@@ -4999,11 +5098,12 @@ do
     end
     handle_register(this_v)
 
-    local function is_planet(card)
+    function is_planet(card)
         return card.ability and card.ability.set == 'Planet'
     end
 
     local update_hand_text_ref=update_hand_text
+    -- reduce animation time
     function update_hand_text(config, vals)
         if G.betmma_solar_system_times then
             config.delay=(config.delay or 0.8)/(1+G.betmma_solar_system_times)
@@ -5012,6 +5112,7 @@ do
     end
 
     local level_up_hand_ref=level_up_hand
+    -- also reduce animation time
     function level_up_hand(card, hand, instant, amount)
         if G.betmma_solar_system_times then
             instant=true
@@ -5460,31 +5561,43 @@ end -- reroll aisle
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
-                --{id = 'c_devil_cu'},
+                {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
                 -- {id = 'c_death'},
-                {id='c_betm_abilities_rental_slot',negative=true},
-                {id='c_betm_abilities_shield',negative=true},
+                -- {id='c_betm_abilities_rental_slot',negative=true},
+                -- {id='c_betm_abilities_shield',negative=true},
             },
             vouchers = {
-                {id = MOD_PREFIX_V.. 'trash_picker'},
+                -- {id = MOD_PREFIX_V.. 'trash_picker'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
-                {id = 'v_paint_brush'},
-                -- {id = 'v_liquidation'},
+                -- {id = 'v_paint_brush'},
+                -- -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
                 {id = 'v_overstock_plus'},
                 {id = 'v_overstock_plus'},
-                {id = MOD_PREFIX_V.. 'stow'},
-                {id = MOD_PREFIX_V.. 'reincarnate'},
-                {id = MOD_PREFIX_V.. 'undying'},
-                {id = MOD_PREFIX_V.. 'flipped_card'},
-                {id = 'v_betm_abilities_able'},
-                {id = MOD_PREFIX_V.. 'real_random'},
-                {id = 'v_betm_abilities_cooled_below'},
-                {id = 'v_retcon'},
-                -- {id = 'v_event_horizon'},
+                -- {id = MOD_PREFIX_V.. 'stow'},
+                -- {id = MOD_PREFIX_V.. 'reincarnate'},
+                -- {id = MOD_PREFIX_V.. 'undying'},
+                -- {id = MOD_PREFIX_V.. 'flipped_card'},
+                -- {id = 'v_betm_abilities_able'},
+                -- {id = MOD_PREFIX_V.. 'real_random'},
+                {id = MOD_PREFIX_V.. 'gravity_assist'},
+                {id = MOD_PREFIX_V.. 'gravitational_wave'},
+                -- {id = 'v_retcon'},
+                {id = MOD_PREFIX_V.. 'event_horizon'},
+                {id = MOD_PREFIX_V.. 'engulfer'},
+                {id = MOD_PREFIX_V.. 'double_planet'},
+                {id = MOD_PREFIX_V.. 'solar_system'},
+                {id = 'v_planet_merchant'},
+                {id = 'v_planet_tycoon'},
+                
             },
             deck = {
                 type = 'Challenge Deck',
