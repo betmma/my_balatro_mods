@@ -896,12 +896,16 @@ do
             return ability_cooled_down(self,card)and #G.hand.highlighted>1 
         end,
         use = function(self,card,area,copier)
-            local rank=G.hand.highlighted[#G.hand.highlighted].base.id
+            local rightmost = G.hand.highlighted[1]
+            for i=1, #G.hand.highlighted-1 do if G.hand.highlighted[i].T.x > rightmost.T.x then rightmost = G.hand.highlighted[i] end end
+            local rank=rightmost.base.id
             for i=1,rank do
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
-                    for i=1, #G.hand.highlighted-1 do
-                        betmma_bump_rank(G.hand.highlighted[i],1,false)
-                        end  
+                    for i=1, #G.hand.highlighted do
+                        if G.hand.highlighted[i]~=rightmost then                        
+                            betmma_bump_rank(G.hand.highlighted[i],1,false)
+                        end
+                    end  
                 return true end }))
             end
         end
