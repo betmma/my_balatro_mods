@@ -79,10 +79,15 @@ end -- randomly_redeem_voucher
 do
 
     do
+        if betmma_smaller_sets then
+            betmma_smaller_sets.Ability=true
+        else
+            betmma_smaller_sets={Ability=true}
+        end
         local Card_set_ability_ref=Card.set_ability
         function Card:set_ability(center, initial, delay_sprites)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if center.set=='Ability' then
+            if betmma_smaller_sets[center.set] then
                 -- self.T.w=W*34/71
                 -- self.T.h=H*34/95
                 self.T.w=G.ABILITY_W or 0.8
@@ -94,7 +99,7 @@ do
         local Card_load=Card.load
         function Card:load(cardTable,other_card)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if G.P_CENTERS[cardTable.save_fields.center].set=='Ability' then
+            if betmma_smaller_sets[G.P_CENTERS[cardTable.save_fields.center].set] then
                 G.P_CENTERS[cardTable.save_fields.center].load=function()
                     self.T.w=G.ABILITY_W or 0.8
                     self.T.h=G.ABILITY_H or 0.8
@@ -166,7 +171,7 @@ do
     local CardArea_align_cards_ref=CardArea.align_cards
     -- enable Ability area to align cards in its border. Also implement vertical align for Ability shop area.
     function CardArea:align_cards()
-        if self==G.betmma_abilities then
+        if self.config.type == 'betmma_ability' then
             self.T.y=self.T.y-0.04 -- dunno why abilities are slightly lower than upper border. move them up a bit
             cardarea_align(self)
             self.T.y=self.T.y+0.04
@@ -187,7 +192,7 @@ do
     local CardArea_can_highlight_ref=CardArea.can_highlight
     -- enable cards in Ability area to be highlighted (clicked)
     function CardArea:can_highlight(card)
-        if self==G.betmma_abilities then
+        if self.config.type == 'betmma_ability' then
             return true
         end
         return CardArea_can_highlight_ref(self,card)

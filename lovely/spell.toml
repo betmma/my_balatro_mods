@@ -1,0 +1,87 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+
+# Create Spell Area 
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''G.SPLASH_BACK = Sprite(-30, -6, G.ROOM.T.w+60, G.ROOM.T.h+12, G.ASSET_ATLAS["ui_1"], {x = 2, y = 0})'''
+position = "before"
+payload = '''
+if USING_BETMMA_SPELLS then -- not adding area if Betmma_Spells.lua isn't executed
+    self.ABILITY_W=0.8
+    self.ABILITY_H=0.8
+    self.betmma_spells = CardArea(G.consumeables.T.x+1.1*G.CARD_W, G.consumeables.T.y+2.6*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, {
+            card_limit = 3,
+            type = "betmma_ability",
+            highlight_limit = 1
+    })
+    self.betmma_spells.card_w=self.betmma_spells.card_w*34/71
+end
+'''
+match_indent = true
+
+# Let Spells go to Spell Area when bought from shop
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.consumeables:emplace(c1)"
+position = "at"
+payload = '''
+if c1.ability.set=='Spell' and G.betmma_spells then -- betmma_spells
+    G.betmma_spells:emplace(c1)
+else
+    G.consumeables:emplace(c1)
+end
+'''
+match_indent = true
+
+# Prevent using Spells costs pack card 
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "elseif G.GAME.pack_choices and G.GAME.pack_choices > 1 then"
+position = "before"
+payload = '''
+elseif card.ability.set=='Spell' then -- betmma_spells
+    G.booster_pack.alignment.offset.y = G.booster_pack.alignment.offset.py
+    G.booster_pack.alignment.offset.py = nil
+'''
+match_indent = true
+
+# Call calculate_joker for individual card played
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''local effects = {eval_card(scoring_hand[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}'''
+position = "after"
+payload = '''
+if USING_BETMMA_ABILITIES and G.betmma_spells then
+    for k=1, #G.betmma_spells.cards do
+        --calculate the spell individual card effects
+        local eval = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true})
+        if eval and eval.joker_repetitions then
+            rep_list = eval.joker_repetitions
+            for z=1, #rep_list do
+                if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
+                    for r=1, rep_list[z].repetitions do
+                        local ev = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, retrigger_joker = true})
+                        if ev then
+                            mod_percent = true
+                            table.insert(effects, ev)
+                            effects[#effects].from_retrigger = rep_list[z]
+                        end
+                    end
+                end
+            end
+        end
+        if eval then 
+            table.insert(effects, eval)
+        end
+    end
+end
+'''
+match_indent = true

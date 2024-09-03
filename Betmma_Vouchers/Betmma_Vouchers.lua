@@ -5550,14 +5550,14 @@ end -- reroll aisle
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_oops'},
-                {id = 'j_baron',  edition='phantom'},
-                {id = 'j_brainstorm', edition='phantom'},
-                {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
-                {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
-                -- {id = 'j_cry_universum', },
+                -- {id = 'j_baron',  edition='phantom'},
+                -- {id = 'j_brainstorm', edition='phantom'},
+                -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
+                -- {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
+                {id = 'j_bloodstone', },
                 -- {id = 'j_madness', eternal = true},
-                {id = JOKER_MOD_PREFIX..'j_flying_cards'},
-                {id = 'j_lobc_fotdb'}--, pinned = true},
+                -- {id = JOKER_MOD_PREFIX..'j_flying_cards'},
+                -- {id = 'j_lobc_fotdb'}--, pinned = true},
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
@@ -5601,7 +5601,7 @@ end -- reroll aisle
             },
             deck = {
                 type = 'Challenge Deck',
-                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red',d='negative'},}
+                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='K',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red',d='negative'},}
             },
             restrictions = {
                 banned_cards = {
