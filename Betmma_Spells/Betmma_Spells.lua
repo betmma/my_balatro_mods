@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.1(20240902)
+--- VERSION: 0.0.2(20240905)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -146,7 +146,7 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
         label = 'Spell'
     },
     shop_rate = 0.0,
-    default = 'c_betm_spells_philosophy',
+    default = 'c_betm_spells_dark',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
 
@@ -253,7 +253,6 @@ local function spell_prototype(data)
     data.keep_on_use = function(self,card)
         return true
     end
-    -- data.config.cardarea='betmma_abilities'
     data.set="Spell"
     data.pos={x=0,y=0}
     table.insert(data.loc_txt.text,1,"{V:1}#11#{}{C:attention}#15#{}{V:2}#12#{}{C:attention}#16#{}{V:3}#13#{}{C:attention}#17#{}{V:4}#14#{}")
@@ -268,7 +267,7 @@ local function spell_prototype(data)
         ret.vars[18]=card.ability.progress.current or 0
         ret.vars[19]=card.ability.progress.max or "?"
         if not card.ability.progress.max then
-            ret.vars[1]=card.config.center.loc_txt.before_desc
+            ret.vars[11]=card.config.center.loc_txt.before_desc
             return ret
         end
         local suits={"Heart", "Diamond", "Club", "Spade"}
@@ -281,7 +280,7 @@ local function spell_prototype(data)
                     break
                 end
             end
-            ret.vars[element_index+10]=(element.negative and localize('spell_not') or "")..localize("spell_"..element.key)
+            ret.vars[element_index+10]=(element.negative and localize('spell_not') or "")..element.text
             ret.vars.colours[element_index]=index==0 and G.C.BLACK or G.C.SUITS[suits[index]..'s']
         end
         for i = 15, 13+card.ability.progress.max do
@@ -290,8 +289,6 @@ local function spell_prototype(data)
         return ret
     end
     data.update_sequence=function(self)
-        -- need to call it after loading from save
-        -- print("afafa")
         local _minh, _minw = 0.35, 0.5
         local true_current=self.ability.progress.current_with_anim
         local current=math.clamp(1,self.ability.progress.current_with_anim,self.ability.progress.max-1) -- if progress=0 display dark 0 and dark 1, if progress=max display light max-1 and light max, otherwise display light current and dark current+1
@@ -300,11 +297,11 @@ local function spell_prototype(data)
         local light_colors={lighten(G.C.RED,0.3),lighten(G.C.GREEN,0.3)}
         local t1 = {
             n=G.UIT.ROOT, config = {minw = 0.6, align = 'tm', colour = darken(G.C.BLACK, 0.1), shadow = true, r = 0.05, padding = 0.03, minh = 0.6}, nodes={
-                {n=G.UIT.R, config={align = "cm", r = 0.03, padding = 0.03, colour = true_current==0 and dark_colors[sequence[current].negative and 1 or 2] or light_colors[sequence[current].negative and 1 or 2]}, nodes={
-                    {n=G.UIT.O, config={can_collide = false, object = betmma_spell_get_symbol_sprite(sequence[current].key)}}
+                {n=G.UIT.R, config={minw=0.3, minh=0.3,align = "cm", r = 0.03, padding = 0.03, colour = true_current==0 and dark_colors[sequence[current].negative and 1 or 2] or light_colors[sequence[current].negative and 1 or 2]}, nodes={
+                    betmma_spell_get_UInode(sequence[current].key)
                 }},
-                {n=G.UIT.R, config={align = "cm", r = 0.03, padding = 0.03, colour = true_current<self.ability.progress.max and dark_colors[sequence[current+1].negative and 1 or 2] or light_colors[sequence[current+1].negative and 1 or 2]}, nodes={
-                    {n=G.UIT.O, config={can_collide = false, object = betmma_spell_get_symbol_sprite(sequence[current+1].key)}}
+                {n=G.UIT.R, config={minw=0.3, minh=0.3,align = "cm", r = 0.03, padding = 0.03, colour = true_current<self.ability.progress.max and dark_colors[sequence[current+1].negative and 1 or 2] or light_colors[sequence[current+1].negative and 1 or 2]}, nodes={
+                    betmma_spell_get_UInode(sequence[current+1].key)
                 }}
               },
             }
@@ -318,6 +315,14 @@ local function spell_prototype(data)
               parent = self
             }
         }
+    end
+    data.generate_sequence_ref=data.generate_sequence
+    data.generate_sequence=function(self)
+        self.config.center.generate_sequence_ref(self)
+        self.ability.progress.current=0--math.floor(pseudorandom('std_a',0,2))
+        self.ability.progress.current_with_anim=self.ability.progress.current
+        self.ability.progress.max=#self.ability.progress.sequence
+        self.config.center.update_sequence(self)
     end
     data.calculate_ref=data.calculate
     data.calculate = function(self,card,context)
@@ -348,28 +353,19 @@ local function spell_prototype(data)
     end
     return SMODS.Consumable(data)
 end
-local function get_atlas(key,type)
-    local px,py,prefix
-    if type==nil or type=='spell' then
-        px=34
-        py=34
-        prefix='a_'
-    elseif type=='voucher' then
-        px=71
-        py=95
-        prefix='v_'
-    end
-    betmma_spells_atlases[key]=SMODS.Atlas {  
-        key = key,
-        px = px,
-        py = py,
-        path = prefix..key..'.png'
-    }
-end
 
 do
-    -- get sprite of lil symbols just like those in deck preview. key should be in: {Chip, Ace, Face, Numbered, Heart, Diamond, Club, Spade} (though chip isn't used as a condition)
-    function betmma_spell_get_symbol_sprite(key)
+    -- get sprite of lil symbols just like those in deck preview. sprites are: {Chip, Ace, Face, Numbered, Heart, Diamond, Club, Spade} (though chip isn't used as a condition)
+    function betmma_spell_get_symbol_sprite(index)
+        local t_s = Sprite(0,0,0.3,0.3,G.ASSET_ATLAS["ui_"..(G.SETTINGS.colourblind_option and 2 or 1)], {x=index%4, y=math.floor(index/4)})
+        t_s.states.drag.can = false
+        t_s.states.hover.can = false
+        t_s.states.collide.can = false
+        return {n=G.UIT.O, config={can_collide = false, object = t_s}}
+    end
+
+    -- if key is in 8 symbolNames return corresponding sprite, otherwise return a text UI node
+    function betmma_spell_get_UInode(key)
         local symbolNames={"Chip", "Ace", "Face", "Numbered", "Heart", "Diamond", "Club", "Spade"}
         local index=0
         for k,v in pairs(symbolNames) do
@@ -378,16 +374,11 @@ do
                 break
             end
         end
-        if index==0 then --not found
-            print(key..' symbol not found')
-            return nil
+        if index==0 then -- doesn't have sprite
+            return {n=G.UIT.T, config={text = ''..key,colour = G.C.BLACK, scale =0.35}} -- how to make it round???
         end
-        index=index-1
-        local t_s = Sprite(0,0,0.3,0.3,G.ASSET_ATLAS["ui_"..(G.SETTINGS.colourblind_option and 2 or 1)], {x=index%4, y=math.floor(index/4)})
-        t_s.states.drag.can = false
-        t_s.states.hover.can = false
-        t_s.states.collide.can = false
-        return t_s
+        index=index-1 -- as indexing image starts at 0
+        return betmma_spell_get_symbol_sprite(index)
     end
 
     local Card_draw_ref=Card.draw
@@ -410,9 +401,29 @@ do
     end
 end -- draw hint ui of spells
 
+local function get_atlas(key,type)
+    local px,py,prefix
+    if type==nil or type=='spell' then
+        px=34
+        py=34
+        prefix='s_'
+    elseif type=='voucher' then
+        px=71
+        py=95
+        prefix='v_'
+    end
+    betmma_spells_atlases[key]=SMODS.Atlas {  
+        key = key,
+        px = px,
+        py = py,
+        path = prefix..key..'.png'
+    }
+end
+
 -- simply return {key=key,negative=negative}. maybe useful in future?
 function get_element_table_in_card_ability(key,negative)
-    return {key=key,negative=negative}
+    local text=localize('spell_'..key)
+    return {key=key,negative=negative,text=text~="ERROR" and text or key} -- if no localization use original key (like J Q K)
 end
 -- element should be from get_element_table_in_card_ability function
 function card_satisfying_element(card,element)
@@ -424,28 +435,36 @@ function card_satisfying_element(card,element)
         satisfying=card:is_face()    
     elseif element.key=='Ace' then
         satisfying=SMODS.Ranks[card.base.value].key == 'Ace'
-    else
+    elseif element.key=='Numbered' then
         satisfying=not(card:is_face() or SMODS.Ranks[card.base.value].key == 'Ace')
+    elseif element.key=='K' then
+        satisfying=SMODS.Ranks[card.base.value].key == 'King'
+    elseif element.key=='Q' then
+        satisfying=SMODS.Ranks[card.base.value].key == 'Queen'
+    elseif element.key=='J' then
+        satisfying=SMODS.Ranks[card.base.value].key == 'Jack'
+    else
+        satisfying=SMODS.Ranks[card.base.value].key == element.key
     end
     return satisfying and element.negative==false or not satisfying and element.negative==true
 end
-
+local getica=get_element_table_in_card_ability
 do
-    local key='philosophy'
+    local key='dark'
     get_atlas(key)
     betmma_spells_objs[key]=spell_prototype { 
         key = key,
         loc_txt = {
-            name = 'Philosophy',
+            name = 'Dark',
             text = {
-                '{C:blue}+#1#{} chips',
+                '{C:chips}+#1#{} chips',
             },
-            before_desc="2 Dark suits"
+            before_desc="2 different Dark suits"
         },
         atlas = key, 
-        config = {extra = {value=100},progress={},prepared=false },
+        config = {extra = {value=80},progress={},prepared=false },
         discovered = true,
-        cost = 6,
+        cost = 4,
         loc_vars = function(self, info_queue, card)
             return {vars = {
                 card.ability.extra.value
@@ -456,16 +475,9 @@ do
         end,
         generate_sequence = function(self)
             self.ability.progress.sequence=pseudorandom_element({
-                {get_element_table_in_card_ability('Diamond',false),
-                get_element_table_in_card_ability('Heart',true)},
-                {get_element_table_in_card_ability('Ace',true),
-                get_element_table_in_card_ability('Face',false),
-                get_element_table_in_card_ability('Numbered',false)}
+                {getica('Spade',false),getica('Club',false)},
+                {getica('Club',false),getica('Spade',false)},
             })
-            self.ability.progress.current=math.floor(pseudorandom('std_a',0,2))
-            self.ability.progress.current_with_anim=self.ability.progress.current
-            self.ability.progress.max=#self.ability.progress.sequence
-            self.config.center.update_sequence(self)
         end,
         calculate = function(self,card,context)
             return {
@@ -475,6 +487,44 @@ do
                 }
         end,
     }
-end --philosophy
+end --dark
+do
+    local key='light'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Light',
+            text = {
+                '{C:mult}+#1#{} Mult',
+            },
+            before_desc="2 different Light suits"
+        },
+        atlas = key, 
+        config = {extra = {value=10},progress={},prepared=false },
+        discovered = true,
+        cost = 4,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        can_use = function(self,card)
+            return false
+        end,
+        generate_sequence = function(self)
+            self.ability.progress.sequence=pseudorandom_element({
+                {getica('Diamond',false),getica('Heart',false)},
+                {getica('Heart',false),getica('Diamond',false)},
+            })
+        end,
+        calculate = function(self,card,context)
+            return {
+                    mult = card.ability.extra.value,
+                    card = card
+                }
+        end,
+    }
+end --light
 ----------------------------------------------
 ------------MOD CODE END----------------------
