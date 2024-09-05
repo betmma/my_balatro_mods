@@ -902,7 +902,7 @@ do
         end,
         use = function(self,card,area,copier)
             local rightmost = G.hand.highlighted[1]
-            for i=1, #G.hand.highlighted-1 do if G.hand.highlighted[i].T.x > rightmost.T.x then rightmost = G.hand.highlighted[i] end end
+            for i=2, #G.hand.highlighted do if G.hand.highlighted[i].T.x > rightmost.T.x then rightmost = G.hand.highlighted[i] end end
             local rank=rightmost.base.id
             for i=1,rank do
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
@@ -1974,6 +1974,8 @@ do
                     G.hand:emplace(_card)
                     _card:start_materialize(nil, _first_dissolve)
                     table.insert(G.deck.config.wonderMagnum_betmma, _card.unique_val)
+                    local new_cards = {}
+                    new_cards[#new_cards+1] = _card
                     playing_card_joker_effects(new_cards)
                 return true end }))
                 

@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.2(20240905)
+--- VERSION: 0.0.3(20240905)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -145,7 +145,7 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
         name = 'Spell',
         label = 'Spell'
     },
-    shop_rate = 0.0,
+    shop_rate = 1.0,
     default = 'c_betm_spells_dark',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -253,14 +253,17 @@ local function spell_prototype(data)
     data.keep_on_use = function(self,card)
         return true
     end
+    data.can_use = function(self,card)
+        return false
+    end
     data.set="Spell"
     data.pos={x=0,y=0}
-    table.insert(data.loc_txt.text,1,"{V:1}#11#{}{C:attention}#15#{}{V:2}#12#{}{C:attention}#16#{}{V:3}#13#{}{C:attention}#17#{}{V:4}#14#{}")
+    table.insert(data.loc_txt.text,1,"{V:1}#11#{}{V:5}#15#{}{V:2}#12#{}{V:6}#16#{}{V:3}#13#{}{V:7}#17#{}{V:4}#14#{}")
     data.loc_txt.text[#data.loc_txt.text+1]='{C:attention}#18#{}/{C:attention}#19#{}'
     data.loc_vars_ref=data.loc_vars
     data.loc_vars = function(self, info_queue, card)
         local ret=card.config.center.loc_vars_ref(self,info_queue,card)
-        ret.vars.colours={G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK}
+        ret.vars.colours={G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK}
         while #ret.vars<20 do
             ret.vars[#ret.vars+1]=""
         end
@@ -284,7 +287,10 @@ local function spell_prototype(data)
             ret.vars.colours[element_index]=index==0 and G.C.BLACK or G.C.SUITS[suits[index]..'s']
         end
         for i = 15, 13+card.ability.progress.max do
-            ret.vars[i]=" -> "
+            ret.vars[i]=", "
+        end
+        if card.ability.progress.max>=3 then
+            ret.vars[13+card.ability.progress.max]=", then "
         end
         return ret
     end
@@ -382,7 +388,7 @@ do
     end
 
     local Card_draw_ref=Card.draw
-    -- draw cascading hint ui
+    -- draw cascading hint ui, also generate its sequence if not prepared (upon buying since only in spell area will it draw hint ui)
     function Card:draw(layer)
         if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not ability_cooled_down(self) then --will spells go to jokers or other areas?
             Card_draw_ref(self,layer)
@@ -423,7 +429,7 @@ end
 -- simply return {key=key,negative=negative}. maybe useful in future?
 function get_element_table_in_card_ability(key,negative)
     local text=localize('spell_'..key)
-    return {key=key,negative=negative,text=text~="ERROR" and text or key} -- if no localization use original key (like J Q K)
+    return {key=key,negative=negative,text=text~="ERROR" and text or key} -- if no localization use original key (like J Q K). text is used in hover ui
 end
 -- element should be from get_element_table_in_card_ability function
 function card_satisfying_element(card,element)
@@ -449,6 +455,25 @@ function card_satisfying_element(card,element)
     return satisfying and element.negative==false or not satisfying and element.negative==true
 end
 local getica=get_element_table_in_card_ability
+local possible_ranks={'Ace','K','Q','J','10','9','8','7','6','5','4','3','2'}
+-- e.g. current_rank='Q',delta=2 -> 'Ace'
+function betmma_spell_delta_rank(current_rank,delta)
+    local function next_rank(rank)
+        if rank=='Ace' then return '2'
+        elseif rank=='K' then return 'Ace'
+        elseif rank=='Q' then return 'K'
+        elseif rank=='J' then return 'Q'
+        elseif rank=='10' then return 'J'
+        else
+            return ''..(tonumber(rank)+1)
+        end
+    end
+    for i = 1, delta do
+        current_rank=next_rank(current_rank)
+    end
+    return current_rank
+end
+
 do
     local key='dark'
     get_atlas(key)
@@ -469,9 +494,6 @@ do
             return {vars = {
                 card.ability.extra.value
             }}
-        end,
-        can_use = function(self,card)
-            return false
         end,
         generate_sequence = function(self)
             self.ability.progress.sequence=pseudorandom_element({
@@ -509,9 +531,6 @@ do
                 card.ability.extra.value
             }}
         end,
-        can_use = function(self,card)
-            return false
-        end,
         generate_sequence = function(self)
             self.ability.progress.sequence=pseudorandom_element({
                 {getica('Diamond',false),getica('Heart',false)},
@@ -526,5 +545,89 @@ do
         end,
     }
 end --light
+do
+    local key='earth'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Earth',
+            text = {
+                '{C:money}+$#1#{}',
+            },
+            before_desc="2 same ranks"
+        },
+        atlas = key, 
+        config = {extra = {value=5},progress={},prepared=false },
+        discovered = true,
+        cost = 4,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            self.ability.progress.sequence=pseudorandom_element({
+                {getica(rank,false),getica(rank,false)},
+            })
+        end,
+        calculate = function(self,card,context)
+            ease_dollars(card.ability.extra.value)
+            return {
+                message = localize('$')..card.ability.extra.value,
+                colour = G.C.MONEY,
+                card = card
+            }
+        end,
+    }
+end --earth
+do
+    local key='air'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Air',
+            text = {
+                '{C:green}#1# in #2#{} chance to',
+                'copy second card'
+            },
+            before_desc="2 different ranks with gap > 4"
+        },
+        atlas = key, 
+        config = {extra = {value=4},progress={},prepared=false },
+        discovered = true,
+        cost = 4,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                ""..(G.GAME and G.GAME.probabilities.normal or 1),
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=pseudorandom_element({5,6,7})
+            self.ability.progress.sequence=
+                {getica(rank,false),getica(betmma_spell_delta_rank(rank,delta),false)}
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            if pseudorandom('std_betmma_spells_air')<G.GAME.probabilities.normal/card.ability.extra.value then
+                after_event(function()
+                    local _card = copy_card(other, nil, nil, 1)
+                    _card:add_to_deck()
+                    G.deck.config.card_limit = G.deck.config.card_limit + 1
+                    table.insert(G.playing_cards, _card)
+                    G.hand:emplace(_card)
+                    _card:start_materialize(nil, _first_dissolve)
+                    local new_cards = {}
+                    new_cards[#new_cards+1] = _card
+                    playing_card_joker_effects(new_cards)
+                end)
+            end
+        end,
+    }
+end --air
 ----------------------------------------------
 ------------MOD CODE END----------------------
