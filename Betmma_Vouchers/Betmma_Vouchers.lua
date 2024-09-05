@@ -3213,7 +3213,7 @@ do
             if used_voucher('gravitational_wave') then 
                 for _,k in pairs(G.handlist) do
                     if k~=hand and k~=last and k~=next and G.GAME.hands[k] then
-                        upgrade_hand_and_display(card,k,true,amount*get_voucher('gravitational_wave').config.extra)
+                        upgrade_hand_and_display(card,k,true,(amount or 1)*get_voucher('gravitational_wave').config.extra)
                     end
                 end
             end
