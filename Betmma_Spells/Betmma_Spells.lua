@@ -35,6 +35,7 @@ function TalismanCompat(num)
 end
 
 function SMODS.current_mod.process_loc_text()
+    G.localization.misc.dictionary.b_fuse = "FUSE"
     G.localization.misc.dictionary.spell_not = "not "
     G.localization.misc.dictionary.spell_Heart = "Heart"
     G.localization.misc.dictionary.spell_Diamond = "Diamond"
@@ -67,7 +68,7 @@ do
 
     
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
-    -- override Spell cards UI and make use and sell buttons smaller
+    -- override Spell cards UI. make sell buttons smaller and add fuse button if 2 spells are highlighted
     function G.UIDEF.use_and_sell_buttons(card)
         if card.ability.set=='Spell' then 
             if card.area and card.area == G.pack_cards then
@@ -93,14 +94,24 @@ do
                 }}
                 }},
             }}
-            
+            local fuse = nil 
+            fuse = {n=G.UIT.R, config={align = "tr"}, nodes={
+                {n=G.UIT.R, config={ref_table = card, align = "tr",padding = 0.1, r=0.08, minw = 0.7, minh = 0.9, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'fuse_card', func = 'can_fuse_card'}, nodes={
+                --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                {n=G.UIT.C, config={align = "tm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_fuse'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
+                    }},
+                }}
+                }},
+            }}
             local use={n=G.UIT.B, config = {w=0.1,h=1}}
             -- remove use button 
             local t = {
                 n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
                 {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
-                    sell
+                    #G.betmma_spells.highlighted>1 and fuse or sell
                     }},
                     -- {n=G.UIT.R, config={align = 'cl'}, nodes={
                     --     {n=G.UIT.B, config = {w=0.1,h=0.1}}
@@ -126,6 +137,38 @@ do
             e.config.button = nil
         end
     end
+    
+    G.FUNCS.can_fuse_card = function(e)
+        local card_a=G.betmma_spells.highlighted[1]
+        local card_b=G.betmma_spells.highlighted[2]
+        local fusion=card_b and card_a.config.center.config.fuse_to[card_b.config.center.raw_key]
+        if fusion then 
+            e.config.colour = G.C.PURPLE
+            e.config.button = 'fuse_card'  
+            e.config.fusion=fusion
+        else
+          e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+          e.config.button = nil
+        end
+    end
+    G.FUNCS.fuse_card = function(e) 
+        local c1 = e.config.ref_table
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.1,
+            func = function()
+                G.betmma_spells.highlighted[1]:start_dissolve()
+                G.betmma_spells.highlighted[2]:start_dissolve()
+                local card = create_card('Spell', nil, nil, nil, nil, nil, e.config.fusion, 'spell')
+                card:add_to_deck()
+                G.betmma_spells:emplace(card)
+                G.GAME.fused_spell=G.GAME.fused_spell or {}
+                G.GAME.fused_spell[e.config.fusion]=true
+
+                return true
+            end
+        }))
+    end
 
     local G_FUNCS_check_for_buy_space_ref=G.FUNCS.check_for_buy_space
     G.FUNCS.check_for_buy_space = function(card)
@@ -138,7 +181,7 @@ do
         end
         return G_FUNCS_check_for_buy_space_ref(card)
     end
-end -- Spell Area and Spell Cards preparation
+end -- Spell Area and Spell Cards preparation (card size; buy, sell and fuse functionality and buttons)
 
 SMODS.ConsumableType { -- Define Spell Consumable Type
     key = 'Spell',
@@ -231,7 +274,17 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
         return t
     end
 }
-
+local undiscovered=SMODS.Atlas {  
+    key = 'undiscovered',
+    px = 34,
+    py = 34,
+    path = 's_undiscovered.png'
+}
+SMODS.UndiscoveredSprite {
+	key = "Spell",
+	atlas = undiscovered.key,
+	pos = {x = 0, y = 0}
+}
 
 do
     if after_event==nil then
@@ -261,11 +314,13 @@ local function spell_prototype(data)
     data.can_use = function(self,card)
         return false
     end
+    data.raw_key=data.key
     data.set="Spell"
     data.pos={x=0,y=0}
     table.insert(data.loc_txt.text,1,"{V:1}#11#{}{V:5}#15#{}{V:2}#12#{}{V:6}#16#{}{V:3}#13#{}{V:7}#17#{}{V:4}#14#{}")
     data.loc_txt.text[#data.loc_txt.text+1]='{C:attention}#18#{}/{C:attention}#19#{}'
     data.loc_vars_ref=data.loc_vars
+    -- add sequence loc as first line and progress as last line
     data.loc_vars = function(self, info_queue, card)
         local ret=card.config.center.loc_vars_ref(self,info_queue,card)
         ret.vars.colours={G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK}
@@ -299,6 +354,7 @@ local function spell_prototype(data)
         end
         return ret
     end
+    -- calculate cascading hint UI (drawn in card:draw)
     data.update_sequence=function(self)
         local _minh, _minw = 0.35, 0.5
         local true_current=self.ability.progress.current_with_anim
@@ -328,6 +384,7 @@ local function spell_prototype(data)
         }
     end
     data.generate_sequence_ref=data.generate_sequence
+    -- set current, current_with_anim, max and call update_sequence
     data.generate_sequence=function(self)
         self.config.center.generate_sequence_ref(self)
         self.ability.progress.current=0--math.floor(pseudorandom('std_a',0,2))
@@ -336,6 +393,7 @@ local function spell_prototype(data)
         self.config.center.update_sequence(self)
     end
     data.calculate_ref=data.calculate
+    -- if individual context and current card satisfies sequence increase progress. if sequence finished call calculate_ref
     data.calculate = function(self,card,context)
         if context.individual==true and context.cardarea == G.play then
             local other=context.other_card
@@ -360,6 +418,20 @@ local function spell_prototype(data)
                     return ret
                 end
             end
+        end
+    end
+    --e.g. dark + light -> shadow, then dark.fuse_to={light='shadow'}
+    data.config.fuse_to={}
+    --shadow.fuse_from={'dark','light'}
+    if data.config.fuse_from then
+        local fusion=data.config.fuse_from
+        local key_a=fusion[1];local key_b=fusion[2]
+        local obj_a=betmma_spells_objs[key_a]
+        local obj_b=betmma_spells_objs[key_b]
+        obj_a.config.fuse_to[key_b]=data.key
+        obj_b.config.fuse_to[key_a]=data.key
+        data.in_pool= function(center)
+            return G.GAME.fused_spell and G.GAME.fused_spell[center.raw_key]
         end
     end
     return SMODS.Consumable(data)
@@ -703,5 +775,40 @@ do
         end,
     }
 end --fire
+do
+    local key='shadow'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Shadow',
+            text = {
+                '{X:mult,C:white}X#1#{} Mult'
+            },
+            before_desc="1 Dark suit and 1 Light suit"
+        },
+        atlas = key, 
+        config = {extra = {value=1.25},fuse_from={'dark','light'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            self.ability.progress.sequence={
+                getica(pseudorandom_element({'Spade','Club'}),false),
+                getica(pseudorandom_element({'Heart','Diamond'}),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            return {
+                x_mult = card.ability.extra.value,
+                card = card
+            }
+        end,
+    }
+end --shadow
 ----------------------------------------------
 ------------MOD CODE END----------------------

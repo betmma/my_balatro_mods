@@ -516,7 +516,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 11110.0,
+    shop_rate = 0.0,
     default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
