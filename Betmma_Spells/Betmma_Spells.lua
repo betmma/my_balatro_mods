@@ -4,13 +4,18 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.3(20240905)
+--- VERSION: 0.0.4(20240906)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
-
+--[[todo:
+implement fusion system (if chooosing 2 spells, replace "sell" with "fuse" if fusable. fusion spells only appear in shop if you have fused it in this run)
+dependencies on abilities mod:
+1. make spells look smaller (betmma_smaller_sets table)
+2. water spell decrease rank (betmma_bump_rank function)
+]]
 MOD_PREFIX='betm_spells'
 USING_BETMMA_SPELLS=true
 IN_SMOD1=MODDED_VERSION>='1.0.0'
@@ -613,7 +618,7 @@ do
         end,
         calculate = function(self,card,context)
             local other=context.other_card
-            if pseudorandom('std_betmma_spells_air')<G.GAME.probabilities.normal/card.ability.extra.value then
+            if pseudorandom('betmma_spells_air')<G.GAME.probabilities.normal/card.ability.extra.value then
                 after_event(function()
                     local _card = copy_card(other, nil, nil, 1)
                     _card:add_to_deck()
@@ -629,5 +634,74 @@ do
         end,
     }
 end --air
+do
+    local key='water'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Water',
+            text = {
+                '{C:attention}decrease{} rank of', 
+                'second card by 1'
+            },
+            before_desc="2 decreasing ranks x and x-1"
+        },
+        atlas = key, 
+        config = {extra = {value=4},progress={},prepared=false },
+        discovered = true,
+        cost = 4,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=12
+            self.ability.progress.sequence=
+                {getica(rank,false),getica(betmma_spell_delta_rank(rank,delta),false)}
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            after_event(function()
+                betmma_bump_rank(other,-1,false)
+            end)
+        end,
+    }
+end --water
+do
+    local key='fire'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Fire',
+            text = {
+                '{C:attention}destroy{} the second card'
+            },
+            before_desc="2 increasing ranks x and x+1"
+        },
+        atlas = key, 
+        config = {extra = {value=4},progress={},prepared=false },
+        discovered = true,
+        cost = 4,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=1
+            self.ability.progress.sequence=
+                {getica(rank,false),getica(betmma_spell_delta_rank(rank,delta),false)}
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            after_event(function()
+                other:start_dissolve()
+            end)
+        end,
+    }
+end --fire
 ----------------------------------------------
 ------------MOD CODE END----------------------

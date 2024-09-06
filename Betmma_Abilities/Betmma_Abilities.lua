@@ -516,7 +516,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.0,
+    shop_rate = 11110.0,
     default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -771,21 +771,27 @@ do
     end
 end --glitched seed
 do
+    local function inc_or_dec_rank(card,dec)
+        local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+        local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
+        if dec then
+            rank_suffix= card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
+        end
+        if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+        elseif rank_suffix == 10 then rank_suffix = 'T'
+        elseif rank_suffix == 11 then rank_suffix = 'J'
+        elseif rank_suffix == 12 then rank_suffix = 'Q'
+        elseif rank_suffix == 13 then rank_suffix = 'K'
+        elseif rank_suffix == 14 then rank_suffix = 'A'
+        end
+        card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+    end
     function betmma_bump_rank(card,amount,temp)
-        for i = 1, amount do
-            if temp then
-                card.ability.rank_bumped=(card.ability.rank_bumped or 0)+1
-            end
-            local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-            local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
-            if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
-            elseif rank_suffix == 10 then rank_suffix = 'T'
-            elseif rank_suffix == 11 then rank_suffix = 'J'
-            elseif rank_suffix == 12 then rank_suffix = 'Q'
-            elseif rank_suffix == 13 then rank_suffix = 'K'
-            elseif rank_suffix == 14 then rank_suffix = 'A'
-            end
-            card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+        if temp then
+            card.ability.rank_bumped=(card.ability.rank_bumped or 0)+amount
+        end
+        for i = 1, math.abs(amount) do
+            inc_or_dec_rank(card,amount<0)
         end
     end
     local key='rank_bump'
@@ -824,19 +830,10 @@ do
     local function cancel_bump(area)
         for k, v in ipairs(area.cards) do
             if v.ability.rank_bumped then
-                for i=1,v.ability.rank_bumped do
+                for i=1,math.abs(v.ability.rank_bumped) do
                     G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
                         local card=v
-                        local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-                        local rank_suffix = card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
-                        if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
-                        elseif rank_suffix == 10 then rank_suffix = 'T'
-                        elseif rank_suffix == 11 then rank_suffix = 'J'
-                        elseif rank_suffix == 12 then rank_suffix = 'Q'
-                        elseif rank_suffix == 13 then rank_suffix = 'K'
-                        elseif rank_suffix == 14 then rank_suffix = 'A'
-                        end
-                        card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+                        inc_or_dec_rank(card,v.ability.rank_bumped>0)
                         v.ability.rank_bumped=nil
                     return true end }))
                 end
@@ -891,7 +888,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = { },cooldown={type='hand', now=2, need=2}, },
+        config = {extra = { },cooldown={type='hand', now=3, need=3}, },
         discovered = true,
         cost = 10,
         loc_vars = function(self, info_queue, card)
