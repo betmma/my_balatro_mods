@@ -164,7 +164,7 @@ do
                 G.betmma_spells:emplace(card)
                 G.GAME.fused_spell=G.GAME.fused_spell or {}
                 G.GAME.fused_spell[e.config.fusion]=true
-
+                discover_card(card.config.center)
                 return true
             end
         }))
@@ -191,7 +191,15 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
     loc_txt = {
         collection = 'Spells',
         name = 'Spell',
-        label = 'Spell'
+        label = 'Spell',
+        undiscovered = {
+			name = "Not Discovered",
+			text = {
+				"Fuse this spell in",
+                "an unseeded run to",
+                "learn what it does"
+			},
+		},
     },
     shop_rate = 1.0,
     default = 'c_betm_spells_dark',
@@ -283,7 +291,8 @@ local undiscovered=SMODS.Atlas {
 SMODS.UndiscoveredSprite {
 	key = "Spell",
 	atlas = undiscovered.key,
-	pos = {x = 0, y = 0}
+	pos = {x = 0, y = 0},
+    no_overlay=true --remove the floating circled ? sign as it's for regular card size
 }
 
 do
@@ -420,7 +429,7 @@ local function spell_prototype(data)
             end
         end
     end
-    --e.g. dark + light -> shadow, then dark.fuse_to={light='shadow'}
+    --e.g. dark + light -> shadow, then dark.fuse_to={light='c_betm_shadow'}
     data.config.fuse_to={}
     --shadow.fuse_from={'dark','light'}
     if data.config.fuse_from then
@@ -431,7 +440,11 @@ local function spell_prototype(data)
         obj_a.config.fuse_to[key_b]=data.key
         obj_b.config.fuse_to[key_a]=data.key
         data.in_pool= function(center)
-            return G.GAME.fused_spell and G.GAME.fused_spell[center.raw_key]
+            return G.GAME.fused_spell and G.GAME.fused_spell[center.raw_key],{allow_duplicates=true}
+        end
+    else
+        data.in_pool= function(center)
+            return true,{allow_duplicates=true}
         end
     end
     return SMODS.Consumable(data)

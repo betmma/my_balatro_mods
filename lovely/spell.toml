@@ -59,28 +59,29 @@ target = "functions/state_events.lua"
 pattern = '''local effects = {eval_card(scoring_hand[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}'''
 position = "after"
 payload = '''
-if USING_BETMMA_ABILITIES and G.betmma_spells then
+if USING_BETMMA_SPELLS and G.betmma_spells then
     for k=1, #G.betmma_spells.cards do
         --calculate the spell individual card effects
-        local eval = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true})
+        local eval = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, callback = function(card, eval, retrigger)
         if eval and eval.joker_repetitions then
             rep_list = eval.joker_repetitions
             for z=1, #rep_list do
                 if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
                     for r=1, rep_list[z].repetitions do
-                        local ev = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, retrigger_joker = true})
+                        local ev = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, retrigger_joker = true, callback = function(card, eval, retrigger)
                         if ev then
                             mod_percent = true
                             table.insert(effects, ev)
-                            effects[#effects].from_retrigger = rep_list[z]
-                        end
+                            effects[#effects].from_retrigger = retrigger
+                        end end, no_retrigger_anim = true})
                     end
                 end
             end
         end
         if eval then 
             table.insert(effects, eval)
-        end
+            effects[#effects].from_retrigger = retrigger
+        end end, no_retrigger_anim = true})
     end
 end
 '''
