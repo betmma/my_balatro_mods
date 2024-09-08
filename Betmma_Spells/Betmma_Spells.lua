@@ -824,5 +824,45 @@ do
         end,
     }
 end --shadow
+do
+    local key='abyss'
+    get_atlas(key)
+    betmma_spells_objs[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Abyss',
+            text = {
+                '{C:chips}+#1#*a{} chips where a',
+                'equals rank of third card'
+            },
+            before_desc="2 ranks x, x-1, and a Dark suit"
+        },
+        atlas = key, 
+        config = {extra = {value=30},fuse_from={'dark','water'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=12
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+                getica(pseudorandom_element({'Spade','Club'}),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            return {
+                chips = card.ability.extra.value*(other.base.nominal or 1),
+                card = card
+            }
+        end,
+    }
+end --abyss
 ----------------------------------------------
 ------------MOD CODE END----------------------
