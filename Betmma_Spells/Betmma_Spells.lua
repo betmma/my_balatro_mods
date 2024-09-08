@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.4(20240906)
+--- VERSION: 0.0.4.1(20240908)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -419,6 +419,7 @@ local function spell_prototype(data)
                 if next_==card.ability.progress.max then
                     local ret= card.config.center.calculate_ref(self,card,context)
                     pprint(ret)
+                    card.ability.progress.current=0 -- hover ui will display as 0/max instead of max/max when this sequence ends and cascading ui displays 0/max
                     card_eval_status_text(card, 'extra', nil, nil, nil, {message = "!",})
                     after_event(function()
                         card.ability.progress.current_with_anim=0

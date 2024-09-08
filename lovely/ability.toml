@@ -281,11 +281,11 @@ end
 '''
 match_indent = true
 
-# call calculate_joker on each ability when round ends.
+# call calculate_joker on each ability when round ends. (disabled as it's redundant)
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = '''if game_over then'''
+pattern = '''if game_over then nope'''
 position = "before"
 payload = '''
 if G.betmma_abilities then
@@ -350,7 +350,7 @@ elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
 match_indent = true
 
 
-# try to add seals to jokers but they can't work at all
+# try to add seals to jokers but they can't work at all (disabled)
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -365,6 +365,7 @@ end
 match_indent = true
 
 
+# (disabled)
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
