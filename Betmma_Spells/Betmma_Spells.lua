@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.4.1(20240908)
+--- VERSION: 0.0.5(20240908)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -19,7 +19,7 @@ dependencies on abilities mod:
 MOD_PREFIX='betm_spells'
 USING_BETMMA_SPELLS=true
 IN_SMOD1=MODDED_VERSION>='1.0.0'
-betmma_spells_objs={}
+betmma_spells_centers={}
 betmma_spells_atlases={}
 local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
 function TalismanCompat(num)
@@ -323,21 +323,29 @@ local function spell_prototype(data)
     data.can_use = function(self,card)
         return false
     end
+    local fused=data.config.fuse_from
     data.raw_key=data.key
     data.set="Spell"
     data.pos={x=0,y=0}
     table.insert(data.loc_txt.text,1,"{V:1}#11#{}{V:5}#15#{}{V:2}#12#{}{V:6}#16#{}{V:3}#13#{}{V:7}#17#{}{V:4}#14#{}")
     data.loc_txt.text[#data.loc_txt.text+1]='{C:attention}#18#{}/{C:attention}#19#{}'
+    if fused then
+        data.loc_txt.text[#data.loc_txt.text+1]='{C:inactive,s:0.8}(#21# + #22#){}'
+    end
     data.loc_vars_ref=data.loc_vars
     -- add sequence loc as first line and progress as last line
     data.loc_vars = function(self, info_queue, card)
         local ret=card.config.center.loc_vars_ref(self,info_queue,card)
         ret.vars.colours={G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK,G.C.BLACK}
-        while #ret.vars<20 do
+        while #ret.vars<23 do
             ret.vars[#ret.vars+1]=""
         end
         ret.vars[18]=card.ability.progress.current or 0
         ret.vars[19]=card.ability.progress.max or "?"
+        if fused then
+            ret.vars[21]=betmma_spells_centers[fused[1]].loc_txt.name
+            ret.vars[22]=betmma_spells_centers[fused[2]].loc_txt.name
+        end
         if not card.ability.progress.max then
             ret.vars[11]=card.config.center.loc_txt.before_desc
             return ret
@@ -433,11 +441,11 @@ local function spell_prototype(data)
     --e.g. dark + light -> shadow, then dark.fuse_to={light='c_betm_shadow'}
     data.config.fuse_to={}
     --shadow.fuse_from={'dark','light'}
-    if data.config.fuse_from then
+    if fused then
         local fusion=data.config.fuse_from
         local key_a=fusion[1];local key_b=fusion[2]
-        local obj_a=betmma_spells_objs[key_a]
-        local obj_b=betmma_spells_objs[key_b]
+        local obj_a=betmma_spells_centers[key_a]
+        local obj_b=betmma_spells_centers[key_b]
         obj_a.config.fuse_to[key_b]=data.key
         obj_b.config.fuse_to[key_a]=data.key
         data.in_pool= function(center)
@@ -564,11 +572,11 @@ function betmma_spell_delta_rank(current_rank,delta)
     end
     return current_rank
 end
-
+-- tier 1
 do
     local key='dark'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Dark',
@@ -604,7 +612,7 @@ end --dark
 do
     local key='light'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Light',
@@ -639,7 +647,7 @@ end --light
 do
     local key='earth'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Earth',
@@ -676,7 +684,7 @@ end --earth
 do
     local key='air'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Air',
@@ -723,7 +731,7 @@ end --air
 do
     local key='water'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Water',
@@ -758,7 +766,7 @@ end --water
 do
     local key='fire'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Fire',
@@ -789,10 +797,11 @@ do
         end,
     }
 end --fire
+-- tier 2
 do
     local key='shadow'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Shadow',
@@ -827,7 +836,7 @@ end --shadow
 do
     local key='abyss'
     get_atlas(key)
-    betmma_spells_objs[key]=spell_prototype { 
+    betmma_spells_centers[key]=spell_prototype { 
         key = key,
         loc_txt = {
             name = 'Abyss',
@@ -864,5 +873,44 @@ do
         end,
     }
 end --abyss
+-- tier 3
+do
+    local key='ripple'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Ripple',
+            text = {
+                '{X:mult,C:white}X#1#{} Mult'
+            },
+            before_desc="3 ranks x, x-1 and x"
+        },
+        atlas = key, 
+        config = {extra = {value=2},fuse_from={'shadow','water'},progress={},prepared=false },
+        discovered = false,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=12
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+                getica(rank,false),
+            }
+        end,
+        calculate = function(self,card,context)
+            return {
+                x_mult = card.ability.extra.value,
+                card = card
+            }
+        end,
+    }
+end --ripple
 ----------------------------------------------
 ------------MOD CODE END----------------------

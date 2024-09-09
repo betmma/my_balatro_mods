@@ -772,7 +772,9 @@ do
 end --glitched seed
 do
     local function inc_or_dec_rank(card,dec)
-        local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+        local suit_data = SMODS.Suits[card.base.suit]
+        local suit_prefix = suit_data.card_key..'_' -- to be compatible with modded suits
+        -- local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
         local rank_suffix = card.base.id == 14 and 2 or math.min(card.base.id+1, 14)
         if dec then
             rank_suffix= card.base.id == 2 and 14 or math.max(card.base.id-1, 2)
