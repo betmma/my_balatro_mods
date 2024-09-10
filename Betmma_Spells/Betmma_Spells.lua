@@ -454,7 +454,7 @@ local function spell_prototype(data)
         end
     else
         data.in_pool= function(center)
-            return true,{allow_duplicates=true}
+            return true--,{allow_duplicates=true}
         end
     end
     return SMODS.Consumable(data)
@@ -852,7 +852,7 @@ do
             before_desc="2 ranks x, x+1, and a Dark suit"
         },
         atlas = key, 
-        config = {extra = {value=80},fuse_from={'dark','fire'},progress={},prepared=false },
+        config = {extra = {value=120},fuse_from={'dark','fire'},progress={},prepared=false },
         discovered = false,
         cost = 5,
         loc_vars = function(self, info_queue, card)
@@ -921,6 +921,44 @@ do
         end,
     }
 end --abyss
+do
+    local key='cavern'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Cavern',
+            text = {
+                '{C:money}+$#1#{}',
+            },
+            before_desc="2 same Dark suits"
+        },
+        atlas = key, 
+        config = {extra = {value=4},fuse_from={'dark','earth'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local suit=pseudorandom_element({'Spade','Club'})
+            self.ability.progress.sequence={
+                getica(suit,false),
+                getica(suit,false),
+            }
+        end,
+        calculate = function(self,card,context)
+            ease_dollars(card.ability.extra.value)
+            return {
+                message = localize('$')..card.ability.extra.value,
+                colour = G.C.MONEY,
+                card = card
+            }
+        end,
+    }
+end --cavern
 -- tier 3
 do
     local key='ripple'
