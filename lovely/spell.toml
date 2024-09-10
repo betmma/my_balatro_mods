@@ -46,13 +46,33 @@ target = "functions/button_callbacks.lua"
 pattern = "elseif G.GAME.pack_choices and G.GAME.pack_choices > 1 then"
 position = "before"
 payload = '''
-elseif card.ability.set=='Spell' then -- betmma_spells
+elseif card.ability.set=='Spell' and G.TEMP_FLAG_TO_LET_BELOW_PATCH_READ then -- betmma_spells
+    G.TEMP_FLAG_TO_LET_BELOW_PATCH_READ=nil
     G.booster_pack.alignment.offset.y = G.booster_pack.alignment.offset.py
     G.booster_pack.alignment.offset.py = nil
 '''
 match_indent = true
 
-# Call calculate_joker for individual card played
+# Prevent dissolve when using Spells in pack. Also emplace Spell card when bought from pack
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK*"
+position = "after"
+payload = '''
+if card.ability.set=='Spell' and area==G.pack_cards then -- betmma_spells
+    area:remove_from_highlighted(card)
+    play_sound('cardSlide2', nil, 0.3)
+    dont_dissolve = true
+    area:remove_card(card)
+    G.betmma_spells:emplace(card)
+else
+    G.TEMP_FLAG_TO_LET_BELOW_PATCH_READ=1
+end
+'''
+match_indent = true
+
+# Call calculate_joker on spells for individual card played
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"

@@ -151,7 +151,7 @@ Vouchers:
 - Cooled Down: Abilities cool down 50% faster.
 - Cooled Below: Abilities can cool down into negative values. (e.g. if you buy an ability whose cooldown is 2 rounds, after 5 rounds it reaches -3/2, and you can use it 2 times consecutively then it'll become 1/2)
 
-# Betmma Spells: Adds 9 "Spell" cards (WIP)
+# Betmma Spells: Adds 10 "Spell" cards (WIP)
 Spell is a new type of card which triggers when certain sequence is completed. The sequence of a spell isn't fixed, instead it's randomly generated when you buy it and after buying it won't change. This is to ensure each suit and rank has the same chance to be used and prevent some suits/ranks become too op. For example before buying you only know Light's sequence will be 2 different Light suits but you don't know if it'll be Heart, Diamond or Diamond, Heart.
 How spells trigger: each spell has a count of how much its progress is completed. Take Heart, Diamond as example, upon buying its count is 0, and if you plays a hand of 9H, 8D, 7S, 6H, 5D, when calculating first card, 9H, its count increases as the first element of this sequence is heart and it matches the first card. This also happens for the second card, 8D. After second card is scored, the spell's count reaches 2, meaning its sequence is completed, so you gain +10 Mult and it resets count to 0. Overall this hand triggers the spell 2 times.
 The sequence is displayed under the spell after bought, but due to limited space it only display last completed element and next element to complete. e.g. if sequence is 7, 6, 5, then it will display "7, 6" or "6, 5".
@@ -166,9 +166,12 @@ Currently spells appear in shop, and fusion spells only appear if you have fused
 - Earth (2 same ranks): +$5.
 - Air (2 ranks with gap>4): 1 in 4 chance to duplicate second card.
 - Shadow (Dark + Light) (1 Dark suit and 1 Light suit): X1.2 Mult.
+- Inferno (Dark + Fire) (2 ranks x, x+1 and 1 Dark suit): destroy third card and + 80 chips
 - Abyss (Dark + Water) (2 ranks x, x-1 and 1 Dark suit): +30*a chips where a is rank of third card.
 - Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
 
+Also add 
+- Spell Pack: choose 1 of 3 spells.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.

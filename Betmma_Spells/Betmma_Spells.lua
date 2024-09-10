@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.5(20240908)
+--- VERSION: 0.0.6(20240910)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -44,6 +44,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.spell_Ace = "Ace"
     G.localization.misc.dictionary.spell_Face = "Face"
     G.localization.misc.dictionary.spell_Numbered = "Numbered"
+    G.localization.misc.dictionary.k_betmma_spell_pack="Spell Pack"
 
 end
 
@@ -185,7 +186,7 @@ end -- Spell Area and Spell Cards preparation (card size; buy, sell and fuse fun
 
 SMODS.ConsumableType { -- Define Spell Consumable Type
     key = 'Spell',
-    collection_rows = { 9,9,9,9 },
+    collection_rows = { 9,9,9 },
     primary_colour = G.C.CHIPS,
     secondary_colour = mix_colours(G.C.SECONDARY_SET.Voucher, G.C.CHIPS, 0.7),
     loc_txt = {
@@ -489,7 +490,7 @@ do
     local Card_draw_ref=Card.draw
     -- draw cascading hint ui, also generate its sequence if not prepared (upon buying since only in spell area will it draw hint ui)
     function Card:draw(layer)
-        if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not ability_cooled_down(self) then --will spells go to jokers or other areas?
+        if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) then --will spells go to jokers or other areas?
             Card_draw_ref(self,layer)
             if self.ability.prepared==false then
                 self.ability.prepared=true
@@ -516,6 +517,10 @@ local function get_atlas(key,type)
         px=71
         py=95
         prefix='v_'
+    elseif type=='booster' then
+        px=71
+        py=95
+        prefix='p_'
     end
     betmma_spells_atlases[key]=SMODS.Atlas {  
         key = key,
@@ -834,6 +839,49 @@ do
     }
 end --shadow
 do
+    local key='inferno'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Inferno',
+            text = {
+                '{C:attention}destroy{} the third card',
+                'and {C:chips}+#1#{} chips'
+            },
+            before_desc="2 ranks x, x+1, and a Dark suit"
+        },
+        atlas = key, 
+        config = {extra = {value=80},fuse_from={'dark','fire'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=1
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+                getica(pseudorandom_element({'Spade','Club'}),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            after_event(function()
+                other:start_dissolve()
+            end)
+            return {
+                chips = card.ability.extra.value,
+                card = card
+            }
+        end,
+    }
+end --inferno
+do
     local key='abyss'
     get_atlas(key)
     betmma_spells_centers[key]=spell_prototype { 
@@ -912,5 +960,37 @@ do
         end,
     }
 end --ripple
+
+-- spell pack
+get_atlas('spell_pack','booster')
+
+SMODS.Booster({
+    key = 'spell_pack',
+    weight = 1.5,
+    kind = "Spell",
+    cost = 5,
+    atlas = "spell_pack",
+    config = {extra = 3, choose = 1},
+    loc_txt = {
+        ['en-us'] = {
+            name = "Spell Pack",
+            text = {
+                "Choose {C:attention}#1#{} of",
+				"up to {C:attention}#2#{} Spells"
+            }
+        }
+    },
+    create_card = function(self, card)
+        return create_card("Spell", G.pack_cards, nil, nil, true, true, nil, 'betmma_spell')
+    end,
+    ease_background_colour = function(self)
+        ease_colour(G.C.DYN_UI.MAIN, HEX('8d32c1'))
+        ease_background_colour{new_colour = HEX('be3fa0'), contrast = 3}
+    end,
+    loc_vars = function(self, info_queue, card)
+		return { vars = {card.config.center.config.choose, card.ability.extra} }
+	end,
+    group_key = "k_betmma_spell_pack", -- this determines the bottom line and its value is assigned in process_loc_text
+})
 ----------------------------------------------
 ------------MOD CODE END----------------------
