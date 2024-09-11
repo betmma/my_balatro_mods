@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.0.6(20240910)
+--- VERSION: 0.1.0(20240911)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -45,6 +45,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.spell_Face = "Face"
     G.localization.misc.dictionary.spell_Numbered = "Numbered"
     G.localization.misc.dictionary.k_betmma_spell_pack="Spell Pack"
+    G.localization.misc.dictionary.k_betmma_smoke="Smoke!"
 
 end
 
@@ -450,7 +451,7 @@ local function spell_prototype(data)
         obj_a.config.fuse_to[key_b]=data.key
         obj_b.config.fuse_to[key_a]=data.key
         data.in_pool= function(center)
-            return G.GAME.fused_spell and G.GAME.fused_spell[center.raw_key],{allow_duplicates=true}
+            return G.GAME.fused_spell and G.GAME.fused_spell[center.raw_key]--,{allow_duplicates=true}
         end
     else
         data.in_pool= function(center)
@@ -493,8 +494,8 @@ do
         if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) then --will spells go to jokers or other areas?
             Card_draw_ref(self,layer)
             if self.ability.prepared==false then
-                self.ability.prepared=true
                 self.config.center.generate_sequence(self)
+                self.ability.prepared=true
             end
             if self.children.hintUI then
                 self.children.hintUI:draw()
@@ -502,6 +503,8 @@ do
                 self.config.center.update_sequence(self)
             end
             return
+        elseif self.ability.set=='Spell' and (self.area==G.pack_cards) then
+            self.ability.prepared=false --prevent spell in pack displays sequence (why? all the data are in ability)
         end
         Card_draw_ref(self,layer)
     end
@@ -530,7 +533,7 @@ local function get_atlas(key,type)
     }
 end
 
--- simply return {key=key,negative=negative}. maybe useful in future?
+-- simply return {key=key,negative=negative,text=localized key}. maybe useful in future?
 function get_element_table_in_card_ability(key,negative)
     local text=localize('spell_'..key)
     return {key=key,negative=negative,text=text~="ERROR" and text or key} -- if no localization use original key (like J Q K). text is used in hover ui
@@ -741,7 +744,7 @@ do
         loc_txt = {
             name = 'Water',
             text = {
-                '{C:attention}decrease{} rank of', 
+                '{C:attention}Decrease{} rank of', 
                 'second card by 1'
             },
             before_desc="2 decreasing ranks x and x-1"
@@ -776,7 +779,7 @@ do
         loc_txt = {
             name = 'Fire',
             text = {
-                '{C:attention}destroy{} the second card'
+                '{C:attention}Destroy{} the second card'
             },
             before_desc="2 increasing ranks x and x+1"
         },
@@ -846,7 +849,7 @@ do
         loc_txt = {
             name = 'Inferno',
             text = {
-                '{C:attention}destroy{} the third card',
+                '{C:attention}Destroy{} the third card',
                 'and {C:chips}+#1#{} chips'
             },
             before_desc="2 ranks x, x+1, and a Dark suit"
@@ -959,6 +962,45 @@ do
         end,
     }
 end --cavern
+do
+    local key='smoke'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Smoke',
+            text = {
+                '{C:attention}Convert{} the second',
+                'card to {C:attention}#1#{}'
+            },
+            before_desc="1 Dark suit and 1 not Dark suit"
+        },
+        atlas = key, 
+        config = {extra = {value=4},fuse_from={'dark','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.progress.sequence and card.ability.progress.sequence[2].text or '?'--"?" is for when it hasn't been bought
+            }}
+        end,
+        generate_sequence = function(self)
+            local suit=pseudorandom_element({'Spade','Club'})
+            local suit2=pseudorandom_element({'Spade','Club'})
+            self.ability.progress.sequence={
+                getica(suit,false),
+                getica(suit2,true),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_betmma_smoke')})
+            after_event(function()
+                other:change_suit(card.ability.progress.sequence[2].key..'s')
+            end)
+        end,
+    }
+end --smoke
 -- tier 3
 do
     local key='ripple'
