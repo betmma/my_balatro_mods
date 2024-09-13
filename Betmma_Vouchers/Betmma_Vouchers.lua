@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.1
+--- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.2
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.1(20240830)
+--- VERSION: 2.2.3.2(202400913)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2426,9 +2426,9 @@ do
     handle_register(this_v)
 
     local function is_hidden(joker)
-        if not (G and G.jokers and G.jokers.cards)then return end
+        if not (G and G.jokers and G.jokers.cards)then return false end
         local index=get_index_in_array(G.jokers.cards,joker)
-        if index==1 and used_voucher('stow') or index==#G.jokers.cards and used_voucher('stash') then
+        if index==1 and used_voucher('stow') and #G.jokers.cards>=G.jokers.config.card_limit or index==#G.jokers.cards and used_voucher('stash') and #G.jokers.cards+1>=G.jokers.config.card_limit then
             return true
         end
         return false
@@ -2883,6 +2883,7 @@ do
         text = {
             "{C:dark_edition}+#1#{} Joker Slot",
             "Leftmost Joker is debuffed",
+            "if Joker Slots are {C:attention}full"
         }
     }
     local this_v = SMODS.Voucher{
@@ -2903,7 +2904,8 @@ do
         name = name,
         text = {
             "{C:dark_edition}+#1#{} Joker Slot",
-            "Rightmost Joker is debuffed",
+            "Rightmost Joker is debuffed if",
+            "there is {C:attention}1{} or {C:attention}no{} empty Joker Slot"
         }
     }
     local this_v = SMODS.Voucher{
@@ -5583,7 +5585,8 @@ end -- reroll aisle
                 {id = 'v_overstock_plus'},
                 {id = 'v_overstock_plus'},
                 {id = 'v_overstock_plus'},
-                -- {id = MOD_PREFIX_V.. 'stow'},
+                {id = MOD_PREFIX_V.. 'stow'},
+                {id = MOD_PREFIX_V.. 'stash'},
                 -- {id = MOD_PREFIX_V.. 'reincarnate'},
                 -- {id = MOD_PREFIX_V.. 'undying'},
                 -- {id = MOD_PREFIX_V.. 'flipped_card'},

@@ -63,8 +63,8 @@ Vouchers have rarities. Rarity affects the chance a voucher is added into the ra
 - Half-life: Shop can have Perishable Jokers. Perishable Jokers only take up 0.5 Joker slots.
 - Debt Burden: Shop can have Rental Jokers. Each Rental Joker increases debt limit by -$10. Rental Jokers won't cost money if you are in debt.
 - Bobby Pin: Shop can have Pinned Jokers. Each Pinned Joker copies ability of Joker to the right if itself isn't triggered.
-- Stow: +1 Joker Slot. Leftmost joker is debuffed.
-- Stash: +1 Joker Slot. Rightmost joker is debuffed.
+- Stow: +1 Joker Slot. Leftmost joker is debuffed if Joker Slots are full.
+- Stash: +1 Joker Slot. Rightmost joker is debuffed if there is 1 or no empty Joker Slot.
 - Undying: When a non-Phantom Joker is destroyed, create a Phantom copy.
 - Reincarnation: When a Phantom Joker is sold, create a joker of same rarity.
 (Phantom Edition: +1 Joker Slot. 50% chance to trigger.)
