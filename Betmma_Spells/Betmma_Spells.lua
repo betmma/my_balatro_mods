@@ -46,6 +46,17 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.spell_Numbered = "Numbered"
     G.localization.misc.dictionary.k_betmma_spell_pack="Spell Pack"
     G.localization.misc.dictionary.k_betmma_smoke="Smoke!"
+    G.localization.misc.dictionary.k_betmma_downgrade_ex="Downgrade!"
+    G.localization.descriptions.Other.card_extra_mult={
+        text = {
+            "{C:mult}+#1#{} extra mult"
+        }
+    }
+    G.localization.descriptions.Other.card_extra_mult_neg={
+        text = {
+            "{C:mult}#1#{} extra mult"
+        }
+    }
 
 end
 
@@ -1001,6 +1012,66 @@ do
         end,
     }
 end --smoke
+do
+    local key='radiance'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Radiance',
+            text = {
+                '{C:attention}Third card{} gains {C:mult}-#1#{} Mult,',
+                '{C:attention}other cards played{} gain {C:mult}+#2#{} Mult,',
+                'cards {C:attention}held in hand{} gain {C:mult}+#3#{} Mult'
+            },
+            before_desc="2 ranks x, x+1, and a Light suit"
+        },
+        atlas = key, 
+        config = {extra = {neg=10,pos=5,posheld=3},fuse_from={'light','fire'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.neg,card.ability.extra.pos,card.ability.extra.posheld
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=1
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+                getica(pseudorandom_element({'Heart','Diamond'}),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            -- perma_mult is added in spell.toml
+            local other=context.other_card
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_betmma_downgrade_ex')})
+            other.ability.perma_mult=(other.ability.perma_mult or 0)-card.ability.extra.neg
+            for k, v in ipairs(G.play.cards) do
+                if v~=other then
+                    card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})
+                    v.ability.perma_mult=(v.ability.perma_mult or 0)+card.ability.extra.pos
+                end
+            end
+            for k, v in ipairs(G.hand.cards) do
+                card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})
+                v.ability.perma_mult=(v.ability.perma_mult or 0)+card.ability.extra.posheld
+            end
+        end,
+    }
+
+    local get_chip_mult_ref=Card.get_chip_mult
+    function Card:get_chip_mult()
+        local ret=get_chip_mult_ref(self)
+        if self.ability.perma_mult then
+            ret=(ret or 0)+self.ability.perma_mult
+        end
+        return ret
+    end
+
+end --radiance
 -- tier 3
 do
     local key='ripple'

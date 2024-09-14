@@ -151,7 +151,7 @@ Vouchers:
 - Cooled Down: Abilities cool down 50% faster.
 - Cooled Below: Abilities can cool down into negative values. (e.g. if you buy an ability whose cooldown is 2 rounds, after 5 rounds it reaches -3/2, and you can use it 2 times consecutively then it'll become 1/2)
 
-# Betmma Spells: Adds 12 "Spell" cards (WIP)
+# Betmma Spells: Adds 13 "Spell" cards (WIP)
 Spell is a new type of card which triggers when certain sequence is completed. The sequence of a spell isn't fixed, instead it's randomly generated when you buy it and after buying it won't change. This is to ensure each suit and rank has the same chance to be used and prevent some suits/ranks become too op. For example before buying Light's sequence displays as "2 different Light suits" and after buying it'll be Heart, Diamond or Diamond, Heart.
 How spells trigger: each spell has a count of how much its progress is completed. Take Heart, Diamond as example, upon buying its count is 0, and if you plays a hand of 9H, 8D, 7S, 6H, 5D, when calculating first card, 9H, its count increases as the first element of this sequence is heart and it matches the first card. This also happens for the second card, 8D. After second card is scored, the spell's count reaches 2, meaning its sequence is completed, so you gain +10 Mult and it resets count to 0. Overall this hand triggers the spell 2 times and not 3 (someone may think there are 3 pairs that are 9H-8D, 9H-5D, 6H-5D, and through the analysis above we know 9H-5D is not a pair).
 If current card doesn't satisfy current element the progress won't reset. So 9H, 8D, 6H, 7S, 5D still triggers twice as 7S doesn't reset the progress.
@@ -171,6 +171,7 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Abyss (Dark + Water) (2 ranks x, x-1 and 1 Dark suit): +30*a chips where a is rank of third card.
 - Cavern (Dark + Earth) (2 same Dark suit): +$4.
 - Smoke (Dark + Air) (1 Dark suit and 1 not Dark suit): Change second card into that Dark suit.
+- Radiance (Light + Fire) (2 ranks x, x+1 and 1 Light suit): Third card gains -10 Mult, other played cards gain +5 Mult, cards held in hand gains +3 Mult.
 - Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
 
 Also add 

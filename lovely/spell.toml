@@ -106,3 +106,47 @@ if USING_BETMMA_SPELLS and G.betmma_spells then
 end
 '''
 match_indent = true
+
+# add perma_mult to card.ability (this hasn't been added by smod?)
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "perma_bonus = self.ability and self.ability.perma_bonus or 0,"
+position = "after"
+payload = '''
+perma_mult = self.ability and self.ability.perma_mult or 0,
+'''
+match_indent = true
+
+# display perma_mult in generate_card_ui (localthunk moment)
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "elseif _c.set == 'Enhanced' then"
+position = "before"
+payload = '''
+if card.ability.perma_mult then
+    if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "elseif _c.set == 'Booster' then"
+position = "before"
+payload = '''
+if card.ability.perma_mult then
+    if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    end
+end
+'''
+match_indent = true

@@ -17,7 +17,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "if mult > 0 then"
 position = "at"
-payload = "if TalismanCompat(mult) > TalismanCompat(0) then"
+payload = "if TalismanCompat(mult) > TalismanCompat(0) or TalismanCompat(mult) < TalismanCompat(0) then"
 match_indent = true
 
 [[patches]]
