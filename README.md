@@ -170,8 +170,9 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Inferno (Dark + Fire) (2 ranks x, x+1 and 1 Dark suit): destroy third card and + 80 chips
 - Abyss (Dark + Water) (2 ranks x, x-1 and 1 Dark suit): +30*a chips where a is rank of third card.
 - Cavern (Dark + Earth) (2 same Dark suit): +$4.
-- Smoke (Dark + Air) (1 Dark suit and 1 not Dark suit): Change second card into that Dark suit.
+- Smoke (Dark + Air) (1 Dark suit and 1 not Dark suit): Change second card into second Dark suit.
 - Radiance (Light + Fire) (2 ranks x, x+1 and 1 Light suit): Third card gains -10 Mult, other played cards gain +5 Mult, cards held in hand gains +3 Mult.
+- Reflection (Light + Water) (3 Light suits X, Y and X): Change rank of third card to first card.
 - Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
 
 Also add 

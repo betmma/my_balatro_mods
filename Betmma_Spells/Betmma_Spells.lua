@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.0(20240911)
+--- VERSION: 0.1.1(20240914)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -57,6 +57,7 @@ function SMODS.current_mod.process_loc_text()
             "{C:mult}#1#{} extra mult"
         }
     }
+    G.localization.misc.dictionary.k_betmma_reflection="Reflection!"
 
 end
 
@@ -336,6 +337,8 @@ local function spell_prototype(data)
     data.can_use = function(self,card)
         return false
     end
+    data.config.progress=data.config.progress or {}
+    data.config.progress.cardlist=data.config.progress.cardlist or {}
     local fused=data.config.fuse_from
     data.raw_key=data.key
     data.set="Spell"
@@ -432,6 +435,7 @@ local function spell_prototype(data)
             if card_satisfying_element(other,current_element) then
                 local current_ref=card.ability.progress.current
                 card.ability.progress.current=next_
+                card.ability.progress.cardlist[next_]=other
                 card_eval_status_text(card, 'extra', nil, nil, nil, {message = ""..next_..'/'..card.ability.progress.max,})
                 after_event(function()
                     card.ability.progress.current_with_anim=next_
@@ -439,8 +443,9 @@ local function spell_prototype(data)
                 end)
                 if next_==card.ability.progress.max then
                     local ret= card.config.center.calculate_ref(self,card,context)
-                    pprint(ret)
+                    -- pprint(ret)
                     card.ability.progress.current=0 -- hover ui will display as 0/max instead of max/max when this sequence ends and cascading ui displays 0/max
+                    card.ability.progress.cardlist={}
                     card_eval_status_text(card, 'extra', nil, nil, nil, {message = "!",})
                     after_event(function()
                         card.ability.progress.current_with_anim=0
@@ -1072,6 +1077,54 @@ do
     end
 
 end --radiance
+do
+    local key='reflection'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Reflection',
+            text = {
+                'Change rank of {C:attention}third card{}',
+                'into {C:attention}first card',
+            },
+            before_desc="3 Light suits X, Y and X"
+        },
+        atlas = key, 
+        config = {extra = {},fuse_from={'light','water'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+
+            }}
+        end,
+        generate_sequence = function(self)
+            self.ability.progress.sequence=pseudorandom_element({
+                {getica('Diamond',false),getica('Heart',false),getica('Diamond',false)},
+                {getica('Heart',false),getica('Diamond',false),getica('Heart',false)},
+            })
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_betmma_reflection')})
+            local rank=card.ability.progress.cardlist[1].base.value
+            -- in after_event cardlist will be reset to {} so i should get its value here
+            after_event(function()
+                other:change_rank(rank)
+            end)
+        end,
+    }
+    
+    function Card:change_rank(new_rank)
+        local new_code = SMODS.Suits[self.base.suit].card_key
+        local new_val = SMODS.Ranks[new_rank].card_key
+        local new_card = G.P_CARDS[new_code..'_'..new_val]
+
+        self:set_base(new_card)
+        G.GAME.blind:debuff_card(self)
+    end
+end --reflection
 -- tier 3
 do
     local key='ripple'
