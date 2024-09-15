@@ -114,7 +114,7 @@ This structure code is based on [Coupon Book mod](https://github.com/nicholassam
 # Better Vouchers This Run UI
 Rewrite the Run Info - Vouchers tab to enable it to display dozens of redeemed vouchers.
 
-# Betmma Abilities: Adds a new type of consumable that is "Ability" and adds 27 abilities and 4 vouchers
+# Betmma Abilities: Adds "Ability" consumable type, 27 abilities and 4 vouchers
 This mod can't work on Steamodded 0.9.8.
 Abilities have their unique area. Active abilities can be used infinite times as long as they aren't on cooldown. Passive abilities are like vouchers but can be sold and revert the changes.
 - GIL: (cooldown: 1 round) If all jokers are Eternal, remove Eternal from all jokers. Otherwise, set all jokers to be Eternal.
@@ -151,7 +151,7 @@ Vouchers:
 - Cooled Down: Abilities cool down 50% faster.
 - Cooled Below: Abilities can cool down into negative values. (e.g. if you buy an ability whose cooldown is 2 rounds, after 5 rounds it reaches -3/2, and you can use it 2 times consecutively then it'll become 1/2)
 
-# Betmma Spells: Adds 13 "Spell" cards (WIP)
+# Betmma Spells: Adds 14 "Spell" cards (WIP)
 Spell is a new type of card which triggers when certain sequence is completed. The sequence of a spell isn't fixed, instead it's randomly generated when you buy it and after buying it won't change. This is to ensure each suit and rank has the same chance to be used and prevent some suits/ranks become too op. For example before buying Light's sequence displays as "2 different Light suits" and after buying it'll be Heart, Diamond or Diamond, Heart.
 How spells trigger: each spell has a count of how much its progress is completed. Take Heart, Diamond as example, upon buying its count is 0, and if you plays a hand of 9H, 8D, 7S, 6H, 5D, when calculating first card, 9H, its count increases as the first element of this sequence is heart and it matches the first card. This also happens for the second card, 8D. After second card is scored, the spell's count reaches 2, meaning its sequence is completed, so you gain +10 Mult and it resets count to 0. Overall this hand triggers the spell 2 times and not 3 (someone may think there are 3 pairs that are 9H-8D, 9H-5D, 6H-5D, and through the analysis above we know 9H-5D is not a pair).
 If current card doesn't satisfy current element the progress won't reset. So 9H, 8D, 6H, 7S, 5D still triggers twice as 7S doesn't reset the progress.

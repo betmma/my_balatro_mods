@@ -125,7 +125,7 @@ target = "functions/common_events.lua"
 pattern = "elseif _c.set == 'Enhanced' then"
 position = "before"
 payload = '''
-if card.ability.perma_mult then
+if card and card.ability.perma_mult then
     if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
         localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
     elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
@@ -141,7 +141,7 @@ target = "functions/common_events.lua"
 pattern = "elseif _c.set == 'Booster' then"
 position = "before"
 payload = '''
-if card.ability.perma_mult then
+if card and card.ability.perma_mult then
     if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
         localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
     elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then

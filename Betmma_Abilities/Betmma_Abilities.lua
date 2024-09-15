@@ -87,7 +87,7 @@ do
         local Card_set_ability_ref=Card.set_ability
         function Card:set_ability(center, initial, delay_sprites)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if betmma_smaller_sets[center.set] then
+            if center and betmma_smaller_sets[center.set] then
                 -- self.T.w=W*34/71
                 -- self.T.h=H*34/95
                 self.T.w=G.ABILITY_W or 0.8
@@ -1784,6 +1784,7 @@ do
                             G.deck.config.card_limit = G.deck.config.card_limit + 1
                             table.insert(G.playing_cards, card)
                             G.deck:emplace(card)
+                    playing_card_joker_effects({card})
                 end
             end
         end,
