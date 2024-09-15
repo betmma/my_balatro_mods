@@ -112,7 +112,7 @@ match_indent = true
 [patches.pattern]
 target = "card.lua"
 pattern = "perma_bonus = self.ability and self.ability.perma_bonus or 0,"
-position = "after"
+position = "before"
 payload = '''
 perma_mult = self.ability and self.ability.perma_mult or 0,
 '''
