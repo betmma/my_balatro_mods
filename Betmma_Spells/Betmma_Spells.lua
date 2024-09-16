@@ -110,7 +110,7 @@ do
             }}
             local fuse = nil 
             fuse = {n=G.UIT.R, config={align = "tr"}, nodes={
-                {n=G.UIT.R, config={ref_table = card, align = "tr",padding = 0.1, r=0.08, minw = 0.7, minh = 0.9, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'fuse_card', func = 'can_fuse_card'}, nodes={
+                {n=G.UIT.R, config={ref_table = card, align = "tr",padding = 0.1, r=0.08, minw = 0.7, minh = 0.9, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'fuse_spell', func = 'can_fuse_spell'}, nodes={
                 --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
                 {n=G.UIT.C, config={align = "tm"}, nodes={
                     {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
@@ -152,20 +152,20 @@ do
         end
     end
     
-    G.FUNCS.can_fuse_card = function(e)
+    G.FUNCS.can_fuse_spell = function(e)
         local card_a=G.betmma_spells.highlighted[1]
         local card_b=G.betmma_spells.highlighted[2]
         local fusion=card_b and card_a.config.center.config.fuse_to[card_b.config.center.raw_key]
         if fusion then 
             e.config.colour = G.C.PURPLE
-            e.config.button = 'fuse_card'  
+            e.config.button = 'fuse_spell'  
             e.config.fusion=fusion
         else
           e.config.colour = G.C.UI.BACKGROUND_INACTIVE
           e.config.button = nil
         end
     end
-    G.FUNCS.fuse_card = function(e) 
+    G.FUNCS.fuse_spell = function(e) 
         local c1 = e.config.ref_table
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
