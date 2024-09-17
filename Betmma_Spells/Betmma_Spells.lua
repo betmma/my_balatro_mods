@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.1(20240914)
+--- VERSION: 0.1.3(20240917)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -58,6 +58,7 @@ function SMODS.current_mod.process_loc_text()
         }
     }
     G.localization.misc.dictionary.k_betmma_reflection="Reflection!"
+    G.localization.misc.dictionary.k_betmma_crystal="Crystalization!"
 
 end
 
@@ -215,7 +216,7 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
 			},
 		},
     },
-    shop_rate = 1.0,
+    shop_rate = BETMMA_DEBUGGING and 9999 or 1.0,
     default = 'c_betm_spells_dark',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -1032,7 +1033,7 @@ do
             before_desc="2 ranks x, x+1, and a Light suit"
         },
         atlas = key, 
-        config = {extra = {neg=10,pos=5,posheld=3},fuse_from={'light','fire'},progress={},prepared=false },
+        config = {extra = {neg=5,pos=5,posheld=3},fuse_from={'light','fire'},progress={},prepared=false },
         discovered = false,
         cost = 5,
         loc_vars = function(self, info_queue, card)
@@ -1111,7 +1112,17 @@ do
             local rank=card.ability.progress.cardlist[1].base.value
             -- in after_event cardlist will be reset to {} so i should get its value here
             after_event(function()
+                other:flip()
+                play_sound('card1', 0.1)
+                other:juice_up(0.3, 0.3)
+            end)
+            after_event(function()
                 other:change_rank(rank)
+            end)
+            after_event(function()
+                other:flip()
+                play_sound('tarot2', 0.1)
+                other:juice_up(0.3, 0.3)
             end)
         end,
     }
@@ -1125,6 +1136,110 @@ do
         G.GAME.blind:debuff_card(self)
     end
 end --reflection
+do
+    local key='crystal'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Crystal',
+            text = {
+                'Enhances {C:attention}second card{}',
+                'to {C:attention}Glass Card{}.',
+                'If already {C:attention}Glass Card{},',
+                '{C:money}+$#1#{}',
+            },
+            before_desc="2 same Light suits"
+        },
+        atlas = key, 
+        config = {extra = {value=6},fuse_from={'light','earth'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local suit=pseudorandom_element({'Diamond','Heart'})
+            self.ability.progress.sequence={
+                getica(suit,false),
+                getica(suit,false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_betmma_crystal')})
+            if other.ability.name=='Glass Card'then
+                ease_dollars(card.ability.extra.value)
+                return {
+                    message = localize('$')..card.ability.extra.value,
+                    colour = G.C.MONEY,
+                    card = card
+                }
+            end
+            after_event(function()
+                other:flip()
+                play_sound('card1', 0.1)
+                other:juice_up(0.3, 0.3)
+            end)
+            local isglass=false
+            after_event(function()
+                other:set_ability(G.P_CENTERS['m_glass'])
+            end)
+            after_event(function()
+                other:flip()
+                play_sound('tarot2', 0.1)
+                other:juice_up(0.3, 0.3)
+            end)
+        end,
+    }
+    
+    function Card:change_rank(new_rank)
+        local new_code = SMODS.Suits[self.base.suit].card_key
+        local new_val = SMODS.Ranks[new_rank].card_key
+        local new_card = G.P_CARDS[new_code..'_'..new_val]
+
+        self:set_base(new_card)
+        G.GAME.blind:debuff_card(self)
+    end
+end --crystal
+do
+    local key='halo'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Halo',
+            text = {
+                '{C:attention}Second card{} gains {C:mult}+#1#{} Mult',
+            },
+            before_desc="1 Light suit and 1 not Light suit"
+        },
+        atlas = key, 
+        config = {extra = {value=5},fuse_from={'light','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local suit=pseudorandom_element({'Diamond','Heart'})
+            local suit2=pseudorandom_element({'Diamond','Heart'})
+            self.ability.progress.sequence={
+                getica(suit,false),
+                getica(suit,true),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})
+            other.ability.perma_mult=(other.ability.perma_mult or 0)+card.ability.extra.value
+        end,
+    }
+end --halo
 -- tier 3
 do
     local key='ripple'

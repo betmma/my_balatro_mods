@@ -5532,9 +5532,9 @@ do
         end
     end
 end -- reroll aisle
-
+    BETMMA_DEBUGGING=false
     -- this challenge is only for test
-    if nil then
+    if BETMMA_DEBUGGING then
         
         table.insert(G.CHALLENGES,1,{
             name = "TestVoucher",
