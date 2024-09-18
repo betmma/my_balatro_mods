@@ -1240,6 +1240,58 @@ do
         end,
     }
 end --halo
+do
+    local key='steam'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Steam',
+            text = {
+                '{X:mult,C:white}X#1#{} Mult, but cards in this hand',
+                'will be debuffed after {C:attention}#2#{} rounds'
+            },
+            before_desc="3 ranks x, x+1, and x-1"
+        },
+        atlas = key, 
+        config = {extra = {value=3,tally=3},fuse_from={'fire','water'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=12
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,1),false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            -- local card1=card.ability.progress.cardlist[1]
+            -- local card2=card.ability.progress.cardlist[2]
+            after_event(function()
+                local cardlist=G.play.cards
+                for k,v in pairs(cardlist) do
+                    if v and v.ability then
+                        v.ability.perishable=true
+                        v.ability.perish_tally=card.ability.extra.tally 
+                    end
+                end
+                -- other.debuff=true
+            end)
+            return {
+                x_mult = card.ability.extra.value,
+                card = card
+            }
+        end,
+    }
+end --steam
 -- tier 3
 do
     local key='ripple'

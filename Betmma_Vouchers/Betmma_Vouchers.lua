@@ -3142,8 +3142,8 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:planet}Planet{} cards also upgrade",
-            "adjacent poker hands",
+            "When upgrading a poker hand,",
+            "also upgrade {C:attention}adjacent{} poker hands",
         }
     }
     local this_v = SMODS.Voucher{
@@ -3163,7 +3163,7 @@ do
     local loc_txt = {
         name = name,
         text = {
-            "{C:planet}Planet{} cards also upgrade",
+            "When upgrading a poker hand, also upgrade",
             "non-adjacent poker hands by {C:attention}#1#{} levels",
         }
     }
@@ -5035,7 +5035,7 @@ do
 
     local Card_set_debuff_ref=Card.set_debuff
     function Card:set_debuff(should_debuff)
-        if self.ability.perishable and self.ability.perish_tally <= 0 and self.ability.eternal and used_voucher('heat_death') and not self.ability.heat_deathed then
+        if self.ability.perishable and (self.ability.perish_tally or 1) <= 0 and self.ability.eternal and used_voucher('heat_death') and not self.ability.heat_deathed then
             self.ability.heat_deathed=true
             card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_heat_death'),colour = G.C.FILTER, delay = 0.45})
             G.jokers.config.card_limit = G.jokers.config.card_limit + get_voucher('heat_death').config.extra
@@ -5601,7 +5601,7 @@ end -- reroll aisle
             },
             deck = {
                 type = 'Challenge Deck',
-                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_glass',g='Red'},{s='D',r='5',e='m_glass',g='Red'},{s='D',r='6',e='m_glass',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_glass',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
+                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_lucky',g='Red'},{s='D',r='5',e='m_lucky',g='Red'},{s='D',r='6',e='m_lucky',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
             },
             restrictions = {
                 banned_cards = {
