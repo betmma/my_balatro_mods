@@ -122,7 +122,7 @@ Abilities have their unique area. Active abilities can be used infinite times as
 - Rank Bump: (cooldown: 2 hands) Temporarily increase ranks of chosen cards by 1 for this hand.
 - Variable: (cooldown: 2 hands) Select some cards, let X be the rank of rightmost card, and then increase ranks of other cards by X.
 - Cached Hand: (cooldown: 1 round) Hand type of next hand is set to the last hand.
-- Heal: (cooldown: 3 hands) Undebuff selected cards for this handd.
+- Heal: (cooldown: 3 hands) Undebuff selected cards for this hand.
 - Absorber: (cooldown: 1 ante) Reduce Hands to 1 and gain X0.1 for each hand reduced.
 - Double Lift: (cooldown: 2 rounds) Choose 1 more card in current pack.
 - Recycle (cooldown: $20 used) Reduce reroll cost by $5.
@@ -179,7 +179,11 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
 
 Also add 
+Pack:
 - Spell Pack: choose 1 of 3 spells.
+Vouchers: 
+- Magic Scroll: +1 Spell Slot.
+- Magic Wheel: +1 Spell Slot. Spend $2 to reroll sequence of a spell.
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.

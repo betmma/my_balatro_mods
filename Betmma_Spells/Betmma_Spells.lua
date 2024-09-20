@@ -36,6 +36,7 @@ end
 
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.b_fuse = "FUSE"
+    G.localization.misc.dictionary.b_reroll = "REROLL"
     G.localization.misc.dictionary.spell_not = "not "
     G.localization.misc.dictionary.spell_Heart = "Heart"
     G.localization.misc.dictionary.spell_Diamond = "Diamond"
@@ -83,7 +84,7 @@ do
 
     
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
-    -- override Spell cards UI. make sell buttons smaller and add fuse button if 2 spells are highlighted
+    -- override Spell cards UI. make sell buttons smaller, add fuse button if 2 spells are highlighted, add reroll button if magic wheel bought
     function G.UIDEF.use_and_sell_buttons(card)
         if card.ability.set=='Spell' then 
             if card.area and card.area == G.pack_cards then
@@ -120,7 +121,23 @@ do
                 }}
                 }},
             }}
-            local use={n=G.UIT.B, config = {w=0.1,h=1}}
+            local reroll={n=G.UIT.R, config={align = "br"}, nodes={
+                {n=G.UIT.R, config={ref_table = card, align = "br",padding = 0.1, r=0.08, minw = 0.7, minh = 1.0, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'reroll_spell', func = 'can_reroll_spell'}, nodes={
+                --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                {n=G.UIT.C, config={align = "bm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                    {n=G.UIT.T, config={text = "",colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
+                    }},
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_reroll'),colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
+                    }},
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                    {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.3, shadow = true}},
+                    {n=G.UIT.T, config={ref_table = betm_spellvouchers['magic_wheel'].config, ref_value = 'cost',colour = G.C.WHITE, scale = 0.3, shadow = true}}
+                    }}
+                }}
+                }},
+            }}
             -- remove use button 
             local t = {
                 n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
@@ -128,22 +145,23 @@ do
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
                     #G.betmma_spells.highlighted>1 and fuse or sell
                     }},
-                    -- {n=G.UIT.R, config={align = 'cl'}, nodes={
-                    --     {n=G.UIT.B, config = {w=0.1,h=0.1}}
-                    -- }},
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
-                    use
+                        {n=G.UIT.B, config = {w=0.1,h=1}}
                     }},
 
                 }},
             }}
+            if used_spellvoucher('magic_wheel') then
+                t.config.padding=-0.1
+                t.nodes[1].nodes[2].nodes[1]=reroll
+            end
             return t
         end
         return G_UIDEF_use_and_sell_buttons_ref(card)
     end
 
     local G_FUNCS_can_buy_and_use_ref=G.FUNCS.can_buy_and_use
-    -- prevent buy and use button on spells in shop (will appear if cooldown is 0 and will crash when clicked)
+    -- prevent buy and use button on spells in shop
     G.FUNCS.can_buy_and_use = function(e)
         G_FUNCS_can_buy_and_use_ref(e)
         if e.config.ref_table.ability.set=='Spell' then
@@ -184,6 +202,25 @@ do
             end
         }))
     end
+    
+    G.FUNCS.can_reroll_spell = function(e)
+        local cost=betm_spellvouchers['magic_wheel'].config.cost
+        if (cost > G.GAME.dollars - G.GAME.bankrupt_at) and (cost > 0) then
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        else
+            e.config.colour = G.C.ORANGE
+            e.config.button = 'reroll_spell'
+        end
+    end
+    G.FUNCS.reroll_spell = function(e) 
+        local c1 = e.config.ref_table
+        ease_dollars(-betm_spellvouchers['magic_wheel'].config.cost)
+        G.E_MANAGER:add_event(Event({
+            c1.config.center.generate_sequence(c1)
+        }))
+        c1.area:remove_from_highlighted(c1)
+    end
 
     local G_FUNCS_check_for_buy_space_ref=G.FUNCS.check_for_buy_space
     G.FUNCS.check_for_buy_space = function(card)
@@ -196,7 +233,7 @@ do
         end
         return G_FUNCS_check_for_buy_space_ref(card)
     end
-end -- Spell Area and Spell Cards preparation (card size; buy, sell and fuse functionality and buttons)
+end -- Spell Area and Spell Cards preparation (card size; buy, sell, fuse and reroll functionality and buttons)
 
 SMODS.ConsumableType { -- Define Spell Consumable Type
     key = 'Spell',
@@ -420,7 +457,31 @@ local function spell_prototype(data)
     data.generate_sequence_ref=data.generate_sequence
     -- set current, current_with_anim, max and call update_sequence
     data.generate_sequence=function(self)
-        self.config.center.generate_sequence_ref(self)
+        if not self.ability.progress.sequence then
+            self.config.center.generate_sequence_ref(self)
+        else -- ensure rerolled sequence is a different one
+            local last_seq=self.ability.progress.sequence
+            self.config.center.generate_sequence_ref(self)
+            local function seq_equal(a,b)
+                if #a~=#b then
+                    return false
+                end
+                for i=1,#a do
+                    if a[i].key~=b[i].key then
+                        return false
+                    end
+                end
+                return true
+            end
+            local count=0
+            while seq_equal(last_seq,self.ability.progress.sequence) do
+                count=count+1
+                self.config.center.generate_sequence_ref(self)
+                if count>50 then
+                    break
+                end
+            end
+        end
         self.ability.progress.current=0--math.floor(pseudorandom('std_a',0,2))
         self.ability.progress.current_with_anim=self.ability.progress.current
         self.ability.progress.max=#self.ability.progress.sequence
@@ -508,7 +569,7 @@ do
     local Card_draw_ref=Card.draw
     -- draw cascading hint ui, also generate its sequence if not prepared (upon buying since only in spell area will it draw hint ui)
     function Card:draw(layer)
-        if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) then --will spells go to jokers or other areas?
+        if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not self.highlighted then --will spells go to jokers or other areas?
             Card_draw_ref(self,layer)
             if self.ability.prepared==false then
                 self.config.center.generate_sequence(self)
@@ -522,6 +583,9 @@ do
             return
         elseif self.ability.set=='Spell' and (self.area==G.pack_cards) then
             self.ability.prepared=false --prevent spell in pack displays sequence (why? all the data are in ability)
+        elseif self.highlighted and self.children.hintUI then
+            self.children.hintUI:remove()
+            self.children.hintUI=nil
         end
         Card_draw_ref(self,layer)
     end
@@ -1109,7 +1173,8 @@ do
         calculate = function(self,card,context)
             local other=context.other_card
             card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_betmma_reflection')})
-            local rank=card.ability.progress.cardlist[1].base.value
+            local card1=card.ability.progress.cardlist[1]
+            local rank=card1 and card1.base and card1.base.value or 'Ace'
             -- in after_event cardlist will be reset to {} so i should get its value here
             after_event(function()
                 other:flip()
@@ -1259,7 +1324,7 @@ do
         cost = 5,
         loc_vars = function(self, info_queue, card)
             return {vars = {
-                card.ability.extra.value
+                card.ability.extra.value,card.ability.extra.tally
             }}
         end,
         generate_sequence = function(self)
@@ -1363,5 +1428,74 @@ SMODS.Booster({
 	end,
     group_key = "k_betmma_spell_pack", -- this determines the bottom line and its value is assigned in process_loc_text
 })
+
+
+-- vouchers --
+betm_spellvouchers={}
+local function voucher_prototype(data)
+    data.unlocked=true
+    data.discovered=true
+    data.available=true
+    data.pos={x=0,y=0}
+    data.atlas=data.key
+    get_atlas(data.key,'voucher')
+    data.cost=data.cost or 10
+    local raw_key=data.key
+    local obj=SMODS.Voucher(data)
+    betm_spellvouchers[raw_key]=obj
+    return obj
+end
+function get_betmma_spellvouchers_key(voucher_raw_key)
+    return betm_spellvouchers[voucher_raw_key].key
+end
+function used_spellvoucher(raw_key)
+    return G.GAME.used_vouchers[get_betmma_spellvouchers_key(raw_key)]
+end
+do
+    voucher_prototype{
+        key='magic_scroll',
+        loc_txt = {
+            name = 'Magic Scroll',
+            text = { 
+                "{C:attention}+#1#{} Spell Slot",
+            }
+        },
+        config={extra=1},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra}}
+        end,
+        redeem=function(self,card)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_spells then 
+                    G.betmma_spells.config.card_limit = G.betmma_spells.config.card_limit + self.config.extra
+                end
+                return true end }))
+        end
+    }
+    voucher_prototype{
+        key='magic_wheel',
+        loc_txt = {
+            name = 'Magic Wheel',
+            text = { 
+                "{C:attention}+#1#{} Spell Slot",
+                "You can spend {C:money}$#2#{} to reroll",
+                "the sequence of a Spell",
+                "(not implemented yet)"
+            }
+        },
+        config={extra=1,cost=2},
+        loc_vars = function(self, info_queue, center)
+            return {vars={center.ability.extra,center.ability.cost}}
+        end,
+        redeem=function(self,card)
+            G.E_MANAGER:add_event(Event({func = function()
+                if G.betmma_spells then 
+                    G.betmma_spells.config.card_limit = G.betmma_spells.config.card_limit + self.config.extra
+                end
+                return true end }))
+        end,
+        requires={get_betmma_spellvouchers_key('magic_scroll')}
+    }
+end --magic scroll/wheel
 ----------------------------------------------
 ------------MOD CODE END----------------------
