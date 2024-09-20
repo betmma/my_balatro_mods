@@ -5602,7 +5602,7 @@ end -- reroll aisle
             },
             deck = {
                 type = 'Challenge Deck',
-                cards = {{s='D',r='2',e='m_lucky',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',e='m_lucky',g='Red'},{s='D',r='5',e='m_lucky',g='Red'},{s='D',r='6',e='m_lucky',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
+                cards = {{s='D',r='2',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',g='Red'},{s='D',r='5',g='Red'},{s='D',r='6',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
             },
             restrictions = {
                 banned_cards = {

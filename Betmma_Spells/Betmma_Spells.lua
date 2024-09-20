@@ -1357,6 +1357,70 @@ do
         end,
     }
 end --steam
+do
+    local key='magma'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Magma',
+            text = {
+                'Change #1# unenhanced Cards',
+                'in deck into {C:attention}Gold Card{}'
+            },
+            before_desc="4 ranks x, x, x+1, and x+1"
+        },
+        atlas = key, 
+        config = {extra = {value=3},fuse_from={'fire','earth'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,1),false),
+                getica(betmma_spell_delta_rank(rank,1),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            local count=0
+            for k,v in pairs(G.deck.cards) do
+                if v.config.center_key=='c_base' then
+                    v:set_ability(G.P_CENTERS['m_gold'],nil,true)
+                    count=count+1
+                    if count>=card.ability.extra.value then
+                        return
+                    end
+                end
+            end
+            for k,v in pairs(G.hand.cards) do
+                if v.config.center_key=='c_base' then
+                    v:set_ability(G.P_CENTERS['m_gold'],nil,true)
+                    count=count+1
+                    if count>=card.ability.extra.value then
+                        return
+                    end
+                end
+            end
+            for k,v in pairs(G.play.cards) do
+                if v.config.center_key=='c_base' then
+                    v:set_ability(G.P_CENTERS['m_gold'],nil,true)
+                    count=count+1
+                    if count>=card.ability.extra.value then
+                        return
+                    end
+                end
+            end
+        end,
+    }
+end --magma
 -- tier 3
 do
     local key='ripple'
