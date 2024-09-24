@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.3(20240917)
+--- VERSION: 0.1.4(20240924)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -1434,6 +1434,64 @@ do
         end,
     }
 end --magma
+do
+    local key='ember'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Ember',
+            text = {
+                '{C:attention}Destroy{} all played cards, and add',
+                '{C:attention}#1#{} copies of fourth card into deck'
+            },
+            before_desc="2 odd ranks and 2 even ranks, alternatively"
+        },
+        atlas = key, 
+        config = {extra = {value=3},fuse_from={'fire','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element({'2','4','6','8','10'})
+            local rank2=pseudorandom_element{'Ace','3','5','7','9'}
+            self.ability.progress.sequence={
+                getica(rank2,false),
+                getica(rank,false),
+                getica(rank2,false),
+                getica(rank,false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            local count=0
+            for k,v in pairs(G.play.cards) do
+                after_event(function()
+                    v:start_dissolve()
+                end)
+            end
+            local new_cards = {}
+            for i = 1, card.ability.extra.value do
+                after_event(function()
+                    local _card = copy_card(other, nil, nil, 1)
+                    _card:add_to_deck()
+                    G.deck.config.card_limit = G.deck.config.card_limit + 1
+                    table.insert(G.playing_cards, _card)
+                    G.hand:emplace(_card)
+                    _card:start_materialize(nil, _first_dissolve)
+                    new_cards[#new_cards+1] = _card
+                    if i==card.ability.extra.value then
+                        playing_card_joker_effects(new_cards)
+                    end
+                end)
+            end
+        end,
+    }
+end --ember
 do
     local key='mud'
     get_atlas(key)

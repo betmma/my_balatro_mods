@@ -176,7 +176,8 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Crystal (Light + Earth) (2 same Light suits): Enhance second card to Glass Card. If already Glass Card, +$6.
 - Halo (Light + Air) (1 Light suit and 1 not Light suit): Second card gains +5 Mult.
 - Steam (Fire + Water) (3 ranks x, x+1 and x-1): X3 Mult, but cards in this hand will be debuffed after 3 rounds.
-- Magma (Fire + Earth) (4 ranks x, x, x+1 and x+1): change 3 unenhanced cards in deck into Gold Card.
+- Magma (Fire + Earth) (4 ranks x, x, x+1 and x+1): Change 3 unenhanced cards in deck into Gold Card.
+- Ember (Fire + Air) (2 odd ranks and 2 even ranks, alternatively): Destroy all played cards and generate 3 copies of fourth card.
 - Mud (Water + Earth) (4 ranks x, x, x-1 and x-1): Cards hold in hand gain +$1 when played. (Hiker-like effect)
 - Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
 
