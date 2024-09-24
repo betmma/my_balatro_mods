@@ -331,7 +331,7 @@ target = "game.lua"
 pattern = '''if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then'''
 position = "at"
 payload = '''
-if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 and #G.discard.cards > 0 and has_ability('shuffle')then
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 and #G.discard.cards > 0 and has_ability and has_ability('shuffle')then
     G.FUNCS.draw_from_discard_to_deck()
 elseif #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 then
 '''
@@ -344,7 +344,7 @@ target = "game.lua"
 pattern = '''if #G.hand.cards < 1 and #G.deck.cards < 1 then'''
 position = "at"
 payload = '''
-if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.discard.cards > 0 and has_ability('shuffle')then
+if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.discard.cards > 0 and has_ability and has_ability('shuffle')then
     G.FUNCS.draw_from_discard_to_deck()
 elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
 '''

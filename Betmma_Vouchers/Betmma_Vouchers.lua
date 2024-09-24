@@ -4701,13 +4701,10 @@ do
     end
 
     local get_p_dollars_ref=Card.get_p_dollars
-    function Card:get_p_dollars(context) -- vanilla function modify dollar_buffer so I just don't execute vanilla function (though I don't clearly know what dollar_buffer does)
+    function Card:get_p_dollars(context) -- vanilla function calls dollar_buffer=0 in an event so i don't need to call it again
+        local ret=get_p_dollars_ref(self)
+        local ret_ref=ret
         if used_voucher('real_random') and not self.debuff and self.config.center.real_random_abilities then
-            local ret=0
-            if self.seal == 'Gold' then
-                ret = ret +  3
-            end
-            
             local key='dollars'
             local num= self.config.center.real_random_abilities.values[key].num
             if num<REAL_RANDOM_COLLAPSE_AMOUNT then
@@ -4722,19 +4719,13 @@ do
                 self.lucky_trigger = true
                 ret=ret+get_real_random_ability_average(self.config.center,key)*num
             end
-            
-            if ret > 0 then 
-                G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + ret
-                G.E_MANAGER:add_event(Event({func = (function() G.GAME.dollar_buffer = 0; return true end)}))
-            end
-            if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
-                ret=ret*self.ability.over_retriggered_ratio
-            end
-            return ret
         end
-        local ret=get_p_dollars_ref(self)
         if self.ability.over_retriggered_ratio and self.ability.over_retriggered_ratio>1 then
             ret=ret*self.ability.over_retriggered_ratio
+        end
+        if ret_ref > 0 then 
+            G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + ret-ret_ref
+            -- G.E_MANAGER:add_event(Event({func = (function() G.GAME.dollar_buffer = 0; return true end)}))
         end
         return ret
     end

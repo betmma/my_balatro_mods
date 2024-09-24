@@ -53,9 +53,19 @@ function SMODS.current_mod.process_loc_text()
             "{C:mult}+#1#{} extra mult"
         }
     }
+    G.localization.descriptions.Other.card_extra_p_dollars={
+        text = {
+            "{C:money}+$#1#{}"
+        }
+    }
     G.localization.descriptions.Other.card_extra_mult_neg={
         text = {
-            "{C:mult}#1#{} extra mult"
+            "{C:red}#1#{} extra mult"
+        }
+    }
+    G.localization.descriptions.Other.card_extra_p_dollars_neg={
+        text = {
+            "{C:red}$#1#{}"
         }
     }
     G.localization.misc.dictionary.k_betmma_reflection="Reflection!"
@@ -375,6 +385,9 @@ local function spell_prototype(data)
     data.can_use = function(self,card)
         return false
     end
+    if BETMMA_DEBUGGING then
+        data.discovered=true
+    end
     data.config.progress=data.config.progress or {}
     data.config.progress.cardlist=data.config.progress.cardlist or {}
     local fused=data.config.fuse_from
@@ -675,7 +688,7 @@ do
             before_desc="2 different Dark suits"
         },
         atlas = key, 
-        config = {extra = {value=80},progress={},prepared=false },
+        config = {extra = {value=60},progress={},prepared=false },
         discovered = true,
         cost = 4,
         loc_vars = function(self, info_queue, card)
@@ -1211,8 +1224,8 @@ do
             text = {
                 'Enhances {C:attention}second card{}',
                 'to {C:attention}Glass Card{}.',
-                'If already {C:attention}Glass Card{},',
-                '{C:money}+$#1#{}',
+                'If already {C:attention}Glass Card{}, {C:money}+$#1#{}',
+                -- '',
             },
             before_desc="2 same Light suits"
         },
@@ -1421,6 +1434,60 @@ do
         end,
     }
 end --magma
+do
+    local key='mud'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Mud',
+            text = {
+                'Cards {C:attention}held in hand{}',
+                'gain {C:money}+$#1#{} when scored',
+                -- "(not implemented yet)"
+            },
+            before_desc="4 ranks x, x, x-1, and x-1"
+        },
+        atlas = key, --should looks more wet instead of like a slime ball currently
+        config = {extra = {value=1},fuse_from={'water','earth'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,12),false),
+                getica(betmma_spell_delta_rank(rank,12),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            for k, v in ipairs(G.hand.cards) do
+                card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})
+                v.ability.perma_p_dollars=(v.ability.perma_p_dollars or 0)+card.ability.extra.value
+            end
+        end,
+    }
+    
+    local get_p_dollars_ref=Card.get_p_dollars
+    function Card:get_p_dollars(context) -- vanilla function calls dollar_buffer=0 in an event so i don't need to call it again
+        local ret=get_p_dollars_ref(self)
+        local ret_ref=ret
+        if self.ability.perma_p_dollars then
+            ret=ret+self.ability.perma_p_dollars
+        end
+        if ret_ref > 0 then 
+            G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + ret-ret_ref
+            -- G.E_MANAGER:add_event(Event({func = (function() G.GAME.dollar_buffer = 0; return true end)}))
+        end
+        return ret
+    end
+end --mud
 -- tier 3
 do
     local key='ripple'
@@ -1544,7 +1611,6 @@ do
                 "{C:attention}+#1#{} Spell Slot",
                 "You can spend {C:money}$#2#{} to reroll",
                 "the sequence of a Spell",
-                "(not implemented yet)"
             }
         },
         config={extra=1,cost=2},

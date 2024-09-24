@@ -107,7 +107,7 @@ end
 '''
 match_indent = true
 
-# add perma_mult to card.ability (this hasn't been added by smod?)
+# add perma_mult and perma_p_dollars to card.ability (this hasn't been added by smod?)
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -115,6 +115,7 @@ pattern = "perma_bonus = self.ability and self.ability.perma_bonus or 0,"
 position = "before"
 payload = '''
 perma_mult = self.ability and self.ability.perma_mult or 0,
+perma_p_dollars = self.ability and self.ability.perma_p_dollars or 0,
 '''
 match_indent = true
 
@@ -132,6 +133,13 @@ if card and card.ability.perma_mult then
         localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
     end
 end
+if card and card.ability.perma_p_dollars then
+    if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+    elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+    end
+end
 '''
 match_indent = true
 
@@ -146,6 +154,13 @@ if card and card.ability.perma_mult then
         localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
     elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
         localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    end
+end
+if card and card.ability.perma_p_dollars then
+    if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+    elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
+        localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
     end
 end
 '''
