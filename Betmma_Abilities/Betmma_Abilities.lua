@@ -14,7 +14,9 @@ current progress: abilities are able to cooldown everywhere, but passive calcula
     discard unselected cards
 ]]
 MOD_PREFIX='betm_abilities'
-USING_BETMMA_ABILITIES=true
+CONFIG_ALLOWING_ABILITIES=not betmma_config or betmma_config.abilities
+USING_BETMMA_ABILITIES=CONFIG_ALLOWING_ABILITIES
+if CONFIG_ALLOWING_ABILITIES then
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 betm_abilities={}
 betm_abilities_atlases={}
@@ -597,8 +599,8 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         return t
     end
 }
-
 local function ability_prototype(data)
+    if not CONFIG_ALLOWING_ABILITIES  then return end
     data.keep_on_use = function(self,card)
         return true
     end
@@ -1989,6 +1991,7 @@ end
 -- vouchers --
 betm_abilvouchers={}
 local function voucher_prototype(data)
+    if not CONFIG_ALLOWING_ABILITIES then return end
     data.unlocked=true
     data.discovered=true
     data.available=true
@@ -2002,7 +2005,7 @@ local function voucher_prototype(data)
     return obj
 end
 function get_betmma_abilvouchers_key(voucher_raw_key)
-    return betm_abilvouchers[voucher_raw_key].key
+    return betm_abilvouchers[voucher_raw_key] and betm_abilvouchers[voucher_raw_key].key
 end
 function used_abilvoucher(raw_key)
     return G.GAME.used_vouchers[get_betmma_abilvouchers_key(raw_key)]
@@ -2087,5 +2090,6 @@ do
         requires={get_betmma_abilvouchers_key('cooled_down')}
     }
 end --cooled down/cooled below
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------

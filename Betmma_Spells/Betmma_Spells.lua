@@ -17,7 +17,9 @@ dependencies on abilities mod:
 2. water spell decrease rank (betmma_bump_rank function)
 ]]
 MOD_PREFIX='betm_spells'
-USING_BETMMA_SPELLS=true
+CONFIG_ALLOWING_SPELLS=not betmma_config or betmma_config.spells
+USING_BETMMA_SPELLS=CONFIG_ALLOWING_SPELLS
+if CONFIG_ALLOWING_SPELLS then
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 betmma_spells_centers={}
 betmma_spells_atlases={}
@@ -244,7 +246,6 @@ do
         return G_FUNCS_check_for_buy_space_ref(card)
     end
 end -- Spell Area and Spell Cards preparation (card size; buy, sell, fuse and reroll functionality and buttons)
-
 SMODS.ConsumableType { -- Define Spell Consumable Type
     key = 'Spell',
     collection_rows = { 9,9,9 },
@@ -379,6 +380,9 @@ function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
 function math.round(n, deci) deci = 10^(deci or 0) return math.floor(n*deci+.5)/deci end
 
 local function spell_prototype(data)
+    if not CONFIG_ALLOWING_SPELLS then
+        return
+    end
     data.keep_on_use = function(self,card)
         return true
     end
@@ -583,7 +587,7 @@ do
     -- draw cascading hint ui, also generate its sequence if not prepared (upon buying since only in spell area will it draw hint ui)
     function Card:draw(layer)
         if self.ability.set=='Spell' and (self.area==G.betmma_spells or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not self.highlighted then --will spells go to jokers or other areas?
-            Card_draw_ref(self,layer)
+            Card_draw_ref(self,layer) --the shadow will be above the ui if i move it under these lines
             if self.ability.prepared==false then
                 self.config.center.generate_sequence(self)
                 self.ability.prepared=true
@@ -1622,6 +1626,9 @@ SMODS.Booster({
 -- vouchers --
 betm_spellvouchers={}
 local function voucher_prototype(data)
+    if not CONFIG_ALLOWING_SPELLS then
+        return
+    end
     data.unlocked=true
     data.discovered=true
     data.available=true
@@ -1635,7 +1642,7 @@ local function voucher_prototype(data)
     return obj
 end
 function get_betmma_spellvouchers_key(voucher_raw_key)
-    return betm_spellvouchers[voucher_raw_key].key
+    return betm_spellvouchers[voucher_raw_key]and betm_spellvouchers[voucher_raw_key].key
 end
 function used_spellvoucher(raw_key)
     return G.GAME.used_vouchers[get_betmma_spellvouchers_key(raw_key)]
@@ -1685,5 +1692,6 @@ do
         requires={get_betmma_spellvouchers_key('magic_scroll')}
     }
 end --magic scroll/wheel
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------

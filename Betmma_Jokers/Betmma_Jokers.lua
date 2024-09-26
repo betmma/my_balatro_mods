@@ -211,6 +211,7 @@ function betmma_inc_joker_value(self,multi)
     card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex'), colour = G.C.RED, no_juice = true})
 end
 local function INIT()
+    if betmma_config and not betmma_config.jokers then return end
     local jokers = {
         jjookkeerr = SMODS.Joker{
             name="JJookkeerr", key="jjookkeerr",

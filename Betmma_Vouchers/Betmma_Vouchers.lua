@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.2
+--- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.3
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.2(202400913)
+--- VERSION: 2.2.3.3(202400926)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -42,6 +42,7 @@ function pprint(x)
         print(x)
     end
 end
+
 IN_SMOD1=MODDED_VERSION>='1.0.0'
 local JOKER_MOD_PREFIX=IN_SMOD1 and "betm_jokers_"or ''
 MOD_PREFIX=IN_SMOD1 and 'betm_vouchers_' or ''
@@ -50,7 +51,11 @@ MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 USING_BETMMA_VOUCHERS=true
 
 -- Config: DISABLE UNWANTED VOUCHERS HERE
-betmma_config = {
+betmma_config=SMODS.load_mod_config{id='BetmmaVouchers'}or{}
+if #betmma_config==0 then
+    print('betmma config not found')
+end
+betmma_config_vouchers = {
     -- normal vouchers
     v_oversupply=true,
     v_oversupply_plus=true,
@@ -130,11 +135,25 @@ betmma_config = {
     v_cryptozoology=true,
     v_reroll_aisle=true
 }
+if betmma_config.vouchers==nil then
+    betmma_config.vouchers=betmma_config_vouchers
+end
+if betmma_config.jokers==nil then
+    betmma_config.jokers=true
+end
+if betmma_config.abilities==nil then
+    betmma_config.abilities=true
+end
+if betmma_config.spells==nil then
+    betmma_config.spells=true
+end
+SMODS.current_mod.config=betmma_config
+SMODS.save_mod_config(SMODS.current_mod)
 if not IN_SMOD1 then
-    betmma_config.v_undying=false
-    betmma_config.v_reincarnate=false
-    betmma_config.v_voucher_tycoon=false
-    betmma_config.v_cryptozoology=false
+    betmma_config.vouchers.v_undying=false
+    betmma_config.vouchers.v_reincarnate=false
+    betmma_config.vouchers.v_voucher_tycoon=false
+    betmma_config.vouchers.v_cryptozoology=false
 end
 
 -- example: if used_voucher('slate') then ... end 
@@ -186,7 +205,7 @@ if IN_SMOD1 then
     SMODS.Center.inject =function(self)
         -- print(SMODS.current_mod+"....."+self.set)
         if self.key:find(MOD_PREFIX_V) and self.set=='Voucher'then
-            if not betmma_config['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
+            if not betmma_config.vouchers['v_'..self.key:sub(MOD_PREFIX_V_LEN+1,-1)] then return false end
             self.mod_name='Betmma Vouchers'
             if self.requires and #self.requires>1 and not self.config.weight then 
                 self.config.weight=fusion_voucher_weight
@@ -198,7 +217,7 @@ else
     local SMODS_Voucher_register=SMODS.Voucher.register
     function SMODS.Voucher:register()
         if SMODS._MOD_NAME=='Betmma Vouchers' then
-            if not betmma_config[self.slug] then return false end
+            if not betmma_config.vouchers[self.slug] then return false end
             if self.loc_vars then
                 self.loc_def=function(self2)
                     local loc_vars=self.loc_vars
@@ -459,7 +478,7 @@ end
 
 local function INIT()
     local PATH=GET_PATH_COMPAT()
-    if betmma_config.v_undying or betmma_config.v_reincarnate then
+    if betmma_config.vouchers.v_undying or betmma_config.vouchers.v_reincarnate then
         NFS.load(PATH .. "phantom.lua")()
     end
     -- NFS.load(PATH .. 'Betmma_Abilities.lua')
