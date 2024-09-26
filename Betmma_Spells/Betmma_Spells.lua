@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.4(20240924)
+--- VERSION: 0.1.5(20240926)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -1506,11 +1506,10 @@ do
             text = {
                 'Cards {C:attention}held in hand{}',
                 'gain {C:money}+$#1#{} when scored',
-                -- "(not implemented yet)"
             },
             before_desc="4 ranks x, x, x-1, and x-1"
         },
-        atlas = key, --should looks more wet instead of like a slime ball currently
+        atlas = key, 
         config = {extra = {value=1},fuse_from={'water','earth'},progress={},prepared=false },
         discovered = false,
         cost = 5,
@@ -1550,6 +1549,58 @@ do
         return ret
     end
 end --mud
+do
+    local key='cloud'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Cloud',
+            text = {
+                'Transfer permanent {C:attention}Bonuses{}', 
+                '{C:inactive,s:0.8}(+chips, +Mult, +$)',
+                'from played cards to {C:attention}third card{}',
+            },
+            before_desc="3 ranks x, x-2, and x-4"
+        },
+        atlas = key, 
+        config = {extra = {value=1},fuse_from={'water','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,11),false),
+                getica(betmma_spell_delta_rank(rank,9),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            local eternal_bonuses={bonus=0,mult=0,p_dollars=0}
+            for k, v in ipairs(G.play.cards) do
+                if v~=other then 
+                    card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize('k_betmma_downgrade_ex')})
+                    for key,amount in pairs(eternal_bonuses) do
+                        local fullkey='perma_'..key
+                        eternal_bonuses[key]=eternal_bonuses[key]+v.ability[fullkey]or 0
+                        v.ability[fullkey]=0
+                    end
+                end
+            end
+            card_eval_status_text(other, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})
+            for key,amount in pairs(eternal_bonuses) do
+                local fullkey='perma_'..key
+                other.ability[fullkey]=other.ability[fullkey]+eternal_bonuses[key]
+            end
+        end,
+    }
+end --cloud
 -- tier 3
 do
     local key='ripple'
