@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.5(20240926)
+--- VERSION: 0.1.6(20240927)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -917,7 +917,7 @@ do
             before_desc="1 Dark suit and 1 Light suit"
         },
         atlas = key, 
-        config = {extra = {value=1.25},fuse_from={'dark','light'},progress={},prepared=false },
+        config = {extra = {value=1.5},fuse_from={'dark','light'},progress={},prepared=false },
         discovered = false,
         cost = 5,
         loc_vars = function(self, info_queue, card)
@@ -1550,6 +1550,65 @@ do
     end
 end --mud
 do
+    local key='dust'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Dust',
+            text = {
+                'Copy {C:attention}fourth card{} and gain {C:money}+$#1#{}', 
+                'for each card copied by this spell',
+                '{C:inactive}(Currently {C:money}$#2#{C:inactive}){}'
+            },
+            before_desc="4 ranks x, x, y and y, gap > 4"
+        },
+        atlas = key, 
+        config = {extra = {value=3,count=1},fuse_from={'earth','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 5,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value,
+                card.ability.extra.value*card.ability.extra.count,
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            local delta=pseudorandom_element({5,6,7})
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(rank,false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+                getica(betmma_spell_delta_rank(rank,delta),false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            local new_cards = {}
+            after_event(function()
+                local _card = copy_card(other, nil, nil, 1)
+                _card:add_to_deck()
+                G.deck.config.card_limit = G.deck.config.card_limit + 1
+                table.insert(G.playing_cards, _card)
+                G.hand:emplace(_card)
+                _card:start_materialize(nil, _first_dissolve)
+                new_cards[#new_cards+1] = _card
+                playing_card_joker_effects(new_cards)
+               
+            end)
+            ease_dollars(card.ability.extra.value*card.ability.extra.count)
+            local ret= {
+                message = localize('$')..card.ability.extra.value*card.ability.extra.count,
+                colour = G.C.MONEY,
+                card = card
+            }
+            card.ability.extra.count=card.ability.extra.count+1
+            return ret
+        end,
+    }
+end --dust
+do
     local key='cloud'
     get_atlas(key)
     betmma_spells_centers[key]=spell_prototype { 
@@ -1615,7 +1674,7 @@ do
             before_desc="3 ranks x, x-1 and x"
         },
         atlas = key, 
-        config = {extra = {value=2},fuse_from={'shadow','water'},progress={},prepared=false },
+        config = {extra = {value=2.5},fuse_from={'shadow','water'},progress={},prepared=false },
         discovered = false,
         cost = 6,
         loc_vars = function(self, info_queue, card)

@@ -5557,7 +5557,7 @@ function copy_table(O)
         copy = O
     end
     return copy
-  end
+end
     BETMMA_DEBUGGING=false
     -- this challenge is only for test
     if BETMMA_DEBUGGING then

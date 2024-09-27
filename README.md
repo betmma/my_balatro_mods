@@ -151,7 +151,7 @@ Vouchers:
 - Cooled Down: Abilities cool down 50% faster.
 - Cooled Below: Abilities can cool down into negative values. (e.g. if you buy an ability whose cooldown is 2 rounds, after 5 rounds it reaches -3/2, and you can use it 2 times consecutively then it'll become 1/2)
 
-# Betmma Spells: Adds 21 "Spell" cards (WIP)
+# Betmma Spells: Adds 22 "Spell" cards (WIP)
 Spell is a new type of card which triggers when certain sequence is completed. The sequence of a spell isn't fixed, instead it's randomly generated when you buy it and after buying it won't change. This is to ensure each suit and rank has the same chance to be used and prevent some suits/ranks become too op. For example before buying Light's sequence displays as "2 different Light suits" and after buying it'll be Heart, Diamond or Diamond, Heart.
 How spells trigger: each spell has a count of how much its progress is completed. Take Heart, Diamond as example, upon buying its count is 0, and if you plays a hand of 9H, 8D, 7S, 6H, 5D, when calculating first card, 9H, its count increases as the first element of this sequence is heart and it matches the first card. This also happens for the second card, 8D. After second card is scored, the spell's count reaches 2, meaning its sequence is completed, so you gain +10 Mult and it resets count to 0. Overall this hand triggers the spell 2 times and not 3 (someone may think there are 3 pairs that are 9H-8D, 9H-5D, 6H-5D, and through the analysis above we know 9H-5D is not a pair).
 If current card doesn't satisfy current element the progress won't reset. So 9H, 8D, 6H, 7S, 5D still triggers twice as 7S doesn't reset the progress.
@@ -166,7 +166,7 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Water (2 ranks x, x-1): decrease rank of second card by 1.
 - Earth (2 same ranks): +$5.
 - Air (2 ranks with gap>4): 1 in 4 chance to duplicate second card.
-- Shadow (Dark + Light) (1 Dark suit and 1 Light suit): X1.2 Mult.
+- Shadow (Dark + Light) (1 Dark suit and 1 Light suit): X1.5 Mult.
 - Inferno (Dark + Fire) (2 ranks x, x+1 and 1 Dark suit): destroy third card and + 80 chips
 - Abyss (Dark + Water) (2 ranks x, x-1 and 1 Dark suit): +30*a chips where a is rank of third card.
 - Cavern (Dark + Earth) (2 same Dark suits): +$4.
@@ -180,7 +180,8 @@ Currently spells appear in shop and spell pack, and fusion spells only appear if
 - Ember (Fire + Air) (2 odd ranks and 2 even ranks, alternatively): Destroy all played cards and generate 3 copies of fourth card.
 - Mud (Water + Earth) (4 ranks x, x, x-1 and x-1): Cards hold in hand gain +$1 when played. (Hiker-like effect)
 - Cloud (Water + Air) (3 ranks x, x-2 and x-4): Transfer permanent bonuses (+chips, +Mult and +$) from played cards to third card.
-- Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2 Mult.
+- Dust (Earth + Air) (4 ranks x, x, y and y): Copy fourth card and gain +$3 for each card copied by this spell.
+- Ripple (Shadow + Water) (3 ranks x, x-1 and x): X2.5 Mult.
 
 Also add 
 Pack:
