@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.3
+--- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.4
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.3(202400926)
+--- VERSION: 2.2.3.4(202400926)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -4434,7 +4434,9 @@ do
         },
         random_tag={
             weight=0.25,
-            chance_range={7,7},
+            chance_function=function(center)
+                return 7*4^math.max(#G.HUD_tags-3,0)
+            end,
             base_value_function=function(chance)
                 return 1
             end,
@@ -4513,7 +4515,7 @@ do
             end,
             text={
                 "{C:green}#1# in #3#{} chance",
-                "to add an ability",
+                "to transfer an ability",
                 "to the card to its right"
             },
             calc_function=function(card)
@@ -5542,6 +5544,20 @@ do
         end
     end
 end -- reroll aisle
+function copy_table(O)
+    local O_type = type(O)
+    local copy
+    if O_type == 'table' then
+        copy = {}
+        for k, v in next, O, nil do
+            copy[copy_table(k)] = copy_table(v)
+        end
+        setmetatable(copy, getmetatable(O))
+    else
+        copy = O
+    end
+    return copy
+  end
     BETMMA_DEBUGGING=false
     -- this challenge is only for test
     if BETMMA_DEBUGGING then
