@@ -32,6 +32,18 @@ SMODS_Joker_fake=function(table)
     end
 end
 
+local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
+function TalismanCompat(num)
+    local using=usingTalisman()
+    if not using then return num end
+    if using=='omeganum'then
+        return to_big(num)
+    end
+    if (using==true or using=='bignumber')then
+        return to_big(num)
+    end
+	return num
+end
 
 do
     if after_event==nil then
@@ -173,6 +185,17 @@ local localization = {
             "{C:hearts}Jack of Hearts{} or {C:clubs}King of Clubs{} scored,",
             "generate a {C:attention}Jimbo{}",
             "{C:inactive}(No need to have room)",
+        }
+    },
+    balatro_mobile = {
+        name = "Balatro Mobile",
+        text = {
+            "This Joker is {C:attention}mobile{} and can be put anywhere.",
+            "#2#",
+            "#3#",
+            -- "{C:attention}If played{} it gives {C:chips}+#1#{} chips",
+            -- "and is considered as {C:attention}every suit{}.",
+            "{C:inactive}(Drag it around to see its effects)",
         }
     },
 }
@@ -460,8 +483,225 @@ local function INIT()
                 end
             end
         },
+        balatro_mobile = SMODS.Joker{
+            name="Balatro Mobile", key="balatro_mobile",
+            config={extra={value=26,win_value=26*10^24},h_x_mult=2,h_mult=6,mobile=true},
+            spritePos={x=0,y=0}, 
+            loc_txt="",
+            rarity=2, 
+            cost=6, 
+            unlocked=true, 
+            discovered=true, 
+            blueprint_compat=true, 
+            eternal_compat=true,
+            loc_vars=function(self,info_queue,center)
+                local effect_text=""
+                local effect_text2=""
+                if G and G.jokers==center.area then
+                    effect_text="If score is larger than "..(center.ability.extra.win_value/10^24).." septillion,"
+                    effect_text2="win the blind and self destruct"
+                elseif G and G.consumeables==center.area then
+                    effect_text="Choose 4 cards of 4 suits and ranks of Six, Eight,"
+                    effect_text2="Person (face) and Ten, destroy them and gain $"..center.ability.extra.value
+                elseif G and G.hand==center.area then
+                    effect_text="If hold in hand,"
+                    effect_text2="+"..center.ability.h_mult.." Mult and X"..center.ability.h_x_mult.." Mult"
+                end
+                return {vars={center.ability.extra.value,effect_text,effect_text2}}
+            end,
+            can_use = function(self,card)
+                if not(G and G.hand.highlighted and #G.hand.highlighted==4) then return false end
+                local suits = {
+                    ['Diamonds'] = 0,
+                    ['Spades'] = 0,
+                    ['Hearts'] = 0,
+                    ['Clubs'] = 0
+                }
+                local ranks={
+                    ['6']=0,
+                    ['8']=0,
+                    ['10']=0
+                }
+                local hasFace=false
+                local wild=0
+                for i = 1, #G.hand.highlighted do
+                    if G.hand.highlighted[i].ability.name ~= 'Wild Card' and not G.hand.highlighted[i].config.center.any_suit then
+                        for k, v in pairs(suits) do
+                            if G.hand.highlighted[i]:is_suit(k) then suits[k] = suits[k] + 1 end
+                        end
+                    else
+                        wild=wild+1
+                    end
+                    for k,v in pairs(ranks)do
+                        if G.hand.highlighted[i]:get_id()==tonumber(k) then
+                            ranks[k]=ranks[k]+1
+                        end
+                    end
+                    if G.hand.highlighted[i]:is_face() then
+                        hasFace=true
+                    end
+                end
+                for i = 1, wild do
+                    for k, v in pairs(suits) do
+                        if suits[k]<1 then
+                            suits[k] = suits[k] + 1
+                            break
+                        end
+                    end
+                end
+                local can_u=true
+                for k, v in pairs(suits) do
+                    if v<1 then
+                        can_u=false
+                        break
+                    end
+                end
+                for k, v in pairs(ranks) do
+                    if v<1 then
+                        can_u=false
+                        break
+                    end
+                end
+                return can_u and hasFace
+            end,
+            keep_on_use = function(self,card)
+                return true
+            end,
+            use = function(self,card,area,copier)
+                local destroyed_cards = {}
+                for i=#G.hand.highlighted, 1, -1 do
+                    destroyed_cards[#destroyed_cards+1] = G.hand.highlighted[i]
+                end
+                local value=card.ability.extra.value
+                after_event(function()
+                    ease_dollars(card.ability.extra.value)
+                end)
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.2,
+                    func = function() 
+                        for i=#G.hand.highlighted, 1, -1 do
+                            local card = G.hand.highlighted[i]
+                            if card.ability.name == 'Glass Card' then 
+                                card:shatter()
+                            else
+                                card:start_dissolve(nil, i == #G.hand.highlighted)
+                            end
+                        end
+                    return true end }))
+                for i = 1, #G.jokers.cards do
+                    local effects = G.jokers.cards[i]:calculate_joker({remove_playing_cards = true, removed = destroyed_cards})
+                    if effects and effects.joker_repetitions then
+                        rep_list = effects.joker_repetitions
+                        for z=1, #rep_list do
+                            if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
+                                for r=1, rep_list[z].repetitions do
+                                    card_eval_status_text(rep_list[z].card, 'jokers', nil, nil, nil, rep_list[z])
+                                    if percent then percent = percent+percent_delta end
+                                    G.jokers.cards[i]:calculate_joker({remove_playing_cards = true, removed = destroyed_cards, retrigger_joker = true})
+                                end
+                            end
+                        end
+                    end
+                end
+            end,
+            calculate=function(self,card,context)
+                if context.after and TalismanCompat(G.GAME.chips+((hand_chips or 0)*(mult or 0)))>TalismanCompat(card.ability.extra.win_value) then
+                    G.GAME.balatro_mobile_win=true
+                    after_event(function()
+                        card:start_dissolve()
+                        G.GAME.blind:disable()
+                        G.GAME.chips = G.GAME.blind.chips
+                        -- G.STATE = G.STATES.HAND_PLAYED
+                        -- G.STATE_COMPLETE = true
+                        -- end_round()
+                        -- after_event(function()
+                            -- after_event(function()
+                            -- end)
+                        -- end)
+                    end)
+                end
+                -- if context.end_of_round == true and context.game_over ==true and card.trigger_destruct==true then
+                --     return {saved=true}
+                -- end
+            end,
+            update = function(self, card)
+                card.ability.mobile=true
+                card.ability.consumeable={}
+                card.base.value='Ace'
+                card.base.suit='Jimbo'
+                if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard then -- or it may return to hand like flipped card
+                    return
+                end
+                local possible_areas=G and {G.jokers, G.consumeables, G.hand, G.betmma_abilities, G.betmma_spells} or {}
+                possible_areas=remove_nils(possible_areas)
+                local card_x=card.VT.x+card.VT.w/2
+                local card_y=card.VT.y+card.VT.h/2
+                for i, v in ipairs(possible_areas) do
+                    if v.T.x<card_x and card_x<v.T.x+v.T.w and v.T.y<card_y and card_y<v.T.y+v.T.h and (not card.area or card.area~=v) then
+                        if card.area then
+                            card.area:remove_card(card)
+                        end
+                        v:emplace(card)
+                    end
+                end
+            end
+        },
     }
-
+    local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
+    -- override Ability cards UI and make use and sell buttons smaller
+    function G.UIDEF.use_and_sell_buttons(card)
+        if card.ability.mobile and card.area and card.area==G.consumeables then 
+            local sell,use
+            sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+                {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card'}, nodes={
+                  {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                  {n=G.UIT.C, config={align = "tm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                      {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                    }},
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                      {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+                      {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                    }}
+                  }}
+                }},
+              }}
+              use = 
+              {n=G.UIT.C, config={align = "cr"}, nodes={
+                
+                {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+                  {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                  {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+                }}
+              }}
+              local t = {
+                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+                  {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                      sell
+                    }},
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                      use
+                    }},
+                  }},
+              }}
+            return t
+        end
+        return G_UIDEF_use_and_sell_buttons_ref(card)
+    end
+    -- local can_use_consumeable_ref=G.FUNCS.can_use_consumeable
+    -- G.FUNCS.can_use_consumeable = function(e)
+    --     can_use_consumeable_ref(e)
+    --     local card=e.config.ref_table
+    --     -- if card.config.center.can_use then
+    --     --     print(card.config.center:can_use(card))
+    --     -- end
+    --     if card.ability.mobile and card.config.center:can_use(card) then
+    --         e.config.colour = G.C.RED
+    --         e.config.button = 'use_card'
+    --     end
+    --   end
 
     -- this challenge is only for test
     -- table.insert(G.CHALLENGES,1,{

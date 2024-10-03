@@ -3198,9 +3198,9 @@ do
     end
     handle_register(this_v)
     local level_up_hand_ref=level_up_hand
-    local function upgrade_hand_and_display(card, hand, immediate, amount)
-        local delaydiv=G.betmma_solar_system_times or 1
-        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.1/delaydiv}, {handname=localize(hand, 'poker_hands'),chips = G.GAME.hands[hand].chips, mult = G.GAME.hands[hand].mult, level=G.GAME.hands[hand].level})
+    local function upgrade_hand_and_display(card, hand, immediate, amount, delaydiv)
+        local delaydiv=(G.betmma_solar_system_times or 1)+(delaydiv or 0)
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8+delaydiv/10, delay = 0.1/delaydiv}, {handname=localize(hand, 'poker_hands'),chips = G.GAME.hands[hand].chips, mult = G.GAME.hands[hand].mult, level=G.GAME.hands[hand].level})
         level_up_hand_ref(card, hand, immediate, amount)
     end
     function level_up_hand(card, hand, instant, amount)
@@ -3232,13 +3232,17 @@ do
                 end
             end
             if used_voucher('gravitational_wave') then 
+                local cnt=0
                 for _,k in pairs(G.handlist) do
                     if k~=hand and k~=last and k~=next and G.GAME.hands[k] then
-                        upgrade_hand_and_display(card,k,true,(amount or 1)*get_voucher('gravitational_wave').config.extra)
+                        cnt=cnt+1
+                        upgrade_hand_and_display(card,k,true,(amount or 1)*get_voucher('gravitational_wave').config.extra,cnt)
                     end
                 end
             end
             G.betmma_gravity_voucher_rep=false
+            local delaydiv=G.betmma_solar_system_times or 1
+            update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.1/delaydiv}, {handname=localize(hand, 'poker_hands'),chips = G.GAME.hands[hand].chips, mult = G.GAME.hands[hand].mult, level=G.GAME.hands[hand].level})
         end
     end
     
@@ -5577,20 +5581,20 @@ end
                 -- {id = 'j_ascension'},
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_sock_and_buskin'},
-                {id = 'j_oops'},
-                {id = 'j_oops'},
+                -- {id = 'j_oops'},
+                -- {id = 'j_oops'},
                 -- {id = 'j_baron',  edition='phantom'},
                 -- {id = 'j_brainstorm', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
                 {id = 'j_bloodstone', },
                 -- {id = 'j_madness', eternal = true},
-                -- {id = JOKER_MOD_PREFIX..'j_flying_cards'},
-                -- {id = 'j_lobc_fotdb'}--, pinned = true},
+                {id = JOKER_MOD_PREFIX..'j_balatro_mobile'},
+                -- {id = 'j_lobc_happy_teddy_bear'}--, pinned = true},
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
-                -- {id = 'c_cry_Klubi'},
+                {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
@@ -5628,7 +5632,7 @@ end
             },
             deck = {
                 type = 'Challenge Deck',
-                cards = {{s='D',r='2',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',g='Red'},{s='D',r='5',g='Red'},{s='D',r='6',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_lucky',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_lucky',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
+                cards = {{s='D',r='2',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',g='Red'},{s='D',r='5',g='Red'},{s='D',r='6',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_wild',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_wild',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
             },
             restrictions = {
                 banned_cards = {
