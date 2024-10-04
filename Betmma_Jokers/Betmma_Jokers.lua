@@ -2,7 +2,7 @@
 --- MOD_NAME: Betmma Jokers
 --- MOD_ID: BetmmaJokers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 10 More Jokers!
+--- MOD_DESCRIPTION: 11 More Jokers!
 --- PREFIX: betm_jokers
 
 ----------------------------------------------
@@ -485,7 +485,7 @@ local function INIT()
         },
         balatro_mobile = SMODS.Joker{
             name="Balatro Mobile", key="balatro_mobile",
-            config={extra={value=26,win_value=26*10^24},h_x_mult=2,h_mult=6,mobile=true},
+            config={extra={value=26,win_value=26*10^24,ability_price=6,cooldown_reduce=2,shop_joker_min=2,shop_joker_max=6},h_x_mult=2,h_mult=6,mobile=true},
             spritePos={x=0,y=0}, 
             loc_txt="",
             rarity=2, 
@@ -506,10 +506,19 @@ local function INIT()
                 elseif G and G.hand==center.area then
                     effect_text="If hold in hand,"
                     effect_text2="+"..center.ability.h_mult.." Mult and X"..center.ability.h_x_mult.." Mult"
+                elseif G and G.shop_jokers==center.area then
+                    effect_text="When bought, generate a joker"
+                    effect_text2="whose price is between $"..center.ability.extra.shop_joker_min.." and $"..center.ability.extra.shop_joker_max
+                elseif G and G.betmma_abilities==center.area then
+                    effect_text="Pay $"..center.ability.extra.ability_price..", decrease cooldown of"
+                    effect_text2="the ability to its right by "..center.ability.extra.cooldown_reduce.." (not impmted)"
                 end
                 return {vars={center.ability.extra.value,effect_text,effect_text2}}
             end,
             can_use = function(self,card)
+                if card.area==G.betmma_abilities then
+                    return (G.GAME.dollars-G.GAME.bankrupt_at)>=card.ability.extra.ability_price
+                end
                 if not(G and G.hand.highlighted and #G.hand.highlighted==4) then return false end
                 local suits = {
                     ['Diamonds'] = 0,
@@ -568,6 +577,27 @@ local function INIT()
                 return true
             end,
             use = function(self,card,area,copier)
+                if card.area==G.betmma_abilities then
+                    after_event(function()
+                        ease_dollars(card.ability.extra.ability_price)
+                    end)
+                    local index=999
+                    for i=1,#G.betmma_abilities.cards do
+                        if G.betmma_abilities.cards[i]==card then
+                            index=i;break
+                        end
+                    end 
+                    if index<#G.betmma_abilities.cards then
+                        local right=G.betmma_abilities.cards[index+1]
+                        if right.ability.cooldown and (right.ability.cooldown.type~='passive') then
+                            right.ability.cooldown.now=right.ability.cooldown.now-card.ability.extra.cooldown_reduce
+                            if not used_abilvoucher('cooled_below') and right.ability.cooldown.now<0 then
+                                right.ability.cooldown.now=0
+                            end
+                        end
+                    end
+                    return
+                end
                 local destroyed_cards = {}
                 for i=#G.hand.highlighted, 1, -1 do
                     destroyed_cards[#destroyed_cards+1] = G.hand.highlighted[i]
@@ -605,6 +635,32 @@ local function INIT()
                     end
                 end
             end,
+            buy_from_shop=function(self,card)
+                if not(#G.jokers.cards < G.jokers.config.card_limit + ((card.edition and card.edition.negative) and 1 or 0)) then
+                    return 
+                end
+                local ret={get_current_pool('Joker')}
+                local pool=ret[1]
+                local new_pool={}
+                local _pool_size=0
+                for k,v in pairs(pool) do
+                    if v~='UNAVAILABLE' then
+                        local card2= G.P_CENTERS[v]
+                        local cost=card2.cost
+                        if card.ability.extra.shop_joker_min<=cost and cost<=card.ability.extra.shop_joker_max then
+                            new_pool[#new_pool+1]=v
+                            _pool_size=_pool_size+1
+                        end
+                    end
+                end
+                if _pool_size == 0 then
+                    new_pool = EMPTY(G.ARGS.TEMP_POOL)
+                    new_pool[#new_pool + 1] = "j_joker"
+                end
+                local card2 = create_card('Joker', G.jokers, nil, nil, nil, nil, pseudorandom_element(new_pool,pseudoseed('std_mobile')))
+                card2:add_to_deck()
+                G.jokers:emplace(card2)
+            end,
             calculate=function(self,card,context)
                 if context.after and TalismanCompat(G.GAME.chips+((hand_chips or 0)*(mult or 0)))>TalismanCompat(card.ability.extra.win_value) then
                     G.GAME.balatro_mobile_win=true
@@ -626,28 +682,55 @@ local function INIT()
                 -- end
             end,
             update = function(self, card)
+                if card.ability.countdown and card.ability.countdown>0 then
+                    card.ability.countdown=card.ability.countdown-1
+                end
                 card.ability.mobile=true
-                card.ability.consumeable={}
+                if card.area~=(G and G.shop_jokers) then
+                    card.ability.consumeable={}
+                else
+                    card.ability.consumeable=nil
+                end
                 card.base.value='Ace'
                 card.base.suit='Jimbo'
-                if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard then -- or it may return to hand like flipped card
+                if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard or (card.ability.countdown and card.ability.countdown>0) then -- or it may return to hand like flipped card
                     return
                 end
-                local possible_areas=G and {G.jokers, G.consumeables, G.hand, G.betmma_abilities, G.betmma_spells} or {}
+                local possible_areas={G.jokers, G.consumeables, G.hand, G.betmma_abilities, G.betmma_spells, G.shop_jokers}
                 possible_areas=remove_nils(possible_areas)
                 local card_x=card.VT.x+card.VT.w/2
                 local card_y=card.VT.y+card.VT.h/2
                 for i, v in ipairs(possible_areas) do
                     if v.T.x<card_x and card_x<v.T.x+v.T.w and v.T.y<card_y and card_y<v.T.y+v.T.h and (not card.area or card.area~=v) then
                         if card.area then
+                            if card.area.config.type ~= 'betmma_ability' and v.config.type == 'betmma_ability' then -- big -> small
+                                -- print('smaller')
+                                card.T.scale = card.T.scale * 0.4
+                                -- card.VT.scale = card.VT.scale * 0.4
+                            elseif card.area.config.type == 'betmma_ability' and v.config.type ~= 'betmma_ability' then -- small -> big
+                                -- print('bigger')
+                                card.T.scale = card.T.scale * 2.5
+                                -- card.VT.scale = card.VT.scale * 2.5
+                            end
                             card.area:remove_card(card)
                         end
                         v:emplace(card)
+                        if v==G.shop_jokers then
+                            create_shop_card_ui(card)
+                        end
                     end
                 end
             end
         },
     }
+    local CardArea_emplace_ref=CardArea.emplace
+    function CardArea:emplace(card, location, stay_flipped)
+        if card.ability.mobile then
+            card.ability.countdown=10 -- if card is moved by program (not by player dragged) prevent being placed back
+        end
+        CardArea_emplace_ref(self, card, location, stay_flipped)
+    end
+    
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
     -- override Ability cards UI and make use and sell buttons smaller
     function G.UIDEF.use_and_sell_buttons(card)
@@ -688,8 +771,66 @@ local function INIT()
               }}
             return t
         end
+        if card.ability.mobile and card.area and card.area==G.betmma_abilities then 
+            local sell = nil
+            local use = nil
+            sell = {n=G.UIT.R, config={align = "tr"}, nodes={
+                {n=G.UIT.R, config={ref_table = card, align = "tr",padding = 0.1, r=0.08, minw = 0.7, minh = 0.9, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card'}, nodes={
+                --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                {n=G.UIT.C, config={align = "tm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
+                    }},
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                    {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.3, shadow = true}},
+                    {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.3, shadow = true}}
+                    }}
+                }}
+                }},
+            }}
+            use = 
+            {n=G.UIT.R, config={align = "bm"}, nodes={
+                
+                {n=G.UIT.R, config={ref_table = card, align = "bm",maxw = 1.25, padding = 0.1, r=0.08, minw = 0.7, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+                --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
+                }}
+            }}
+            if card.ability.cooldown and card.ability.cooldown.type=='passive' then
+                use={n=G.UIT.B, config = {w=0.1,h=1}}
+            end -- remove use button if this is passive ability
+            local t = {
+                n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+                {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                    sell
+                    }},
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                        {n=G.UIT.B, config = {w=0.1,h=1.9}}
+                    }},
+                    {n=G.UIT.R, config={align = 'cl'}, nodes={
+                    use
+                    }},
+                }},
+            }}
+            return t
+        end
         return G_UIDEF_use_and_sell_buttons_ref(card)
     end
+
+    local G_FUNCS_buy_from_shop_ref=G.FUNCS.buy_from_shop
+    G.FUNCS.buy_from_shop = function(e)
+        local c1 = e.config.ref_table
+        if c1.ability.mobile then
+            c1.ability.consumable=nil
+        end
+        local ret=G_FUNCS_buy_from_shop_ref(e)
+        if ret~=false and c1.ability.mobile and c1.config.center.buy_from_shop then 
+            c1.config.center:buy_from_shop(c1)
+        end
+        return ret
+    end
+
     -- local can_use_consumeable_ref=G.FUNCS.can_use_consumeable
     -- G.FUNCS.can_use_consumeable = function(e)
     --     can_use_consumeable_ref(e)

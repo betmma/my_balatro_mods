@@ -3205,7 +3205,7 @@ do
     end
     function level_up_hand(card, hand, instant, amount)
         level_up_hand_ref(card, hand, instant, amount)
-        if not G.betmma_gravity_voucher_rep then --this doesn't seem to work. maybe it's because repeated calls are after events so must call _ref
+        if (used_voucher('gravity_assist') or used_voucher('gravitational_wave')) and not G.betmma_gravity_voucher_rep then --this doesn't seem to work. maybe it's because repeated calls are after events so must call _ref
             G.betmma_gravity_voucher_rep=true
             local last=nil
             local next=nil
@@ -3616,6 +3616,7 @@ do
         if c1.ability.consumeable and (c1.config.center.set == 'Planet') and ret~=false and used_voucher('double_planet') and #G.consumeables.cards + G.GAME.consumeable_buffer + (e.config.id ~= 'buy_and_use' and 1 or 0) < G.consumeables.config.card_limit then -- (e.config.id ~= 'buy_and_use' and 1 or 0) is because buy_from_shop adds a card in an event that is executed after this code if the button is "buy" not "buy_and_use"
             randomly_create_planet('v_double_planet','Double Planet!',nil)
         end
+        return ret
     end
 end -- double planet
 do
