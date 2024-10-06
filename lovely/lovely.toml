@@ -137,7 +137,7 @@ pattern = "G.GAME.orbital_choices = G.GAME.orbital_choices or {}"
 position = "before"
 payload = '''
     local betmma_extra_blind_money=0
-    if type=='Boss' then
+    if type=='Boss' and betmma_rich_boss_bonus then
         betmma_extra_blind_money=betmma_extra_blind_money+betmma_rich_boss_bonus()
     end
     local function string_rep(string,times)
@@ -172,7 +172,7 @@ target = "blind.lua"
 pattern = '''G.GAME.current_round.dollars_to_be_earned = self.dollars > 0 and (string.rep(localize('$'), self.dollars)..'') or ('')'''
 position = "at"
 payload = '''
-    if self.boss then
+    if self.boss and betmma_rich_boss_bonus then
         self.dollars=self.dollars+betmma_rich_boss_bonus()
     end
     local function string_rep(string,times)
@@ -187,7 +187,7 @@ payload = '''
         return ans
     end
     G.GAME.current_round.dollars_to_be_earned = self.dollars > 0 and (string_rep(localize('$'), self.dollars)..'') or ('')
-    if self.boss then
+    if self.boss and betmma_rich_boss_bonus then
         self.dollars=self.dollars-betmma_rich_boss_bonus()
     end
 '''
