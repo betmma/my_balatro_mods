@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.4
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.4(202400926)
+--- VERSION: 2.2.3.4(20240926)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -50,7 +50,7 @@ MOD_PREFIX_V='v_'..MOD_PREFIX
 MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 USING_BETMMA_VOUCHERS=true
 
--- Config: DISABLE UNWANTED VOUCHERS HERE
+-- Config: You can disable unwanted vouchers and my other mods in AppData/Roaming/Balatro/config/BetmmaVouchers.jkr. The config below is a default one if such .jkr doesn't exist, and .jkr is automatically created in such case.
 betmma_config=SMODS.load_mod_config{id='BetmmaVouchers'}or{}
 if #betmma_config==0 then
     print('betmma config not found')
@@ -231,7 +231,6 @@ else
         SMODS_Voucher_register(self)
     end
 end
-
 
 SMODS_Voucher_ref=SMODS.Voucher -- 0.9.8 compat thing
 SMODS_Voucher_fake=function(table)

@@ -193,3 +193,4 @@ Vouchers:
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.
+About config: You can disable unwanted vouchers and my other mods in AppData/Roaming/Balatro/config/BetmmaVouchers.jkr. If such .jkr doesn't exist, boot the game once and .jkr will be automatically created.
