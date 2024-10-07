@@ -138,6 +138,11 @@ betmma_config_vouchers = {
 if betmma_config.vouchers==nil then
     betmma_config.vouchers=betmma_config_vouchers
 end
+for k,v in pairs(betmma_config_vouchers) do
+    if betmma_config.vouchers[k]==nil then
+        betmma_config.vouchers[k]=v
+    end
+end
 if betmma_config.jokers==nil then
     betmma_config.jokers=true
 end
@@ -5562,7 +5567,7 @@ function copy_table(O)
     end
     return copy
 end
-    BETMMA_DEBUGGING=false
+    BETMMA_DEBUGGING=1
     -- this challenge is only for test
     if BETMMA_DEBUGGING then
         

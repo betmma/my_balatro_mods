@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.6(20240927)
+--- VERSION: 0.1.7(20241007)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -264,7 +264,7 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
 			},
 		},
     },
-    shop_rate = 1.0,--BETMMA_DEBUGGING and 9999 or 
+    shop_rate = BETMMA_DEBUGGING and 9999 or 1.0,-- 
     default = 'c_betm_spells_dark',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -1699,6 +1699,65 @@ do
         end,
     }
 end --ripple
+do
+    local key='lava'
+    get_atlas(key)
+    betmma_spells_centers[key]=spell_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Lava',
+            text = {
+                'Change first unenhanced Card',
+                'in hand into {C:attention}Gold Card{}.',
+                '{X:mult,C:white}X#1#{} Mult for each {C:attention}Gold Card{} in hand'
+            },
+            before_desc="4 ranks x, x, Numbered and Numbered"
+        },
+        atlas = key, 
+        config = {extra = {value=1.5},fuse_from={'magma','air'},progress={},prepared=false },
+        discovered = false,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {
+                card.ability.extra.value
+            }}
+        end,
+        generate_sequence = function(self)
+            local rank=pseudorandom_element(possible_ranks)
+            self.ability.progress.sequence={
+                getica(rank,false),
+                getica(rank,false),
+                getica('Numbered',false),
+                getica('Numbered',false),
+            }
+        end,
+        calculate = function(self,card,context)
+            local other=context.other_card
+            local count=0
+            local added=false
+            for k,v in pairs(G.hand.cards) do
+                if v.config.center_key=='c_base' and not added then
+                    added=true
+                    count=count+1
+                    card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize{type = 'variable', key = 'a_xmult', vars = {card.ability.extra.value}}})
+                elseif v.config.center_key=='c_base' then
+                    count=count+1
+                    card_eval_status_text(v, 'extra', nil, nil, nil, {message = localize{type = 'variable', key = 'a_xmult', vars = {card.ability.extra.value}}})
+                end
+            end
+            for k,v in pairs(G.hand.cards) do
+                if v.config.center_key=='c_base' then
+                    v:set_ability(G.P_CENTERS['m_gold'],nil,true)
+                    break
+                end
+            end
+            return {
+                x_mult = card.ability.extra.value^count,
+                card = card
+            }
+        end,
+    }
+end --lava
 
 -- spell pack
 get_atlas('spell_pack','booster')
