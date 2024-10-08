@@ -5568,6 +5568,10 @@ function copy_table(O)
     return copy
 end
     BETMMA_DEBUGGING=false
+    local PATH=GET_PATH_COMPAT()
+    if not NFS.load(PATH .. "debug_on") then
+        BETMMA_DEBUGGING=false
+    end
     -- this challenge is only for test
     if BETMMA_DEBUGGING then
         
