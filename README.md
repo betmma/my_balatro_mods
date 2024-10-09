@@ -191,6 +191,8 @@ Pack:
 Vouchers: 
 - Magic Scroll: +1 Spell Slot.
 - Magic Wheel: +1 Spell Slot. Spend $2 to reroll sequence of a spell.
+Ability:
+- Switch (cooldown: 3 hands) Flip the current element of selected spell. 
 
 # Note that [Steamodded](https://github.com/Steamopollys/Steamodded) is required to load the mods.
 The mods are written and tested on Steamodded 1.0.0. There was code for 0.9.8 compatibility but since most people are shifting to SMOD 1.0.0 and SMOD 1.0.0 supports 0.9.8 mods now, I won't check 0.9.8 compatibility very frequently and can't promise its compatibility.

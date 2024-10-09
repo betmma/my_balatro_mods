@@ -579,7 +579,7 @@ local function INIT()
             use = function(self,card,area,copier)
                 if card.area==G.betmma_abilities then
                     after_event(function()
-                        ease_dollars(card.ability.extra.ability_price)
+                        ease_dollars(-card.ability.extra.ability_price)
                     end)
                     local index=999
                     for i=1,#G.betmma_abilities.cards do

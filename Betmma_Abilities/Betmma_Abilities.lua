@@ -518,7 +518,7 @@ SMODS.ConsumableType { -- Define Ability Consumable Type
         name = 'Ability',
         label = 'Abililty'
     },
-    shop_rate = 0.0,
+    shop_rate = BETMMA_DEBUGGING and 0.0 or 0.0,
     default = 'c_betm_abilities_philosophy',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}
@@ -609,6 +609,7 @@ local function ability_prototype(data)
     data.pos={x=0,y=0}
     return SMODS.Consumable(data)
 end
+betmma_abilities_ability_prototype=ability_prototype
 
 -- return first ability (card) whose key is key (e.g. 'shield'). If none return nil. Search in ability slots, consumable slots and deck.
 function has_ability(key)
@@ -669,6 +670,7 @@ local function get_atlas(key,type)
         path = prefix..key..'.png'
     }
 end
+betmma_abilities_get_atlas=get_atlas
 function ability_cooled_down(self,card)
     if not card then card=self end
     if card.ability.cooldown and (card.ability.cooldown.type=='passive' or card.ability.cooldown.now<=0) then

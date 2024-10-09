@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.7(20241007)
+--- VERSION: 0.1.8(20241009)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -151,11 +151,17 @@ do
                 }},
             }}
             -- remove use button 
+            local upper_node=sell
+            if G.betmma_abilities and #G.betmma_abilities.highlighted>0 then
+                upper_node={n=G.UIT.B, config = {w=0.1,h=1}} --if an ability and a spell are both highlighted, sell button of spell will block use button of ability. so remove sell if an ability is highlighted
+            elseif #G.betmma_spells.highlighted>1 then
+                upper_node=fuse
+            end
             local t = {
                 n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
                 {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
-                    #G.betmma_spells.highlighted>1 and fuse or sell
+                        upper_node
                     }},
                     {n=G.UIT.R, config={align = 'cl'}, nodes={
                         {n=G.UIT.B, config = {w=0.1,h=1}}
@@ -393,7 +399,7 @@ local function spell_prototype(data)
         data.discovered=true
     end
     data.config.progress=data.config.progress or {}
-    data.config.progress.cardlist=data.config.progress.cardlist or {}
+    data.config.progress.cardlist=data.config.progress.cardlist or {} -- not safe. card may be nil if loaded a run
     local fused=data.config.fuse_from
     data.raw_key=data.key
     data.set="Spell"
@@ -1861,6 +1867,45 @@ do
         requires={get_betmma_spellvouchers_key('magic_scroll')}
     }
 end --magic scroll/wheel
+
+if USING_BETMMA_ABILITIES then
+    do
+        local key='switch'
+        betmma_abilities_get_atlas(key)
+        betm_abilities[key]=betmma_abilities_ability_prototype { 
+            key = key,
+            loc_txt = {
+                name = 'Switch',
+                text = { 
+                    "Flip current element",
+                    "of selected spell",
+                    'Cooldown: {C:mult}#1#/#2# #3#{}'
+            }
+            },
+            atlas = key, 
+            config = {extra = {},cooldown={type='hand', now=3, need=3}, },
+            discovered = true,
+            cost = 6,
+            loc_vars = function(self, info_queue, card)
+                return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type..'s'}}
+            end,
+            can_use = function(self,card)
+                return ability_cooled_down(self,card) and G.betmma_spells and G.betmma_spells.highlighted and #G.betmma_spells.highlighted==1
+            end,
+            use = function(self,card,area,copier)
+                if not G.betmma_spells then return end
+                for i=1, #G.betmma_spells.highlighted do
+                    local spell=G.betmma_spells.highlighted[i]
+                    local next_=spell.ability.progress.current%spell.ability.progress.max+1
+                    spell.ability.progress.sequence[next_].negative=not spell.ability.progress.sequence[next_].negative
+                end
+            end,
+            in_pool= function(center)
+                return G.betmma_spells and G.betmma_spells.cards and #G.betmma_spells.cards>0
+            end
+        }
+    end --switch
+end
 end
 ----------------------------------------------
 ------------MOD CODE END----------------------
