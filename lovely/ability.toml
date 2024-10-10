@@ -14,7 +14,7 @@ payload = '''
 if USING_BETMMA_ABILITIES then -- not adding area if Betmma_Abilities.lua isn't executed
     self.ABILITY_W=0.8
     self.ABILITY_H=0.8
-    self.betmma_abilities = CardArea(G.consumeables.T.x+1.1*G.CARD_W, G.consumeables.T.y+2.2*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, {
+    self.betmma_abilities = CardArea(G.jokers.T.x + G.jokers.T.w + 0.2+1.1*G.CARD_W, G.jokers.T.y+2.2*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, { -- G.jokers.T.x + G.jokers.T.w + 0.2 is G.consumables.x but some deck removes consumables area
             card_limit = 3,
             type = "betmma_ability",
             highlight_limit = 1

@@ -14,7 +14,7 @@ payload = '''
 if USING_BETMMA_SPELLS then -- not adding area if Betmma_Spells.lua isn't executed
     self.ABILITY_W=0.8
     self.ABILITY_H=0.8
-    self.betmma_spells = CardArea(G.consumeables.T.x+1.1*G.CARD_W, G.consumeables.T.y+2.6*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, {
+    self.betmma_spells = CardArea(G.jokers.T.x + G.jokers.T.w + 0.2+1.1*G.CARD_W, G.jokers.T.y+2.6*G.CARD_H, 1.2*G.CARD_W, 0.3*G.CARD_H, {
             card_limit = 3,
             type = "betmma_ability",
             highlight_limit = 2
