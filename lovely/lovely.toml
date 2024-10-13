@@ -193,5 +193,52 @@ payload = '''
 '''
 match_indent = true
 
+# Garbage Bag and Handbag effect
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)'''
+position = "before"
+payload = '''
+if used_voucher and used_voucher('garbage_bag') then
+    G.GAME.betmma_discards_left_ref=G.GAME.current_round.discards_left or 0
+end
+if used_voucher and used_voucher('handbag') then
+    G.GAME.betmma_hands_left_ref=G.GAME.current_round.hands_left or 0
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('garbage_bag') then
+    G.GAME.current_round.discards_left = G.GAME.current_round.discards_left + G.GAME.betmma_discards_left_ref
+end
+if used_voucher and used_voucher('handbag') then
+    G.GAME.current_round.hands_left = G.GAME.current_round.hands_left + G.GAME.betmma_hands_left_ref
+end
+'''
+match_indent = true
 
 
+
+# Garbage Bag and Handbag effect (Why setting hands and discards twice in both cash out and new round?)
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('garbage_bag') then
+    G.GAME.current_round.discards_left = G.GAME.current_round.discards_left + (G.GAME.betmma_discards_left_ref or 0)
+end
+if used_voucher and used_voucher('handbag') then
+    G.GAME.current_round.hands_left = G.GAME.current_round.hands_left + (G.GAME.betmma_hands_left_ref or 0)
+end
+'''
+match_indent = true

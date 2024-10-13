@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 52 Vouchers and 24 Fusion Vouchers! v2.2.3.4
+--- MOD_DESCRIPTION: 54 Vouchers and 24 Fusion Vouchers! v2.2.3.5
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.4(20240926)
+--- VERSION: 2.2.3.5(20241013)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -51,9 +51,13 @@ MOD_PREFIX_V_LEN=string.len(MOD_PREFIX_V)
 USING_BETMMA_VOUCHERS=true
 
 -- Config: You can disable unwanted vouchers and my other mods in AppData/Roaming/Balatro/config/BetmmaVouchers.jkr. The config below is a default one if such .jkr doesn't exist, and .jkr is automatically created in such case.
-betmma_config=SMODS.load_mod_config{id='BetmmaVouchers'}or{}
+betmma_config=SMODS.load_mod_config and SMODS.load_mod_config{id='BetmmaVouchers'}or{}
 if #betmma_config==0 then
-    print('betmma config not found')
+    if not IN_SMOD1 then
+        print('config file isn\'t available in SMOD<1')
+    else
+        print('betmma config not found')
+    end
 end
 betmma_config_vouchers = {
     -- normal vouchers
@@ -109,6 +113,8 @@ betmma_config_vouchers = {
     v_richer_boss=true,
     v_gravity_assist=true,
     v_gravitational_wave=true,
+    v_garbage_bag=true,
+    v_handbag=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -3260,6 +3266,68 @@ do
     end
 
 end -- gravity assist
+do 
+    local name="Garbage Bag"
+    local id="garbage_bag"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You carry surplus {C:red}discards{} over rounds.",
+            "gain {C:red}#1#{} one-time discards",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Handbag"
+    local id="handbag"
+    local loc_txt = {
+        name = name,
+        text = {
+            "You carry surplus {C:blue}hands{} over rounds.",
+            "gain {C:blue}#1#{} one-time hands",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=2,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'garbage_bag'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local Card_apply_to_run_ref = Card.apply_to_run
+    function Card:apply_to_run(center)
+        local center_table = {
+            name = center and center.name or self and self.ability.name,
+            extra = center and center.config.extra or self and self.ability.extra
+        }
+        if center_table.name == 'Garbage Bag' then
+            ease_discard(center_table.extra)
+            G.GAME.betmma_discards_left_ref=(G.GAME.betmma_discards_left_ref or 0)+center_table.extra
+        end
+        if center_table.name == 'Handbag' then
+            ease_hands_played(center_table.extra)
+            G.GAME.betmma_hands_left_ref=(G.GAME.betmma_hands_left_ref or 0)+center_table.extra
+        end
+        Card_apply_to_run_ref(self, center)
+    end
+    
+
+end -- garbage bag
 
 
     -- ################
@@ -5632,8 +5700,8 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'gravity_assist'},
-                {id = MOD_PREFIX_V.. 'gravitational_wave'},
+                {id = MOD_PREFIX_V.. 'garbage_bag'},
+                {id = MOD_PREFIX_V.. 'handbag'},
                 -- {id = 'v_retcon'},
                 {id = 'v_planet_merchant'},
                 {id = 'v_planet_tycoon'},
