@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 54 Vouchers and 24 Fusion Vouchers! v2.2.3.5
+--- MOD_DESCRIPTION: 56 Vouchers and 24 Fusion Vouchers! v3.0.0
 --- PREFIX: betm_vouchers
---- VERSION: 2.2.3.5(20241013)
+--- VERSION: 3.0.0(20241017)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -21,18 +21,13 @@
 -- Forbidden Word: Fusion voucher and joker may appear in the store.  Forbidden magic: Purchased fusion Joker and voucher give things related to their fusion
 -- Randomize Lucky Card effects (+Chip, Mult, xMult, money, copy first card played, generate consumable, generate joker (oops all 6 maybe), comsumable slot, joker slot, random tag, enhance jokers, enhance cards, retrigger ...)
 -- (upgraded of above) if probabilities in lucky card, that is written as A in B, satisfies A>B, this can trigger more than 1 time
--- Magic Trick + Reroll Surplus: return all cards to deck if deck has no cards
 -- Overstock + Reroll Surplus could make it so that whenever you buy something, it's automatically replaced with a card of the same type
 -- enhancements can stack
 -- give $1 per 10 cards left when round ends
 -- Grand Finale: if no cards left when round ends, gives $10
 -- money grabber + gold coin :
 --[[
-Tier 1 Voucher: Bargain Aisle: One random item in the shop will be free per shop, persists between rerolls.
-
-Tier 2 Voucher: Clearance Aisle: 3 random items in the shop will be free per shop, persists between rerolls.
-
-Fusion Voucher: Giveaway Search (Reroll Glut + Clearance Aisle): Each shop reroll that you do will add +1 random free item to that shop. 
+get_end_of_round_effect
 ]]
 --sendDebugMessage(tprint(table))
 function pprint(x)
@@ -115,6 +110,8 @@ betmma_config_vouchers = {
     v_gravitational_wave=true,
     v_garbage_bag=true,
     v_handbag=true,
+    v_echo_wall=true,
+    v_echo_chamber=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -3328,6 +3325,149 @@ do
     
 
 end -- garbage bag
+do 
+    local name="Echo Wall"
+    local id="echo_wall"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:red}Discarding{} a card triggers",
+            "its {C:attention}end of round{} effect",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Echo Chamber"
+    local id="echo_chamber"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Holding{} a card in each hand triggers",
+            "its {C:attention}end of round{} effect",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=2,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'echo_wall'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local eval_card_ref=eval_card
+
+    local function trigger_end_of_round(card,i)
+        local reps = {1}
+        local j = 1
+        while j <= #reps do
+            local percent = (i-0.999)/(#G.hand.cards-0.998) + (j-1)*0.1
+            if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+
+            --calculate the hand effects
+            local effects = {card:get_end_of_round_effect()}
+            for k=1, #G.jokers.cards do
+                --calculate the joker individual card effects
+                local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.hand,  other_card = card, individual = true, end_of_round = true, callback = function(card, eval, retrigger)
+                    if eval then 
+                        table.insert(effects, eval)
+                        effects[#effects].from_retrigger = retrigger
+                    end
+                end, no_retrigger_anim = true})
+
+            end
+
+            if reps[j] == 1 then 
+                --Check for hand doubling
+                --From Red seal
+                local eval = eval_card_ref(card, {end_of_round = true,cardarea = G.hand, repetition = true, repetition_only = true})
+                if next(eval) and (next(effects[1]) or #effects > 1)  then 
+                    for h = 1, eval.seals.repetitions do
+                        if G.GAME.blind.name == "bl_mathbl_infinite" and not G.GAME.blind.disabled then
+                            G.GAME.blind:wiggle()
+                            G.GAME.blind.triggered = true
+                        else
+                            reps[#reps+1] = eval
+                        end
+                    end
+                end
+
+                --from Jokers
+                for j=1, #G.jokers.cards do
+                    --calculate the joker effects
+                    local eval = eval_card_ref(G.jokers.cards[j], {cardarea = G.hand, other_card = card, repetition = true, end_of_round = true, card_effects = effects, callback = function(card, ret) eval = {jokers = ret}
+                    if next(eval) then 
+                        for h  = 1, eval.jokers.repetitions do
+                            if G.GAME.blind.name == "bl_mathbl_infinite" and not G.GAME.blind.disabled then
+                                G.GAME.blind:wiggle()
+                                G.GAME.blind.triggered = true
+                            else
+                                reps[#reps+1] = eval
+                            end
+                        end
+                    end end})
+                end
+            end
+
+            for ii = 1, #effects do
+                --if this effect came from a joker
+                if effects[ii].card and not Talisman.config_file.disable_anims then
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'immediate',
+                        func = (function() effects[ii].card:juice_up(0.7);return true end)
+                    }))
+                end
+                
+                --If dollars
+                if effects[ii].h_dollars then 
+                    ease_dollars(effects[ii].h_dollars)
+                    card_eval_status_text(card, 'dollars', effects[ii].h_dollars, percent)
+                end
+
+                --Any extras
+                if effects[ii].extra then
+                    card_eval_status_text(card, 'extra', nil, percent, nil, effects[ii].extra)
+                end
+            end
+            j = j + 1
+        end
+    end
+
+    local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted
+    G.FUNCS.discard_cards_from_highlighted = function(e, hook)
+        if used_voucher('echo_wall') then
+            local highlighted_count = math.min(#G.hand.highlighted, G.discard.config.card_limit - #G.play.cards)
+            if highlighted_count > 0 then 
+                for i=1, highlighted_count do
+                    trigger_end_of_round(G.hand.highlighted[i],i)
+                end
+            end
+        end
+        G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
+    end
+
+    function eval_card(card, context)
+        if used_voucher('echo_chamber') and context and context.cardarea==G.hand and not context.other_card and not context.repetition then
+            trigger_end_of_round(card,1)
+        end
+        return eval_card_ref(card,context)
+    end
+    
+
+end -- echo wall
 
 
     -- ################
@@ -5635,7 +5775,7 @@ function copy_table(O)
     end
     return copy
 end
-    BETMMA_DEBUGGING=false
+    BETMMA_DEBUGGING=1
     local PATH=GET_PATH_COMPAT()
     if not NFS.load(PATH .. "debug_on") then
         BETMMA_DEBUGGING=false
@@ -5700,8 +5840,8 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'garbage_bag'},
-                {id = MOD_PREFIX_V.. 'handbag'},
+                {id = MOD_PREFIX_V.. 'echo_wall'},
+                {id = MOD_PREFIX_V.. 'echo_chamber'},
                 -- {id = 'v_retcon'},
                 {id = 'v_planet_merchant'},
                 {id = 'v_planet_tycoon'},
@@ -5709,7 +5849,7 @@ end
             },
             deck = {
                 type = 'Challenge Deck',
-                cards = {{s='D',r='2',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',g='Red'},{s='D',r='5',g='Red'},{s='D',r='6',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_wild',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_wild',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
+                cards = {{s='D',r='2',g='Red'},{s='D',r='3',e='m_glass',g='Red'},{s='D',r='4',g='Blue'},{s='D',r='5',g='Red'},{s='D',r='6',g='Red'},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='7',e='m_lucky',},{s='D',r='8',e='m_gold',},{s='D',r='9',e='m_lucky',},{s='D',r='T',e='m_wild',},{s='D',r='J',e='m_lucky',},{s='D',r='Q',e='m_lucky',g='Red'},{s='D',r='Q',e='m_wild',g='Red'},{s='D',r='K',e='m_wild'},{s='D',r='Q',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='K',e='m_steel',g='Red'},{s='D',r='A',e='m_steel',g='Red',d='negative'},}
             },
             restrictions = {
                 banned_cards = {

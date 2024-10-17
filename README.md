@@ -19,7 +19,7 @@ A collection of mods made by me for Balatro.
 - Friends of Jimbo: For each King of Spades, Queen of Diamonds, Jack of Hearts or King of Clubs scored, generate a Jimbo. (No need to have room)
 - Balatro Mobile: This joker is mobile and can be put anywhere. Its effect varies by the area it's in.
 
-# Betmma Vouchers: Adds 54 Vouchers and 24 fusion Vouchers.
+# Betmma Vouchers: Adds 56 Vouchers and 24 fusion Vouchers.
 Vouchers have rarities. Rarity affects the chance a voucher is added into the random pool. Only vouchers added into the pool can be chosen and appear. For example, if you have redeemed all vouchers but one uncommon, rare or legendary voucher, it still can not appear. Specifically, the chances for uncommon, rare and legendary vouchers to be in the pool are 1/2, 1/4 and 1/20. Vanilla vouchers and vouchers from other mods are considered common.
 ## Normal Vouchers
 - Oversupply: Gain 1 Voucher Tag after beating boss blind.
@@ -78,6 +78,8 @@ Undying and Reincarnation are unavailable on Steamodded 0.9.8 version.
 - Gravitational Wave: Planet cards also upgrade non-adjacent poker hands by 0.2 levels.
 - Garbage Bag: You carry surplus discards over rounds. Gain 3 one-time discards.
 - Handbag: You carry surplus hands over rounds. Gain 3 one-time hands.
+- Echo Wall: Discarding a card triggers its end of round effect.
+- Echo Chamber: Holding a card in each hand triggers its end of round effect.
 ## Fusion Vouchers
 Fusion Vouchers aren't fused by clicking a fusion button. Instead they appear randomly and can be bought regularly only after you have redeemed the required 2 vouchers. (May change in the future)
 - Gold Round Up (Round Up + Gold Coin): Your money always round up to nearest even number.
