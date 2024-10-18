@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.2(20240827)
+--- VERSION: 1.0.3.3(20241018)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -281,6 +281,25 @@ do
         end
         return G_UIDEF_use_and_sell_buttons_ref(card)
     end
+    
+    local G_UIDEF_card_focus_ui_ref=G.UIDEF.card_focus_ui
+    -- add use and sell buttons to Abilities for controller
+    function G.UIDEF.card_focus_ui(card)
+        local base_background=G_UIDEF_card_focus_ui_ref(card)
+        local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == 'Voucher' and -0.16 or 0)
+        local base_attach = base_background:get_UIE_by_ID('ATTACH_TO_ME')
+        if card.ability.set=='Ability' and card.area and card.area ~= G.pack_cards and card.area~=G.shop_abilities then
+            base_attach.children.use = G.UIDEF.card_focus_button{
+              card = card, parent = base_attach, type = 'use',
+              func = 'can_use_consumeable', button = 'use_card', card_width = card_width
+            }
+            base_attach.children.sell = G.UIDEF.card_focus_button{
+              card = card, parent = base_attach, type = 'sell',
+              func = 'can_sell_card', button = 'sell_card', card_width = card_width
+            }
+        end
+        return base_background
+    end
 
     local G_FUNCS_can_buy_and_use_ref=G.FUNCS.can_buy_and_use
     -- prevent buy and use button on abilities in shop (will appear if cooldown is 0 and will crash when clicked)
@@ -375,6 +394,29 @@ do
             G.shop_abilities=nil
         end
         return t
+    end
+
+    local G_UIDEF_card_focus_ui_ref=G.UIDEF.card_focus_ui
+    -- add buy button to abilities in shop for controller
+    function G.UIDEF.card_focus_ui(card)
+        local base_background=G_UIDEF_card_focus_ui_ref(card)
+        local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == 'Voucher' and -0.16 or 0)
+        local base_attach = base_background:get_UIE_by_ID('ATTACH_TO_ME')
+        if G.shop_abilities and card.area==G.shop_abilities then
+            local buy_and_use = nil
+            if card.ability.consumeable then 
+                base_attach.children.buy_and_use = G.UIDEF.card_focus_button{
+                    card = card, parent = base_attach, type = 'buy_and_use',
+                    func = 'can_buy_and_use', button = 'buy_from_shop', card_width = card_width
+                }
+                buy_and_use = true
+            end
+            base_attach.children.buy = G.UIDEF.card_focus_button{
+            card = card, parent = base_attach, type = 'buy',
+            func = 'can_buy', button = 'buy_from_shop', card_width = card_width, buy_and_use = buy_and_use
+            }
+        end
+        return base_background
     end
 end -- add Ability area in shop (only appear after a boss blind)
 

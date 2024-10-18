@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.8(20241009)
+--- VERSION: 0.1.9(20241018)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -138,14 +138,14 @@ do
                 --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
                 {n=G.UIT.C, config={align = "bm"}, nodes={
                     {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                    {n=G.UIT.T, config={text = "",colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
+                        {n=G.UIT.T, config={text = "",colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
                     }},
                     {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
-                    {n=G.UIT.T, config={text = localize('b_reroll'),colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
+                        {n=G.UIT.T, config={text = localize('b_reroll'),colour = G.C.UI.TEXT_LIGHT, scale = 0.21, shadow = true}}
                     }},
                     {n=G.UIT.R, config={align = "cm"}, nodes={
-                    {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.3, shadow = true}},
-                    {n=G.UIT.T, config={ref_table = betm_spellvouchers['magic_wheel'].config, ref_value = 'cost',colour = G.C.WHITE, scale = 0.3, shadow = true}}
+                        {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.3, shadow = true}},
+                        {n=G.UIT.T, config={ref_table = betm_spellvouchers['magic_wheel'].config, ref_value = 'cost',colour = G.C.WHITE, scale = 0.3, shadow = true}}
                     }}
                 }}
                 }},
@@ -176,6 +176,77 @@ do
             return t
         end
         return G_UIDEF_use_and_sell_buttons_ref(card)
+    end
+
+    local G_UIDEF_card_focus_button_ref=G.UIDEF.card_focus_button
+    -- make fuse and reroll buttons for controller
+    function G.UIDEF.card_focus_button(args)
+        if args and (args.type=='reroll_spell' or args.type=='fuse_spell')then
+            local button_contents = {}
+            if args.type == 'reroll_spell' then 
+                button_contents = 
+                    {n=G.UIT.C, config={align = "cl"}, nodes={
+                        {n=G.UIT.R, config={align = "cl", maxw = 1}, nodes={
+                            {n=G.UIT.T, config={text = localize('b_reroll'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+                        }},
+                        {n=G.UIT.R, config={align = "cl"}, nodes={
+                            {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+                            {n=G.UIT.T, config={ref_table = betm_spellvouchers['magic_wheel'].config, ref_value = 'cost',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+                        }}
+                    }}
+            elseif args.type == 'fuse_spell' then 
+                button_contents = {n=G.UIT.T, config={text = localize('b_fuse'),colour = G.C.WHITE, scale = 0.5}}
+            end
+
+            return UIBox{
+                T = {args.card.VT.x,args.card.VT.y,0,0},
+                definition = 
+                {n=G.UIT.ROOT, config = {align = 'cm', colour = G.C.CLEAR}, nodes={
+                    {n=G.UIT.R, config={id = args.type == 'buy_and_use' and 'buy_and_use' or nil, ref_table = args.card, ref_parent = args.parent, align =  args.type == 'sell' and 'cl' or 'cr', colour = G.C.BLACK, shadow = true, r = 0.08, func = args.func, one_press = true, button = args.button, focus_args = {type = 'none'}, hover = true}, nodes={
+                    {n=G.UIT.R, config={align = args.type == 'sell' and 'cl' or 'cr', minw = 1 + (args.type == 'select' and 0.1 or 0), minh = args.type == 'sell' and 1.5 or 1, padding = 0.08,
+                        focus_args = {button = args.type == 'sell' and 'leftshoulder' or args.type == 'buy_and_use' and 'leftshoulder' or 'rightshoulder', scale = 0.55, orientation = args.type == 'sell' and 'tli' or 'tri', offset = {x = args.type == 'sell' and 0.1 or -0.1, y = 0}, type = 'none'},
+                        func = 'set_button_pip'}, nodes={
+                        {n=G.UIT.R, config={align = "cm", minh = 0.3}, nodes={}},
+                        {n=G.UIT.R, config={align = "cm"}, nodes={
+                        args.type ~= 'sell' and {n=G.UIT.C, config={align = "cm",minw = 0.2, minh = 0.6}, nodes={}} or nil,
+                        {n=G.UIT.C, config={align = "cm", maxw = 1}, nodes={
+                            button_contents
+                        }},
+                        args.type == 'sell' and {n=G.UIT.C, config={align = "cm",minw = 0.2, minh = 0.6}, nodes={}} or nil,
+                        }}
+                    }}
+                    }}
+                }}, 
+                config = {
+                    align = args.type == 'sell' and 'cl' or 'cr',
+                    offset = {x=(args.type == 'sell' and -1 or 1)*((args.card_width or 0) - 0.17 - args.card.T.w/2),y=args.type == 'buy_and_use' and 0.6 or (args.buy_and_use) and -0.6 or 0}, 
+                    parent = args.parent,
+                }
+            }
+        end
+        return G_UIDEF_card_focus_button_ref(args)
+    end
+
+    local G_UIDEF_card_focus_ui_ref=G.UIDEF.card_focus_ui
+    -- add sell, fuse and reroll buttons to Spells for controller
+    -- WARNING: since controller can't highlight cards, currently fuse isn't available for controllers
+    function G.UIDEF.card_focus_ui(card)
+        local base_background=G_UIDEF_card_focus_ui_ref(card)
+        local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == 'Voucher' and -0.16 or 0)
+        local base_attach = base_background:get_UIE_by_ID('ATTACH_TO_ME')
+        if card.ability.set=='Spell' and card.area and card.area ~= G.pack_cards then
+            base_attach.children.sell = G.UIDEF.card_focus_button{
+              card = card, parent = base_attach, type = 'sell',
+              func = 'can_sell_card', button = 'sell_card', card_width = card_width
+            }
+            if used_spellvoucher('magic_wheel') then
+                base_attach.children.use = G.UIDEF.card_focus_button{
+                card = card, parent = base_attach, type = 'reroll_spell',
+                func = 'can_reroll_spell', button = 'reroll_spell', card_width = card_width
+                }
+            end
+        end
+        return base_background
     end
 
     local G_FUNCS_can_buy_and_use_ref=G.FUNCS.can_buy_and_use

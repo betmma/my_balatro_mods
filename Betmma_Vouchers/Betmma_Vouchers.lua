@@ -1615,6 +1615,7 @@ do
     -- function G.UIDEF.card_focus_ui(card)
     -- I suspect that this function does nothing too
     -- because replacing it with empty function seems do no harm
+    -- no card_focus_ui and card_focus_button are for controller ui. lol
 
 end -- reserve area
 do 
@@ -5775,7 +5776,7 @@ function copy_table(O)
     end
     return copy
 end
-    BETMMA_DEBUGGING=1
+    BETMMA_DEBUGGING=false
     local PATH=GET_PATH_COMPAT()
     if not NFS.load(PATH .. "debug_on") then
         BETMMA_DEBUGGING=false
