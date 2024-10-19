@@ -234,7 +234,7 @@ do
         local base_background=G_UIDEF_card_focus_ui_ref(card)
         local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == 'Voucher' and -0.16 or 0)
         local base_attach = base_background:get_UIE_by_ID('ATTACH_TO_ME')
-        if card.ability.set=='Spell' and card.area and card.area ~= G.pack_cards then
+        if card.ability.set=='Spell' and card.area and card.area ~= G.pack_cards and card.area~=G.shop_jokers then
             base_attach.children.sell = G.UIDEF.card_focus_button{
               card = card, parent = base_attach, type = 'sell',
               func = 'can_sell_card', button = 'sell_card', card_width = card_width
