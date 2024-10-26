@@ -3425,11 +3425,18 @@ do
 
             for ii = 1, #effects do
                 --if this effect came from a joker
-                if effects[ii].card and not Talisman.config_file.disable_anims then
+		if usingTalisman() then
+                  if effects[ii].card and not Talisman.config_file.disable_anims then
                     G.E_MANAGER:add_event(Event({
                         trigger = 'immediate',
                         func = (function() effects[ii].card:juice_up(0.7);return true end)
                     }))
+                  end
+                elseif effects[ii].card then 
+                  G.E_MANAGER:add_event(Event({
+                        trigger = 'immediate',
+                        func = (function() effects[ii].card:juice_up(0.7);return true end)
+                  }))
                 end
                 
                 --If dollars
