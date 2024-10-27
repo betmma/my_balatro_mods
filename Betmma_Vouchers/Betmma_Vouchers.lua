@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 56 Vouchers and 24 Fusion Vouchers! v3.0.0
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.0(20241017)
+--- VERSION: 3.0.1(20241027)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -112,6 +112,8 @@ betmma_config_vouchers = {
     v_handbag=true,
     v_echo_wall=true,
     v_echo_chamber=true,
+    v_laminator=true,
+    v_eliminator=true,
     -- fusion vouchers
     v_gold_round_up=true,
     v_overshopping=true,
@@ -273,6 +275,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_bulletproof = "Bulletproof!"
     G.localization.misc.dictionary.b_vanish = "VANISH"
     G.localization.misc.dictionary.k_heat_death="Heat Death!"
+    G.localization.misc.dictionary.k_laminator="Laminated!"
     G.localization.misc.dictionary.k_undying="Undying!"
     G.localization.misc.dictionary.k_reincarnate="Reincarnate!"
     G.localization.misc.dictionary.k_solar_system="Solar System!"
@@ -3469,6 +3472,82 @@ do
     
 
 end -- echo wall
+do 
+    local name="Laminator"
+    local id="laminator"
+    local loc_txt = {
+        name = name,
+        text = {
+            "When {C:attetntion}round ends{},",
+            "if {C:attention}leftmost{} joker has sticker,",
+            "{C:green}#1# in #2#{} chance to add random {C:attention}Edition",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={""..(G.GAME and G.GAME.probabilities.normal or 1),center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local name="Eliminator"
+    local id="eliminator"
+    local loc_txt = {
+        name = name,
+        text = {
+            "{C:attention}Remove{} all stickers",
+            "on {C:attention}Laminated{} Joker",
+        }
+    }
+    local this_v = SMODS.Voucher{
+        name=name, key=id,
+        config={rarity=1,extra=3},
+        pos={x=0,y=0}, loc_txt=loc_txt,
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'laminator'}
+    }
+    handle_atlas(id,this_v)
+    this_v.loc_vars = function(self, info_queue, center)
+        return {vars={center.ability.extra}}
+    end
+    handle_register(this_v)
+
+    local end_round_ref = end_round
+    function end_round()
+        if used_voucher('laminator') then
+            
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                func = (function() 
+                    local card=G.jokers.cards[1]
+                    if card and (card.ability.eternal or card.ability.perishable or card.ability.rental or card.pinned or card.ability.banana) and pseudorandom('laminator') < G.GAME.probabilities.normal/get_voucher('laminator').config.extra then
+                        local edition = nil
+                        edition = poll_edition('wheel_of_fortune', nil, true, true)
+                        -- I think using 'wheel_of_fortune' here is ok
+                        card:set_edition(edition, true)
+                        check_for_unlock({type = 'have_edition'})
+                        
+                        card_eval_status_text(card,'jokers',nil,nil,nil,{message=localize("k_laminator")})
+                        if used_voucher('eliminator')then
+                            card:set_eternal(false)
+                            card.ability.perishable=false
+                            card:set_rental(false)
+                            card.pinned=false
+                            card.ability.banana=false
+                        end
+                    end
+                return true end)
+            }))
+            --,edition={negative=true}
+        end
+        end_round_ref()
+    end
+
+end -- laminator
 
 
     -- ################
@@ -5828,6 +5907,7 @@ end
                 {id = MOD_PREFIX_V.. '4d_boosters'},
                 -- {id = 'v_paint_brush'},
                 -- -- {id = 'v_liquidation'},
+                {id = MOD_PREFIX_V.. 'scrawl'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
@@ -5841,11 +5921,10 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'echo_wall'},
+                {id = MOD_PREFIX_V.. 'laminator'},
+                {id = MOD_PREFIX_V.. 'eliminator'},
                 {id = MOD_PREFIX_V.. 'echo_chamber'},
                 -- {id = 'v_retcon'},
-                {id = 'v_planet_merchant'},
-                {id = 'v_planet_tycoon'},
                 
             },
             deck = {
