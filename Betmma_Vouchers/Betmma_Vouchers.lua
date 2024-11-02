@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.1
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1(20241027)
+--- VERSION: 3.0.1.1(20241103)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -5885,7 +5885,7 @@ end
                 -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
                 {id = 'j_bloodstone', },
-                -- {id = 'j_madness', eternal = true},
+                {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_balatro_mobile'},
                 -- {id = 'j_lobc_happy_teddy_bear'}--, pinned = true},
             },
@@ -5916,7 +5916,7 @@ end
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'stash'},
                 -- {id = MOD_PREFIX_V.. 'reincarnate'},
-                -- {id = MOD_PREFIX_V.. 'undying'},
+                {id = MOD_PREFIX_V.. 'undying'},
                 -- {id = MOD_PREFIX_V.. 'flipped_card'},
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},

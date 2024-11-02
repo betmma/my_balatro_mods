@@ -341,7 +341,7 @@ SMODS.ConsumableType { -- Define Spell Consumable Type
 			},
 		},
     },
-    shop_rate = BETMMA_DEBUGGING and 9999 or 1.0,-- 
+    shop_rate = BETMMA_DEBUGGING and 1.9999 or 1.0,-- 
     default = 'c_betm_spells_dark',
     create_UIBox_your_collection = function(self)
         local deck_tables = {}

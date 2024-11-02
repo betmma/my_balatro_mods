@@ -104,7 +104,7 @@
 
     local Card_start_dissolve_ref=Card.start_dissolve
     function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
-        if not self.selling and not(self.edition and self.edition.phantom) and self.ability.set=='Joker' and used_voucher('undying') then -- 'self.selling' is set in :sell_card function below to exclude sell
+        if not self.selling and not(self.edition and self.edition.phantom) and self.ability.set=='Joker' and self.added_to_deck and used_voucher('undying') then -- 'self.selling' is set in :sell_card function below to exclude sell
             local card = copy_card(self, nil, nil, nil, true)
             card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize('k_undying')})
             card.getting_sliced=false
