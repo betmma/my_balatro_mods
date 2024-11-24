@@ -1782,11 +1782,15 @@ do
         if used_voucher('3d_boosters') then value=value+1 end
         return value
     end
-    local G_FUNCS_cash_out_ref=G.FUNCS.cash_out
-    G.FUNCS.cash_out=function (e)
-        G_FUNCS_cash_out_ref(e)
-        if used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
-            my_reroll_shop(get_booster_pack_max()-2,0)
+    local G_update_shop_ref=Game.update_shop
+    Game.update_shop=function (self,dt)
+        local flag
+        if not G.STATE_COMPLETE then
+            flag=true
+        end
+        G_update_shop_ref(self,dt)
+        if flag and used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
+            my_reroll_shop(get_booster_pack_max(),0)
         end
     end
     
