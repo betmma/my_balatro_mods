@@ -686,7 +686,7 @@ local function INIT()
                     card.ability.countdown=card.ability.countdown-1
                 end
                 card.ability.mobile=true
-                if card.area~=(G and G.shop_jokers) and card.area~=(G and G.hand) then
+                if card.area~=(G and G.shop_jokers) and card.area~=(G and G.hand) and card.area~=(G and G.pack_cards) then
                     card.ability.consumeable={}
                 else
                     card.ability.consumeable=nil
@@ -732,7 +732,6 @@ local function INIT()
     end
     
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
-    -- override Ability cards UI and make use and sell buttons smaller
     function G.UIDEF.use_and_sell_buttons(card)
         if card.ability.mobile and card.area and card.area==G.consumeables then 
             local sell,use
