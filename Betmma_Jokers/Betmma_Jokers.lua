@@ -497,7 +497,10 @@ local function INIT()
             loc_vars=function(self,info_queue,center)
                 local effect_text=""
                 local effect_text2=""
-                if G and G.jokers==center.area then
+                if not G or G.in_joker_overlay_menu then
+                    effect_text="But not here"
+                    effect_text2=":)"
+                elseif G and G.jokers==center.area then
                     effect_text="If score is larger than "..(center.ability.extra.win_value/10^24).." septillion,"
                     effect_text2="win the blind and self destruct"
                 elseif G and G.consumeables==center.area then
@@ -693,7 +696,7 @@ local function INIT()
                 end
                 card.base.value='Ace'
                 card.base.suit='Jimbo'
-                if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard or not card.states.drag.is or (card.ability.countdown and card.ability.countdown>0) then -- card.ability.countdown is to prevent it return to shop area after bought, but excluding shop_jokers is enough
+                if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard or not card.states.drag.is or (card.ability.countdown and card.ability.countdown>0) or G.in_joker_overlay_menu then -- card.ability.countdown is to prevent it return to shop area after bought, but excluding shop_jokers is enough
                     return
                 end
                 local possible_areas={G.jokers, G.consumeables, G.hand, G.betmma_abilities, G.betmma_spells, G.shop_jokers}
@@ -830,6 +833,19 @@ local function INIT()
         return ret
     end
 
+    
+    local G_FUNCS_exit_overlay_menu_ref=G.FUNCS.exit_overlay_menu
+    G.FUNCS.exit_overlay_menu = function()
+        local ret=G_FUNCS_exit_overlay_menu_ref()
+        G.in_joker_overlay_menu=false
+    end
+
+    local create_UIBox_your_collection_jokers_ref=create_UIBox_your_collection_jokers
+    function create_UIBox_your_collection_jokers()
+        local ret=create_UIBox_your_collection_jokers_ref()
+        G.in_joker_overlay_menu=true
+        return ret
+    end
     -- local can_use_consumeable_ref=G.FUNCS.can_use_consumeable
     -- G.FUNCS.can_use_consumeable = function(e)
     --     can_use_consumeable_ref(e)
