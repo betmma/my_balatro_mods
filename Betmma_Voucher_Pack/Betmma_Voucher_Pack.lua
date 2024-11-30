@@ -348,7 +348,7 @@ IN_SMOD1=MODDED_VERSION>='1.0.0'
         else
             G_FUNCS_can_skip_booster_ref(e)
         end
-        if G.GAME.pack_size<1 then
+        if type(G.GAME.pack_size)=='number' and G.GAME.pack_size<1 then
             e.config.colour = G.C.GREY
             e.config.button = 'skip_booster'
         end
