@@ -1029,16 +1029,32 @@ function Card:calculate_dollar_bonus()
 end
 
 --  Piggy Bank 
+if not TalismanCompat then
+    local usingTalisman = function() return SMODS.Mods and SMODS.Mods["Talisman"] and Big and Talisman.config_file.break_infinity or false end
+
+    function TalismanCompat(num)
+        local using=usingTalisman()
+        if not using then return num end
+        if using=='omeganum'then
+            return to_big(num)
+        end
+        if (using==true or using=='bignumber')then
+            return to_big(num)
+        end
+        return num
+    end
+end
+
 local ease_dollars_ref = ease_dollars
 function ease_dollars(mod, instant)
     ease_dollars_ref(mod, instant)
-    if mod and mod > 0 then
+    if mod and TalismanCompat(mod) > TalismanCompat(0) then
         local Piggy_Banks = find_joker(' Piggy Bank ')
         -- local Piggy_Bank_number = #Piggy_Banks
         --local saved_dollars = 0
         for index, card in pairs(Piggy_Banks) do
             local half = math.floor(mod/2)
-            if half > 0 and not card.selling_self then
+            if TalismanCompat(half) > TalismanCompat(0) and not card.selling_self then
                 delay(1)
                 ease_dollars_ref(-half, false) 
                 G.E_MANAGER:add_event(Event({
