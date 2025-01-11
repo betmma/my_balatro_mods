@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.1(20241103)
+--- VERSION: 3.0.1.2(20250111)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2191,7 +2191,7 @@ do
 
     local eval_card_ref=eval_card
     function eval_card(card, context) -- debuffed card won't call this
-        local ret = eval_card_ref(card,context)
+        local ret = {eval_card_ref(card,context)}
         G.GAME.scoring_hand=context.scoring_hand
         if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and used_voucher('double_flipped_card') and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
@@ -2199,7 +2199,7 @@ do
                 card.facing_ref=card.facing
             end
         end
-        return ret
+        return unpack(ret)
     end
     
     function draw_card_immediately(from, to, percent, dir, sort, card, delay, mute, stay_flipped, vol, discarded_only)
@@ -4283,7 +4283,7 @@ do
         if G.GAME.probabilities and G.GAME.probabilities.normal==nil then
             G.GAME.probabilities.normal=1 -- someone reported G.GAME.probabilities.normal became nil and crashed. just override it to 1 if it's nil.
         end
-        local ret=eval_card_ref(card, context)
+        local ret={eval_card_ref(card, context)}
         if used_voucher('mirror') and not context.repetition_only and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
             local index=1
             while G.play.cards[index]~=card and index<=#G.play.cards do
@@ -4296,21 +4296,21 @@ do
         end
         if context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
             card.ability.over_retriggered_ratio=1
-            if not ret.seals then ret.seals={
+            if not ret[1].seals then ret[1].seals={
                 message = localize('k_again_ex'),
                 repetitions = card.ability.temp_repetition,
                 card = card
             }
-            else ret.seals.repetitions=ret.seals.repetitions+card.ability.temp_repetition
+            else ret[1].seals.repetitions=ret[1].seals.repetitions+card.ability.temp_repetition
             end
-            if ret.seals.repetitions>OVER_RETRIGGER_LIMIT then
-                card.ability.over_retriggered_ratio=ret.seals.repetitions/OVER_RETRIGGER_LIMIT
-                ret.seals.repetitions=OVER_RETRIGGER_LIMIT
+            if ret[1].seals.repetitions>OVER_RETRIGGER_LIMIT then
+                card.ability.over_retriggered_ratio=ret[1].seals.repetitions/OVER_RETRIGGER_LIMIT
+                ret[1].seals.repetitions=OVER_RETRIGGER_LIMIT
                 card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('over_retriggered')..tostring(card.ability.over_retriggered_ratio)})
             end
             card.ability.temp_repetition=0
         end
-        return ret
+        return unpack(ret)
     end
 
 end -- mirror
@@ -5061,7 +5061,7 @@ do
 
     local eval_card_ref=eval_card
     function eval_card(card, context) --other abilities
-        local ret=eval_card_ref(card,context)
+        local ret={eval_card_ref(card,context)}
         if context.cardarea == G.play and not context.repetition_only and used_voucher('real_random') and not card.debuff and card.config.center.real_random_abilities then
             -- local abilities=card.config.center.real_random_abilities
             -- local abilities_ref=copy_table(card.config.center.real_random_abilities)
@@ -5071,7 +5071,7 @@ do
                 end
             end
         end
-        return ret
+        return unpack(ret)
     end
 end -- real random
 do
@@ -5866,7 +5866,7 @@ function copy_table(O)
     end
     return copy
 end
-    BETMMA_DEBUGGING=false
+    BETMMA_DEBUGGING=0
     local PATH=GET_PATH_COMPAT()
     if not NFS.load(PATH .. "debug_on") then
         BETMMA_DEBUGGING=false
@@ -5902,7 +5902,7 @@ end
             },
             consumeables = {
                 -- {id = 'c_cryptid'},
-                {id = 'c_cry_Klubi'},
+                -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
@@ -5932,9 +5932,7 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'laminator'},
-                {id = MOD_PREFIX_V.. 'eliminator'},
-                {id = MOD_PREFIX_V.. 'echo_chamber'},
+                {id = MOD_PREFIX_V.. 'mirror'},
                 -- {id = 'v_retcon'},
                 
             },

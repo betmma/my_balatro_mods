@@ -2004,7 +2004,7 @@ do
 
     local eval_card_ref=eval_card
     function eval_card(card, context)
-        local ret=eval_card_ref(card, context)
+        local ret={eval_card_ref(card, context)}
         if G.play.cards[1]==card and not context.repetition_only then
             local find=find_abilities('echo')
             for i=1,#find do
@@ -2026,7 +2026,7 @@ do
                 
             end
         end
-        return ret
+        return unpack(ret)
     end
 end --echo
 
