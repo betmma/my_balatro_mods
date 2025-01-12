@@ -3583,7 +3583,12 @@ do
             local index=card.config and card.config.center and card.config.center.config and card.config.center.config.rarity or 1
             index=normalize_rarity(index)
             local card_type=({localize('k_common'), localize('k_uncommon'), localize('k_rare'), localize('k_legendary')})[index]
-            local ret=retval.nodes[1].nodes[1].nodes[1].nodes
+            local ret
+            if SMODS.Mods and SMODS.Mods["CelesteCardCollection"]then
+                ret=retval.nodes[2].nodes[1].nodes[1].nodes--CelesteCardsCollection mod compat
+            else
+                ret=retval.nodes[1].nodes[1].nodes[1].nodes
+            end
             table.insert(ret[#ret].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
         end
 
