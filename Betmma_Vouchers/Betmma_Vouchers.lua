@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.2
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.3
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.2(20250111)
+--- VERSION: 3.0.1.3(20250116)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3574,22 +3574,31 @@ do
         card.debuff or -- debuffed card
         (not card.config.center.discovered and ((card.area ~= G.jokers and card.area ~= G.consumeables and card.area) or not card.area)) -- undiscovered card
         then return retval end
-        if card.ability.set=='Voucher' and card.config.center.mod_name=='Betmma Vouchers' and card.config.center.requires and #card.config.center.requires>1 then
-            local ret=retval.nodes[1].nodes[1].nodes[1].nodes
-            ret[#ret].nodes[1].nodes[1].nodes[2].config.object:remove()
-            ret[#ret].nodes[1] = create_badge(localize('k_fusion_voucher'), loc_colour("fusion", nil), nil, 1.2)
-        end
+        
         if card.ability.set=='Voucher' then
+            local index=1
+            if SMODS.Mods and SMODS.Mods["CelesteCardCollection"]then
+                index=2--CelesteCardsCollection mod compat
+            end
+
+            if not retval or not retval.nodes or not retval.nodes[index] or not retval.nodes[index].nodes or not retval.nodes[index].nodes[1] or not retval.nodes[index].nodes[1].nodes or not retval.nodes[index].nodes[1].nodes[1] or not retval.nodes[index].nodes[1].nodes[1].nodes then 
+                return retval
+            end
+            local ret=retval.nodes[index].nodes[1].nodes[1].nodes
+
             local index=card.config and card.config.center and card.config.center.config and card.config.center.config.rarity or 1
             index=normalize_rarity(index)
             local card_type=({localize('k_common'), localize('k_uncommon'), localize('k_rare'), localize('k_legendary')})[index]
-            local ret
-            if SMODS.Mods and SMODS.Mods["CelesteCardCollection"]then
-                ret=retval.nodes[2].nodes[1].nodes[1].nodes--CelesteCardsCollection mod compat
-            else
-                ret=retval.nodes[1].nodes[1].nodes[1].nodes
+            table.insert(ret[#ret].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2)) -- add voucher rarity badge
+            
+            if card.config.center.mod_name=='Betmma Vouchers' and card.config.center.requires and #card.config.center.requires>1 then
+                if not ret[#ret] or not ret[#ret].nodes or not ret[#ret].nodes[1] or not ret[#ret].nodes[1].nodes or not ret[#ret].nodes[1].nodes[1] or not ret[#ret].nodes[1].nodes[1].nodes or not ret[#ret].nodes[1].nodes[1].nodes[2] or not ret[#ret].nodes[1].nodes[1].nodes[2].config or not ret[#ret].nodes[1].nodes[1].nodes[2].config.object or not ret[#ret].nodes[1].nodes[1].nodes[2].config.object.remove then 
+                    return retval
+                end
+                ret[#ret].nodes[1].nodes[1].nodes[2].config.object:remove()
+                ret[#ret].nodes[1] = create_badge(localize('k_fusion_voucher'), loc_colour("fusion", nil), nil, 1.2) -- add Fusion Voucher badge
             end
-            table.insert(ret[#ret].nodes,2,create_badge(card_type,G.C.RARITY[index],nil,1.2))
+
         end
 
         return retval
