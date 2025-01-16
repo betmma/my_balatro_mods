@@ -462,7 +462,7 @@ do
             local card=cardarea.cards[i]
             if card.ability and card.ability.cooldown and card.ability.cooldown.type==type then
                 card.ability.cooldown.now=card.ability.cooldown.now-value
-                if not used_abilvoucher('cooled_below') and card.ability.cooldown.now<0 then
+                if not used_abilvoucher('cooled_below') and TalismanCompat(card.ability.cooldown.now)<TalismanCompat(0) then
                     card.ability.cooldown.now=0
                 end
             end
@@ -500,9 +500,9 @@ do
     local ease_dollars_ref = ease_dollars
     -- update 'money spent' and 'money gain' cooldown
     function ease_dollars(mod, instant)
-        if mod and mod<0 then
+        if mod and TalismanCompat(mod)<TalismanCompat(0) then
             update_ability_cooldown('money spent',-mod)
-        elseif mod and mod>0 then
+        elseif mod and TalismanCompat(mod)>TalismanCompat(0) then
             update_ability_cooldown('money gain',mod)
         end
         ease_dollars_ref(mod, instant)
@@ -715,7 +715,7 @@ end
 betmma_abilities_get_atlas=get_atlas
 function ability_cooled_down(self,card)
     if not card then card=self end
-    if card.ability.cooldown and (card.ability.cooldown.type=='passive' or card.ability.cooldown.now<=0) then
+    if card.ability.cooldown and (card.ability.cooldown.type=='passive' or TalismanCompat(card.ability.cooldown.now)<=TalismanCompat(0)) then
         return true
     else
         return false
