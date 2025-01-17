@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.3
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.4
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.3(20250116)
+--- VERSION: 3.0.1.4(20250117)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -156,6 +156,9 @@ if betmma_config.abilities==nil then
 end
 if betmma_config.spells==nil then
     betmma_config.spells=true
+end
+if betmma_config.enable_voucher_rarity==nil then
+    betmma_config.enable_voucher_rarity=true
 end
 SMODS.current_mod.config=betmma_config
 SMODS.save_mod_config(SMODS.current_mod)
@@ -583,7 +586,7 @@ local function get_weight(v)
         end
     end
     if v.weight then return v.weight end
-    if v.config and v.config.weight then return v.config.weight end
+    if betmma_config.enable_voucher_rarity and v.config and v.config.weight then return v.config.weight end
     return 1
 end
 
