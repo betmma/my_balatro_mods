@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 0
+priority = 1
 
 
 # Create Spell Area 
@@ -75,32 +75,21 @@ match_indent = true
 # Call calculate_joker on spells for individual card played (better calc version)
 [[patches]]
 [patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''local effects = {eval_card(scoring_hand[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}'''
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: main scoring on played cards'''
 position = "after"
 payload = '''
 if USING_BETMMA_SPELLS and G.betmma_spells then
+    local effects={}
     for k=1, #G.betmma_spells.cards do
         --calculate the spell individual card effects
-        local eval = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, no_retrigger_anim = true})
-        if eval and eval.joker_repetitions then
-            rep_list = eval.joker_repetitions
-            for z=1, #rep_list do
-                if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
-                    for r=1, rep_list[z].repetitions do
-                        local ev = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true, retrigger_joker = true, no_retrigger_anim = true})
-                        if ev then
-                            mod_percent = true
-                            table.insert(effects, {jokers=ev})
-                        end
-                    end
-                end
-            end
-        end
+        local eval = G.betmma_spells.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = context.scoring_hand, scoring_name = context.text, poker_hands = context.poker_hands, other_card = card, individual = true, no_retrigger_anim = true})
         if eval then 
             table.insert(effects, {jokers=eval})
         end 
     end
+    
+    SMODS.trigger_effects(effects,card)
 end
 '''
 match_indent = true
