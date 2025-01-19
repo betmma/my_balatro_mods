@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.3(20241018)
+--- VERSION: 1.0.3.4(20250119)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -2005,7 +2005,7 @@ do
     local eval_card_ref=eval_card
     function eval_card(card, context)
         local ret={eval_card_ref(card, context)}
-        if G.play.cards[1]==card and not context.repetition_only then
+        if G.play.cards[1]==card and not context.repetition_only and context.cardarea == G.play and context.main_scoring  then
             local find=find_abilities('echo')
             for i=1,#find do
                 G.deck.config.wonderMagnum_betmma = G.deck.config.wonderMagnum_betmma or {}
