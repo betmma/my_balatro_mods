@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.4(20250119)
+--- VERSION: 1.0.3.5(20250119)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1491,6 +1491,7 @@ do
                 -- ease_dollars(-card.ability.extra.lose)
                 -- card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
                 return {
+                    card=card,
                     message = localize{type='variable',key='a_xmult',vars={card.ability.extra.value}},
                     Xmult_mod = card.ability.extra.value
                 }
