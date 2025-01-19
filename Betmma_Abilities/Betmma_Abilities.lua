@@ -36,6 +36,8 @@ end
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary.k_decay = "Decay!"
     G.localization.misc.dictionary.k_echo = "Echo!"
+    G.localization.misc.dictionary.b_move_consumeable = "MOVE"
+    
 end
 
 function get_randomly_redeem_voucher()
@@ -224,6 +226,27 @@ do
         return Card_can_sell_card_ref(self,context)
     end
 
+    G.FUNCS.can_move_consumeable = function(e)
+        local card=G.consumeables.highlighted[1]
+        if not (card and (card.ability.set=='Ability' and G.betmma_abilities.config.card_limit>#G.betmma_abilities.cards) or (card.ability.set=='Spell' and G.betmma_spells.config.card_limit>#G.betmma_spells.cards)) then
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        else
+            e.config.colour = G.C.ORANGE
+            e.config.button = 'move_consumeable'
+        end
+    end
+    G.FUNCS.move_consumeable = function(e) 
+        local c1 = e.config.ref_table
+        c1.area:remove_from_highlighted(c1)
+        c1.area:remove_card(c1)
+        if c1.ability.set=='Ability' then
+            G.betmma_abilities:emplace(c1)
+        elseif c1.ability.set=='Spell' then
+            G.betmma_spells:emplace(c1)
+        end
+    end
+
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
     -- override Ability cards UI and make use and sell buttons smaller
     function G.UIDEF.use_and_sell_buttons(card)
@@ -277,6 +300,23 @@ do
                     }},
                 }},
             }}
+            if card.area and card.area == G.consumeables then
+                local move={n=G.UIT.R, config={align = "bm"}, nodes={
+                    {n=G.UIT.R, config={ref_table = card, align = "br",maxw = 1.25, padding = 0.1, r=0.08, minw = 0.9, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'move_card', func = 'can_move_consumeable'}, nodes={
+                    --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                    {n=G.UIT.T, config={text = localize('b_move_consumeable'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
+                    }}
+                }}
+                t.nodes[1].nodes[1].nodes[3]=
+                {n=G.UIT.R, config={align = 'cl'}, nodes={
+                    move
+                }}
+                -- t.nodes[2]={n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+                --     {n=G.UIT.R, config={align = 'cl'}, nodes={
+                --     move
+                --     }},
+                -- }}
+            end
             return t
         end
         return G_UIDEF_use_and_sell_buttons_ref(card)

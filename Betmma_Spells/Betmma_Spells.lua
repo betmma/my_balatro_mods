@@ -173,6 +173,23 @@ do
                 t.config.padding=-0.1
                 t.nodes[1].nodes[2].nodes[1]=reroll
             end
+            if card.area and card.area == G.consumeables then
+                local move={n=G.UIT.R, config={align = "bm"}, nodes={
+                    {n=G.UIT.R, config={ref_table = card, align = "br",maxw = 1.25, padding = 0.1, r=0.08, minw = 0.9, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'move_card', func = 'can_move_consumeable'}, nodes={
+                    --   {n=G.UIT.B, config = {w=0.1,h=0.6}},
+                    {n=G.UIT.T, config={text = localize('b_move_consumeable'),colour = G.C.UI.TEXT_LIGHT, scale = 0.3, shadow = true}}
+                    }}
+                }}
+                t.nodes[1].nodes[1].nodes[3]=
+                {n=G.UIT.R, config={align = 'cl'}, nodes={
+                    move
+                }}
+                -- t.nodes[2]={n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+                --     {n=G.UIT.R, config={align = 'cl'}, nodes={
+                --     move
+                --     }},
+                -- }}
+            end
             return t
         end
         return G_UIDEF_use_and_sell_buttons_ref(card)
