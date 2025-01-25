@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.5(20250119)
+--- VERSION: 1.0.3.6(20250125)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1545,6 +1545,80 @@ do
         end
     }
 end --antinomy
+do
+    local key='enhancer'
+    get_atlas(key)
+    betm_abilities[key]=ability_prototype { 
+        key = key,
+        loc_txt = {
+            name = 'Enhancer',
+            text = { 
+                "Enhance selected joker randomly",
+                -- "copy of selected joker for this round",
+                'Cooldown: {C:mult}#1#/#2# #3#{}'
+        }
+        },
+        atlas = key, 
+        config = {extra = {value=2},cooldown={type='ante', now=1, need=1}, },
+        discovered = true,
+        cost = 6,
+        loc_vars = function(self, info_queue, card)
+            return {vars = {card.ability.cooldown.now,card.ability.cooldown.need,card.ability.cooldown.type,card.ability.extra.value}}
+        end,
+        can_use = function(self,card)
+            return ability_cooled_down(self,card) and #G.jokers.highlighted == 1
+        end,
+        use = function(self,card,area,copier) 
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+                local chosen_joker = G.jokers.highlighted[1]
+                local enhancement=SMODS.poll_enhancement{guaranteed=true}
+                chosen_joker.ability.betmma_enhancement=enhancement
+                chosen_joker.ability.betmma_enhancement_atlas = 'centers'
+                chosen_joker.betmma_enhancement_fake_card=nil
+            return true end }))
+        end
+    }
+    function Card:calculate_enhancement_betmma(context)
+        if self.debuff or self.ability.set ~= 'Joker' then return nil end
+        local center = G.P_CENTERS[self.ability.betmma_enhancement]
+        if not center then return nil end
+        if center.calculate and type(center.calculate) == 'function' then -- mod enhancements
+            local o = center:calculate(self, context)
+            if o then return o end
+        end
+        if not self.betmma_enhancement_fake_card then
+            local fake_card = {T={x=0,y=0,w=71,h=95},config={center=center},params={},set_sprites=function()end,base={nominal=0}} -- get_chip_bonus will use base.nominal
+            Card.set_ability(fake_card, center, true)-- initial is true to prevent calling G.GAME.blind:debuff_card
+            self.betmma_enhancement_fake_card = fake_card
+        end
+        local fake_card = self.betmma_enhancement_fake_card
+        local ret={}
+        if context.joker_main then
+            ret.chips=Card.get_chip_bonus(fake_card)--center.config.bonus
+            ret.mult=Card.get_chip_mult(fake_card)
+            ret.x_mult=Card.get_chip_x_mult(fake_card)
+            ret.h_x_mult=Card.get_chip_h_x_mult(fake_card)
+            ret.p_dollars=Card.get_p_dollars(fake_card)
+            if center==G.P_CENTERS.m_glass then
+                if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/4 then
+                    after_event(function()
+                        self:shatter()
+                    end)
+                end
+            end
+        elseif context.end_of_round and context.cardarea == G.jokers then 
+            ret.h_dollars=center.config.h_dollars
+        else
+            return
+        end
+        for k,v in pairs(ret) do
+            if v==0 then
+                ret[k]=nil
+            end
+        end
+        return ret
+    end
+end --enhancer
 do
     local key='zircon'
     get_atlas(key)

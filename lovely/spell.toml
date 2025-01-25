@@ -113,20 +113,20 @@ target = "functions/common_events.lua"
 pattern = "elseif _c.set == 'Enhanced' then"
 position = "before"
 payload = '''
-if card and card.ability.perma_mult then
-    if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
-    elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    if card and card.ability.perma_mult then
+        if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+        elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+        end
     end
-end
-if card and card.ability.perma_p_dollars then
-    if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
-    elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+    if card and card.ability.perma_p_dollars then
+        if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+        elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+        end
     end
-end
 '''
 match_indent = true
 
@@ -136,19 +136,19 @@ target = "functions/common_events.lua"
 pattern = "elseif _c.set == 'Booster' then"
 position = "before"
 payload = '''
-if card and card.ability.perma_mult then
-    if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
-    elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+    if card and card.ability.perma_mult then
+        if TalismanCompat(card.ability.perma_mult)>TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+        elseif TalismanCompat(card.ability.perma_mult)<TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_mult_neg', nodes = desc_nodes, vars = {card.ability.perma_mult}}
+        end
     end
-end
-if card and card.ability.perma_p_dollars then
-    if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
-    elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
-        localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+    if card and card.ability.perma_p_dollars then
+        if TalismanCompat(card.ability.perma_p_dollars)>TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_p_dollars', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+        elseif TalismanCompat(card.ability.perma_p_dollars)<TalismanCompat(0) then
+            localize{type = 'other', key = 'card_extra_p_dollars_neg', nodes = desc_nodes, vars = {card.ability.perma_p_dollars}}
+        end
     end
-end
 '''
 match_indent = true

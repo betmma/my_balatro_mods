@@ -585,8 +585,10 @@ local function get_weight(v)
             v=G.P_CENTERS[v]
         end
     end
-    if v.weight then return v.weight end
-    if betmma_config.enable_voucher_rarity and v.config and v.config.weight then return v.config.weight end
+    if betmma_config.enable_voucher_rarity then
+        if v.weight then return v.weight end
+        if v.config and v.config.weight then return v.config.weight end
+    end
     return 1
 end
 
@@ -5906,8 +5908,8 @@ end
                 -- {id = 'j_ascension'},
                 -- {id = 'j_sock_and_buskin'},
                 -- {id = 'j_sock_and_buskin'},
-                -- {id = 'j_oops'},
-                -- {id = 'j_oops'},
+                {id = 'j_oops'},
+                {id = 'j_oops'},
                 -- {id = 'j_baron',  edition='phantom'},
                 -- {id = 'j_brainstorm', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
@@ -5927,7 +5929,7 @@ end
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_death'},
                 -- {id='c_betm_abilities_rental_slot',negative=true},
-                -- {id='c_betm_abilities_shield',negative=true},
+                {id='c_betm_abilities_enhancer'},
             },
             vouchers = {
                 -- {id = MOD_PREFIX_V.. 'trash_picker'},

@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 0
+priority = 1
 
 
 # Create Ability Area 
@@ -233,7 +233,7 @@ elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
 match_indent = true
 
 
-# try to add seals to jokers but they can't work at all (disabled)
+# draw joker's enhancement
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -248,28 +248,57 @@ end
 match_indent = true
 
 
-# (disabled)
+# draw extra enhancement layer on jokers
 [[patches]]
 [patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''if next(eval) then nope'''
-position = "after"
+target = "card.lua"
+pattern = '''if center.set == 'Default' or center.set == 'Enhanced' and not center.replace_base_card then'''
+position = "before"
 payload = '''
-if eval.jokers==nil and eval.seals and eval.seals.repetitions then
-    eval.jokers={
-                    message = localize('k_again_ex'),
-                    repetitions = eval.seals.repetitions,
-                    card = eval.seals.card
-                }
-elseif eval.seals==nil and eval.jokers and eval.jokers.repetitions then
-    eval.seals={
-                    message = localize('k_again_ex'),
-                    repetitions = eval.jokers.repetitions,
-                    card = eval.jokers.card
-                }
-else
-    eval.jokers={repetitions=0}
-    eval.seals={repetitions=0}
+if self.ability.set == 'Joker' and self.ability.betmma_enhancement then
+    local center = G.P_CENTERS[self.ability.betmma_enhancement]
+    local sprite=Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[self.ability.betmma_enhancement_atlas], center.pos)
+    --sprite.VT.scale=0.95
+    sprite.states.hover = self.states.hover
+    sprite.states.click = self.states.click
+    sprite.states.drag = self.states.drag
+    sprite.states.collide.can = false
+    sprite:set_role({major = self, role_type = 'Glued', draw_major = self})
+    love.graphics.setBlendMode("multiply", 'premultiplied')
+    sprite:draw_shader('dissolve', nil, nil, nil, self.children.center)
+    love.graphics.setBlendMode("alpha")
+    --self.ability.betmma_enhancement_sprite:draw()
+    sprite:remove()             
+end
+'''
+match_indent = true
+
+
+# add extra enhancement on joker to info_queue in generate_card_ui() (not patching to "elseif _c.set == 'Joker' then" part is because modded jokers go into "elseif _c.generate_ui and type(_c.generate_ui) == 'function' then" before "_c.set == 'Joker'")
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if main_end then"
+position = "before"
+payload = '''
+    if _c.set == "Joker" and card.ability.betmma_enhancement then
+        info_queue[#info_queue+1] = G.P_CENTERS[card.ability.betmma_enhancement]
+    end
+'''
+match_indent = true
+
+# Call calculate_enhancement_betmma on jokers under joker_main context
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: evaluate your own general effects'''
+position = "before"
+payload = '''
+if card.ability.set=="Joker" and card.ability.betmma_enhancement then -- context.joker_main and 
+    local effects={}
+    local eval = card:calculate_enhancement_betmma(context)
+    table.insert(effects, {jokers=eval})
+    SMODS.trigger_effects(effects,card)
 end
 '''
 match_indent = true
