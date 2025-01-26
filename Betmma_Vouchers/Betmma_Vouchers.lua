@@ -5927,7 +5927,7 @@ end
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
-                -- {id = 'c_death'},
+                {id = 'c_heirophant'},
                 -- {id='c_betm_abilities_rental_slot',negative=true},
                 {id='c_betm_abilities_enhancer'},
             },
