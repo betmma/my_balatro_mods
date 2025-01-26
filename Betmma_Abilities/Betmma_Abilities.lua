@@ -1574,7 +1574,7 @@ do
                 local enhancement=SMODS.poll_enhancement{guaranteed=true}
                 chosen_joker.ability.betmma_enhancement=enhancement
                 chosen_joker.ability.betmma_enhancement_atlas = 'centers'
-                chosen_joker.betmma_enhancement_fake_card=nil
+                chosen_joker.betmma_enhancement_fake_card=nil -- reset fake card or it won't update
             return true end }))
         end
     }
@@ -1599,12 +1599,10 @@ do
             ret.x_mult=Card.get_chip_x_mult(fake_card)
             ret.h_x_mult=Card.get_chip_h_x_mult(fake_card)
             ret.p_dollars=Card.get_p_dollars(fake_card)
-            if center==G.P_CENTERS.m_glass then
-                if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/4 then
-                    after_event(function()
-                        self:shatter()
-                    end)
-                end
+            if SMODS.has_enhancement(fake_card, 'm_glass') and pseudorandom('glass') < G.GAME.probabilities.normal/(fake_card.ability.name == 'Glass Card' and fake_card.ability.extra or G.P_CENTERS.m_glass.config.extra) then 
+                after_event(function()
+                    self:shatter()
+                end)
             end
         elseif context.end_of_round and context.cardarea == G.jokers then 
             ret.h_dollars=center.config.h_dollars

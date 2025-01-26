@@ -281,9 +281,9 @@ target = "functions/common_events.lua"
 pattern = "if main_end then"
 position = "before"
 payload = '''
-    if _c.set == "Joker" and card.ability.betmma_enhancement then
-        info_queue[#info_queue+1] = G.P_CENTERS[card.ability.betmma_enhancement]
-    end
+if _c.set == "Joker" and card and card.ability.betmma_enhancement then
+    info_queue[#info_queue+1] = G.P_CENTERS[card.ability.betmma_enhancement]
+end
 '''
 match_indent = true
 
