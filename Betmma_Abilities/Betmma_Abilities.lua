@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.6(20250125)
+--- VERSION: 1.0.3.7(20250126)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1548,6 +1548,53 @@ end --antinomy
 do
     local key='enhancer'
     get_atlas(key)
+    local function create_fake_card(center,real_card)
+        local fake_card = {
+            T={x=0,y=0,w=71,h=95},
+            config={center=center},
+            params={},
+            set_sprites=function()end,
+            base={nominal=0},  -- get_chip_bonus will use base.nominal
+            real_parent=real_card,
+            start_dissolve=function(fake_card)
+                if fake_card.real_parent then
+                    fake_card.real_parent:start_dissolve()
+                end
+            end,
+        }
+        if SMODS.Mods['Cryptid'] then
+            fake_card.get_gameset=cry_get_gameset
+        end
+        -- fake_card has function so can't be saved, but face_card.ability.extra needs to be saved to track variables used
+        Card.set_ability(fake_card, center, true) -- initial is true to prevent calling G.GAME.blind:debuff_card
+
+        if real_card then
+            real_card.betmma_enhancement_fake_card = fake_card
+        end
+        return fake_card
+    end
+    -- if _center is nil, enhancement is random. otherwise consider it as a key or a center in P_CENTERS. If restore_extra is true, restore fake_card.ability.extra from card.ability.betmma_enhancement_extra
+    local function betmma_enhance_joker(card, _center, restore_extra)
+        local enhancement, center
+        if _center==nil then
+            enhancement=SMODS.poll_enhancement{guaranteed=true}
+            center=G.P_CENTERS[enhancement]
+        elseif type(_center)=='string' then
+            enhancement=_center
+            center=G.P_CENTERS[_center]
+        else
+            enhancement=_center.key
+            center=_center
+        end
+        card.ability.betmma_enhancement=enhancement
+        card.ability.betmma_enhancement_atlas = center.atlas or 'centers'
+        local fake_card = create_fake_card(center,card)
+        if restore_extra then
+            fake_card.ability.extra=card.ability.betmma_enhancement_extra -- restore fake_card.ability.extra
+        else
+            card.ability.betmma_enhancement_extra=fake_card.ability.extra
+        end
+    end
     betm_abilities[key]=ability_prototype { 
         key = key,
         loc_txt = {
@@ -1559,7 +1606,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {value=2},cooldown={type='ante', now=1, need=1}, },
+        config = {extra = {value=2},cooldown={type='ante', now=0, need=0}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
@@ -1571,10 +1618,15 @@ do
         use = function(self,card,area,copier) 
             G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
                 local chosen_joker = G.jokers.highlighted[1]
-                local enhancement=SMODS.poll_enhancement{guaranteed=true}
-                chosen_joker.ability.betmma_enhancement=enhancement
-                chosen_joker.ability.betmma_enhancement_atlas = 'centers'
-                chosen_joker.betmma_enhancement_fake_card=nil -- reset fake card or it won't update
+                betmma_enhance_joker(chosen_joker)
+                -- local enhancement=SMODS.poll_enhancement{guaranteed=true}
+                -- chosen_joker.ability.betmma_enhancement=enhancement
+                -- local center=G.P_CENTERS[enhancement]
+                -- chosen_joker.ability.betmma_enhancement_atlas = center.atlas or 'centers'
+                -- local fake_card = create_fake_card(center)
+                -- chosen_joker.betmma_enhancement_fake_card = fake_card
+                -- chosen_joker.ability.betmma_enhancement_extra=fake_card.ability.extra
+                
             return true end }))
         end
     }
@@ -1582,16 +1634,19 @@ do
         if self.debuff or self.ability.set ~= 'Joker' then return nil end
         local center = G.P_CENTERS[self.ability.betmma_enhancement]
         if not center then return nil end
-        if center.calculate and type(center.calculate) == 'function' then -- mod enhancements
-            local o = center:calculate(self, context)
-            if o then return o end
-        end
-        if not self.betmma_enhancement_fake_card then
-            local fake_card = {T={x=0,y=0,w=71,h=95},config={center=center},params={},set_sprites=function()end,base={nominal=0}} -- get_chip_bonus will use base.nominal
-            Card.set_ability(fake_card, center, true)-- initial is true to prevent calling G.GAME.blind:debuff_card
-            self.betmma_enhancement_fake_card = fake_card
+        if not self.betmma_enhancement_fake_card then -- this is after load a game when fake_card is not saved and needs restoring fake_card.ability.extra
+            betmma_enhance_joker(self, center, true)
+            -- local fake_card = create_fake_card(center)
+            -- self.betmma_enhancement_fake_card = fake_card
+            -- fake_card.ability.extra=self.ability.betmma_enhancement_extra -- restore fake_card.ability.extra
         end
         local fake_card = self.betmma_enhancement_fake_card
+        if center.calculate and type(center.calculate) == 'function' then -- mod enhancements
+            local effect={}
+            local o = center:calculate(fake_card, context, effect) -- not use self here
+            if o then return o end
+            return effect -- huh why cryptid uses such way
+        end
         local ret={}
         if context.joker_main then
             ret.chips=Card.get_chip_bonus(fake_card)--center.config.bonus
@@ -1614,6 +1669,47 @@ do
                 ret[k]=nil
             end
         end
+        return ret
+    end
+    local calculate_joker_ref = Card.calculate_joker
+    function Card:calculate_joker(context)
+        local card_is_suit_ref,restore_card_is_suit
+        local card_get_id_ref,restore_card_get_id
+        if self.ability.betmma_enhancement then
+            card_is_suit_ref=Card.is_suit
+            card_get_id_ref=Card.get_id
+            if self.ability.betmma_enhancement=='m_wild' then -- let wild joker always succeed when testing suit
+                Card.is_suit=function(card)
+                    return true
+                end
+                restore_card_is_suit=true
+            elseif self.ability.betmma_enhancement=='m_stone' then -- let stone joker always fail when testing suit or rank
+                Card.is_suit=function(card)
+                    return false
+                end
+                restore_card_is_suit=true
+                Card.get_id=function(card)
+                    return -math.random(100, 1000000)
+                end
+            end
+        end
+        local ret = calculate_joker_ref(self, context)
+        if restore_card_is_suit then
+            Card.is_suit=card_is_suit_ref
+        end
+        if restore_card_get_id then
+            Card.get_id=card_get_id_ref
+        end
+        return ret
+    end
+    local Card_set_ability_ref = Card.set_ability
+    function Card:set_ability(center, initial, delay_sprites) -- when using tarot to enhance joker
+        if self.ability and self.ability.set=='Joker' and center.set=='Enhanced' then
+            betmma_enhance_joker(self, center)
+            return
+        end
+        local ret=Card_set_ability_ref(self, center, initial, delay_sprites)
+
         return ret
     end
 end --enhancer
