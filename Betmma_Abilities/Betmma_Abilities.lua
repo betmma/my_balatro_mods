@@ -1606,7 +1606,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {value=2},cooldown={type='ante', now=0, need=0}, },
+        config = {extra = {value=2},cooldown={type='ante', now=1, need=1}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
