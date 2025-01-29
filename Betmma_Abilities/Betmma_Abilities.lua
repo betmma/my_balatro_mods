@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.7(20250126)
+--- VERSION: 1.0.3.8(20250129)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1606,7 +1606,7 @@ do
         }
         },
         atlas = key, 
-        config = {extra = {value=2},cooldown={type='ante', now=1, need=1}, },
+        config = {extra = {value=2},cooldown={type='round', now=1, need=1}, },
         discovered = true,
         cost = 6,
         loc_vars = function(self, info_queue, card)
@@ -2114,40 +2114,13 @@ do
             end
         end,
     }
-    local G_FUNCS_evaluate_play_ref=G.FUNCS.evaluate_play
-    G.FUNCS.evaluate_play=function(e)
-        G_FUNCS_evaluate_play_ref(e)
-        if not G.betmma_abilities then
-            return
+    local SMODS_get_card_areas_ref=SMODS.get_card_areas
+    function SMODS.get_card_areas(_type, _context)
+        local ret=SMODS_get_card_areas_ref(_type, _context)
+        if _type=='jokers' then
+            table.insert(ret, G.betmma_abilities)
         end
-        local percent=0.3
-        local percent_delta=0.08
-        for i=1, #G.betmma_abilities.cards do
-            --calculate the joker after hand played effects
-            local effects = eval_card(G.betmma_abilities.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, after = true})
-            if effects and effects.jokers and effects.jokers.joker_repetitions then
-                rep_list = effects.jokers.joker_repetitions
-                for z=1, #rep_list do
-                    if type(rep_list[z]) == 'table' and rep_list[z].repetitions then
-                        for r=1, rep_list[z].repetitions do
-                            card_eval_status_text(rep_list[z].card, 'jokers', nil, nil, nil, rep_list[z])
-                            if percent then percent = percent+percent_delta end
-                            local ef = eval_card(G.betmma_abilities.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, after = true, retrigger_joker = true})
-            
-                            --Any Joker effects
-                            if ef.jokers then
-                                card_eval_status_text(G.betmma_abilities.cards[i], 'jokers', nil, percent, nil, ef.jokers)
-                                if percent then percent = percent+percent_delta end
-                            end
-                        end
-                    end
-                end
-            end
-            if effects.jokers then
-                card_eval_status_text(G.jokers.cards[i], 'jokers', nil, percent, nil, effects.jokers)
-                percent = percent + percent_delta
-            end
-        end
+        return ret 
     end
 end --decay
 do
