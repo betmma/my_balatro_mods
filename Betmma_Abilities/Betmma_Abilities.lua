@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.8(20250129)
+--- VERSION: 1.0.3.9(20250202)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1691,6 +1691,7 @@ do
                 Card.get_id=function(card)
                     return -math.random(100, 1000000)
                 end
+                restore_card_get_id=true
             end
         end
         local ret = calculate_joker_ref(self, context)
