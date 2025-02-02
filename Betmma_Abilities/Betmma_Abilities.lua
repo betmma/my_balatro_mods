@@ -1373,7 +1373,7 @@ do
             return {vars = {card.ability.extra.cost,value/100,card.ability.extra.increment}}
         end,
         can_use = function(self,card)
-            return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and (G.GAME.dollars-G.GAME.bankrupt_at)>=card.ability.extra.cost
+            return ability_cooled_down(self,card) and G and G.STATE == G.STATES.SELECTING_HAND and G.GAME and G.GAME.current_round and TalismanCompat(G.GAME.dollars-G.GAME.bankrupt_at)>=TalismanCompat(card.ability.extra.cost)
         end,
         use = function(self,card,area,copier)
             local value=card.ability.extra.value
