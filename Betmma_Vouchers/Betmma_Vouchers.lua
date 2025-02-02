@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.1
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1(20250129)
+--- VERSION: 3.0.1.1(20250202)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2049,7 +2049,7 @@ do
         }
         G.GAME.vouchers_bought=(G.GAME.vouchers_bought or 0)+1
         if center_table.name ~= 'Antimatter'then
-            if used_voucher('connoisseur') and G.GAME.dollars>=v_connoisseur:loc_vars().vars[2] then
+            if used_voucher('connoisseur') and TalismanCompat(G.GAME.dollars)>=TalismanCompat(v_connoisseur:loc_vars().vars[2]) then
                 G.GAME.v_connoisseur_count= (G.GAME.v_connoisseur_count or 0)+1
                 G.E_MANAGER:add_event(Event({
                     trigger = 'before',
@@ -2854,7 +2854,7 @@ do
 
     local Card_calculate_rental_ref=Card.calculate_rental
     function Card:calculate_rental()
-        if used_voucher('debt_burden') and G.GAME.dollars<0 then
+        if used_voucher('debt_burden') and TalismanCompat(G.GAME.dollars)<TalismanCompat(0) then
             return
         end
         Card_calculate_rental_ref(self)
@@ -4026,7 +4026,7 @@ do
         G.GAME.interest_amount_ref=G.GAME.interest_amount
         --print("interest_ref",G.GAME.interest_amount_ref)
         G.GAME.v_money_target_triggered=false
-        if used_voucher('money_target') and G.GAME.dollars%5==0 then
+        if used_voucher('money_target') and TalismanCompat(G.GAME.dollars%5)==TalismanCompat(0) then
             G.GAME.v_money_target_triggered=true
             G.GAME.interest_amount=G.GAME.interest_amount*get_voucher('money_target').config.extra
         end
@@ -5406,7 +5406,7 @@ do
     handle_register(this_v)
     local G_FUNCS_evaluate_round_ref=G.FUNCS.evaluate_round
     G.FUNCS.evaluate_round = function()
-        if used_voucher('deep_roots') and G.GAME.dollars<0 then
+        if used_voucher('deep_roots') and TalismanCompat(G.GAME.dollars)<TalismanCompat(0) then
             G.GAME.dollars=-G.GAME.dollars
             G_FUNCS_evaluate_round_ref()
             G.GAME.dollars=-G.GAME.dollars

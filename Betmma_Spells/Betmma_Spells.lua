@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Spell
 --- PREFIX: betm_spells
---- VERSION: 0.1.9.2(20250118)
+--- VERSION: 0.1.9.3(20250202)
 --- DEPENDENCIES: [BetmmaAbilities>=1.0.3]
 --- BADGE_COLOUR: 8DB09F
 
@@ -311,7 +311,7 @@ do
     
     G.FUNCS.can_reroll_spell = function(e)
         local cost=betm_spellvouchers['magic_wheel'].config.cost
-        if (cost > G.GAME.dollars - G.GAME.bankrupt_at) and (cost > 0) then
+        if (TalismanCompat(cost) > TalismanCompat(G.GAME.dollars - G.GAME.bankrupt_at)) and (cost > 0) then
             e.config.colour = G.C.UI.BACKGROUND_INACTIVE
             e.config.button = nil
         else
