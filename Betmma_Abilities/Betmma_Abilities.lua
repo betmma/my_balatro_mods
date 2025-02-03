@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.9(20250202)
+--- VERSION: 1.0.3.10(20250203)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1549,7 +1549,7 @@ do
     local key='enhancer'
     get_atlas(key)
     local function create_fake_card(center,real_card)
-        local fake_card = {
+        local fake_card = setmetatable({
             T={x=0,y=0,w=71,h=95},
             config={center=center},
             params={},
@@ -1561,11 +1561,11 @@ do
                     fake_card.real_parent:start_dissolve()
                 end
             end,
-        }
+        },Card)
         if SMODS.Mods['Cryptid'] then
             fake_card.get_gameset=cry_get_gameset
         end
-        -- fake_card has function so can't be saved, but face_card.ability.extra needs to be saved to track variables used
+        -- fake_card has function so can't be saved, but fake_card.ability.extra needs to be saved to track variables used
         Card.set_ability(fake_card, center, true) -- initial is true to prevent calling G.GAME.blind:debuff_card
 
         if real_card then
