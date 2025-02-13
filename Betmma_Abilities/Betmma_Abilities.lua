@@ -226,6 +226,7 @@ do
         return Card_can_sell_card_ref(self,context)
     end
 
+    -- move button to move misplaced abilities to Ability area
     G.FUNCS.can_move_consumeable = function(e)
         local card=G.consumeables.highlighted[1]
         if not (card and (card.ability.set=='Ability' and G.betmma_abilities.config.card_limit>#G.betmma_abilities.cards) or (card.ability.set=='Spell' and G.betmma_spells.config.card_limit>#G.betmma_spells.cards)) then
@@ -353,6 +354,7 @@ do
     end
 
     local G_FUNCS_check_for_buy_space_ref=G.FUNCS.check_for_buy_space
+    -- check for betmma.abilities card limit when buying from shop
     G.FUNCS.check_for_buy_space = function(card)
         if card.ability.set=='Ability' then
             if #G.betmma_abilities.cards < G.betmma_abilities.config.card_limit + ((card.edition and card.edition.negative) and 1 or 0) then

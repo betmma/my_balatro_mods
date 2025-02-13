@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.1(20250202)
+--- VERSION: 3.0.1.2(20250213)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -5951,7 +5951,7 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'mirror'},
+                {id = MOD_PREFIX_V.. 'eternity'},
                 -- {id = 'v_retcon'},
                 
             },
