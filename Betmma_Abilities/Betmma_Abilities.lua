@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.10(20250203)
+--- VERSION: 1.0.3.11(20250214)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1550,6 +1550,14 @@ end --antinomy
 do
     local key='enhancer'
     get_atlas(key)
+    local attention_text_ref=attention_text
+    -- fix card_eval_status_text crash (cuz it calls attention_text which assumes args.major is a moveable)
+    function attention_text(args)
+        if args and args.major and args.major.real_parent then
+            args.major = args.major.real_parent
+        end
+        return attention_text_ref(args)
+    end
     local function create_fake_card(center,real_card)
         local fake_card = setmetatable({
             T={x=0,y=0,w=71,h=95},
@@ -1563,6 +1571,10 @@ do
                     fake_card.real_parent:start_dissolve()
                 end
             end,
+            juice_up=function(self, scale, rot_amount)
+                if not self.real_parent then return end
+                self.real_parent:juice_up(scale, rot_amount)
+            end
         },Card)
         if SMODS.Mods['Cryptid'] then
             fake_card.get_gameset=cry_get_gameset
@@ -1643,8 +1655,9 @@ do
             -- fake_card.ability.extra=self.ability.betmma_enhancement_extra -- restore fake_card.ability.extra
         end
         local fake_card = self.betmma_enhancement_fake_card
-        if center.calculate and type(center.calculate) == 'function' then -- mod enhancements
+        if center.calculate and type(center.calculate) == 'function' and context.joker_main then -- mod enhancements. If not limit to joker_main, each card scoring and unhighlighting will trigger enhancement effect
             local effect={}
+            context.cardarea=G.play -- pretend it's a card in play area
             local o = center:calculate(fake_card, context, effect) -- not use self here
             if o then return o end
             return effect -- huh why cryptid uses such way

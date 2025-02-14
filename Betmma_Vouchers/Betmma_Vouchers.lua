@@ -5915,7 +5915,7 @@ end
                 -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
                 {id = 'j_bloodstone', },
-                {id = 'j_madness', eternal = true},
+                -- {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_balatro_mobile'},
                 -- {id = 'j_lobc_happy_teddy_bear'}--, pinned = true},
             },
