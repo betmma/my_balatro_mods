@@ -29,6 +29,57 @@ position = "before"
 payload = "if self.ability.x_mult == nil then return 0 end"
 match_indent = true
 
+# evaluate repetition effects of Omnicard and Mirror voucher. calculate over_retriggered_ratio. (NOTE: now retrigger source is very broad, only SMODS.calculate_repetitions sums up all retriggers. Even in eval_card all ret's sub tables don't contain jokers' repetitions. so the over_retriggered_ratio should be changed to after SMODS.calculate_repetitions)
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: evaluate your own repetition effects'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('omnicard') and SMODS.has_enhancement(card, 'm_wild') then
+    ret.omnicard={
+        message = localize('k_again_ex'),
+        repetitions = 1,
+        card = card
+    }
+end
+card.ability.over_retriggered_ratio=1
+if card.ability.temp_repetition and card.ability.temp_repetition>0 then
+    ret.temp_repetition={
+        message = localize('k_again_ex'),
+        repetitions = card.ability.temp_repetition,
+        card = card
+    }
+    if ret.temp_repetition.repetitions>OVER_RETRIGGER_LIMIT then
+        card.ability.over_retriggered_ratio=ret.temp_repetition.repetitions/OVER_RETRIGGER_LIMIT
+        ret.temp_repetition.repetitions=OVER_RETRIGGER_LIMIT
+        card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('over_retriggered')..tostring(card.ability.over_retriggered_ratio)})
+    end
+    card.ability.temp_repetition=0
+end
+'''
+match_indent = true
+
+# Mirror voucher add temp repetition to card when main scoring
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: main scoring on played cards'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('mirror') and SMODS.has_enhancement(card, 'm_steel') then
+    local index=1
+    while G.play.cards[index]~=card and index<=#G.play.cards do
+        index=index+1
+    end
+    if index<#G.play.cards then
+        local right_card=G.play.cards[index+1]
+        right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+1
+    end
+end
+'''
+match_indent = true
+
 # Half-life changing displayed joker limit in CardArea:draw()
 [[patches]]
 [patches.pattern]

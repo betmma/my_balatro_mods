@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.2
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.3
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.2(20250213)
+--- VERSION: 3.0.1.3(20250215)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2497,22 +2497,7 @@ do
         Card_update_ref(self, dt)
     end
 
-    local Card_calculate_seal_ref=Card.calculate_seal
-    function Card:calculate_seal(context)
-        local ret=Card_calculate_seal_ref(self,context)
-        if context.repetition and used_voucher('omnicard') and self.config and self.config.center_key=='m_wild' then
-            if ret then
-                ret.repetitions=ret.repetitions+1
-            else
-                ret={
-                    message = localize('k_again_ex'),
-                    repetitions = 1,
-                    card = self
-                }
-            end
-        end
-        return ret
-    end
+    -- implementation of omnicard is in lovely.toml
 
     local Card_shatter_ref=Card.shatter
     function Card:shatter()
@@ -4297,40 +4282,7 @@ do
 
     OVER_RETRIGGER_LIMIT=50
 
-    local eval_card_ref=eval_card
-    function eval_card(card, context)
-        if G.GAME.probabilities and G.GAME.probabilities.normal==nil then
-            G.GAME.probabilities.normal=1 -- someone reported G.GAME.probabilities.normal became nil and crashed. just override it to 1 if it's nil.
-        end
-        local ret={eval_card_ref(card, context)}
-        if used_voucher('mirror') and not context.repetition_only and context.cardarea == G.play and card.config.center_key=='m_steel' then -- this is scoring calculation
-            local index=1
-            while G.play.cards[index]~=card and index<=#G.play.cards do
-                index=index+1
-            end
-            if index<#G.play.cards then
-                local right_card=G.play.cards[index+1]
-                right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+1
-            end
-        end
-        if context.repetition_only  and card.ability.temp_repetition then -- if this is the red seal calculation, add temp repetition 
-            card.ability.over_retriggered_ratio=1
-            if not ret[1].seals then ret[1].seals={
-                message = localize('k_again_ex'),
-                repetitions = card.ability.temp_repetition,
-                card = card
-            }
-            else ret[1].seals.repetitions=ret[1].seals.repetitions+card.ability.temp_repetition
-            end
-            if ret[1].seals.repetitions>OVER_RETRIGGER_LIMIT then
-                card.ability.over_retriggered_ratio=ret[1].seals.repetitions/OVER_RETRIGGER_LIMIT
-                ret[1].seals.repetitions=OVER_RETRIGGER_LIMIT
-                card_eval_status_text(card,'extra',nil,nil,nil,{message=localize('over_retriggered')..tostring(card.ability.over_retriggered_ratio)})
-            end
-            card.ability.temp_repetition=0
-        end
-        return unpack(ret)
-    end
+    -- Mirror voucher add temp repetition to card when main scoring, calculation of temp repetition and calculation of over retriggered ratio is in lovely.toml
 
 end -- mirror
 do
@@ -5937,7 +5889,7 @@ end
                 {id = MOD_PREFIX_V.. '4d_boosters'},
                 -- {id = 'v_paint_brush'},
                 -- -- {id = 'v_liquidation'},
-                {id = MOD_PREFIX_V.. 'scrawl'},
+                {id = MOD_PREFIX_V.. 'mirror'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
                 {id = 'v_overstock_norm'},
                 {id = 'v_overstock_plus'},
@@ -5951,7 +5903,7 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'eternity'},
+                {id = MOD_PREFIX_V.. 'omnicard'},
                 -- {id = 'v_retcon'},
                 
             },
