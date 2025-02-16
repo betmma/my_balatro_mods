@@ -36,6 +36,7 @@ target = "functions/common_events.lua"
 pattern = '''-- TARGET: evaluate your own repetition effects'''
 position = "after"
 payload = '''
+-- evaluate repetition effects of Omnicard and Mirror voucher. calculate over_retriggered_ratio.
 if used_voucher and used_voucher('omnicard') and SMODS.has_enhancement(card, 'm_wild') then
     ret.omnicard={
         message = localize('k_again_ex'),
@@ -67,7 +68,7 @@ target = "functions/common_events.lua"
 pattern = '''-- TARGET: main scoring on played cards'''
 position = "after"
 payload = '''
-if used_voucher and used_voucher('mirror') and SMODS.has_enhancement(card, 'm_steel') then
+if used_voucher and used_voucher('mirror') and SMODS.has_enhancement(card, 'm_steel') then -- Mirror voucher add temp repetition to card when main scoring
     local index=1
     while G.play.cards[index]~=card and index<=#G.play.cards do
         index=index+1
@@ -75,6 +76,39 @@ if used_voucher and used_voucher('mirror') and SMODS.has_enhancement(card, 'm_st
     if index<#G.play.cards then
         local right_card=G.play.cards[index+1]
         right_card.ability.temp_repetition=(right_card.ability.temp_repetition or 0)+1
+    end
+end
+'''
+match_indent = true
+
+# Echo Wall voucher calculate end of round effect on discarded cards
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: evaluate your own general effects'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('echo_wall') and context.discard then -- Echo Wall voucher calculate end of round effect on discarded cards
+    local end_of_round = card:get_end_of_round_effect(context)
+    if end_of_round then
+        ret.end_of_round = end_of_round
+    end
+end
+'''
+match_indent = true
+
+
+# Echo Chamber voucher calculate end of round effect on held cards
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''-- TARGET: main scoring on held cards'''
+position = "after"
+payload = '''
+if used_voucher and used_voucher('echo_chamber') then -- Echo Chamber voucher calculate end of round effect on held cards
+    local end_of_round = card:get_end_of_round_effect(context)
+    if end_of_round then
+        ret.end_of_round = end_of_round
     end
 end
 '''

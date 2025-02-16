@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.3
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.4
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.3(20250215)
+--- VERSION: 3.0.1.4(20250216)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3366,110 +3366,10 @@ do
     end
     handle_register(this_v)
 
-    local eval_card_ref=eval_card
 
-    local function trigger_end_of_round(card,i)
-        local reps = {1}
-        local j = 1
-        while j <= #reps do
-            local percent = (i-0.999)/(#G.hand.cards-0.998) + (j-1)*0.1
-            if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+    -- echo wall triggering end of round effect on discarded card is in lovely.toml
+    -- echo chamber triggering end of round effect on held card is in lovely.toml
 
-            --calculate the hand effects
-            local effects = {card:get_end_of_round_effect()}
-            for k=1, #G.jokers.cards do
-                --calculate the joker individual card effects
-                local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.hand,  other_card = card, individual = true, end_of_round = true, callback = function(card, eval, retrigger)
-                    if eval then 
-                        table.insert(effects, eval)
-                        effects[#effects].from_retrigger = retrigger
-                    end
-                end, no_retrigger_anim = true})
-
-            end
-
-            if reps[j] == 1 then 
-                --Check for hand doubling
-                --From Red seal
-                local eval = eval_card_ref(card, {end_of_round = true,cardarea = G.hand, repetition = true, repetition_only = true})
-                if next(eval) and (next(effects[1]) or #effects > 1)  then 
-                    for h = 1, eval.seals.repetitions do
-                        if G.GAME.blind.name == "bl_mathbl_infinite" and not G.GAME.blind.disabled then
-                            G.GAME.blind:wiggle()
-                            G.GAME.blind.triggered = true
-                        else
-                            reps[#reps+1] = eval
-                        end
-                    end
-                end
-
-                --from Jokers
-                for j=1, #G.jokers.cards do
-                    --calculate the joker effects
-                    local eval = eval_card_ref(G.jokers.cards[j], {cardarea = G.hand, other_card = card, repetition = true, end_of_round = true, card_effects = effects, callback = function(card, ret) eval = {jokers = ret}
-                    if next(eval) then 
-                        for h  = 1, eval.jokers.repetitions do
-                            if G.GAME.blind.name == "bl_mathbl_infinite" and not G.GAME.blind.disabled then
-                                G.GAME.blind:wiggle()
-                                G.GAME.blind.triggered = true
-                            else
-                                reps[#reps+1] = eval
-                            end
-                        end
-                    end end})
-                end
-            end
-
-            for ii = 1, #effects do
-                --if this effect came from a joker
-		if usingTalisman() then
-                  if effects[ii].card and not Talisman.config_file.disable_anims then
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'immediate',
-                        func = (function() effects[ii].card:juice_up(0.7);return true end)
-                    }))
-                  end
-                elseif effects[ii].card then 
-                  G.E_MANAGER:add_event(Event({
-                        trigger = 'immediate',
-                        func = (function() effects[ii].card:juice_up(0.7);return true end)
-                  }))
-                end
-                
-                --If dollars
-                if effects[ii].h_dollars then 
-                    ease_dollars(effects[ii].h_dollars)
-                    card_eval_status_text(card, 'dollars', effects[ii].h_dollars, percent)
-                end
-
-                --Any extras
-                if effects[ii].extra then
-                    card_eval_status_text(card, 'extra', nil, percent, nil, effects[ii].extra)
-                end
-            end
-            j = j + 1
-        end
-    end
-
-    local G_FUNCS_discard_cards_from_highlighted_ref = G.FUNCS.discard_cards_from_highlighted
-    G.FUNCS.discard_cards_from_highlighted = function(e, hook)
-        if used_voucher('echo_wall') then
-            local highlighted_count = math.min(#G.hand.highlighted, G.discard.config.card_limit - #G.play.cards)
-            if highlighted_count > 0 then 
-                for i=1, highlighted_count do
-                    trigger_end_of_round(G.hand.highlighted[i],i)
-                end
-            end
-        end
-        G_FUNCS_discard_cards_from_highlighted_ref(e,hook)
-    end
-
-    function eval_card(card, context)
-        if used_voucher('echo_chamber') and context and context.cardarea==G.hand and not context.other_card and not context.repetition then
-            trigger_end_of_round(card,1)
-        end
-        return eval_card_ref(card,context)
-    end
     
 
 end -- echo wall
@@ -5882,6 +5782,7 @@ end
                 {id = 'c_heirophant'},
                 -- {id='c_betm_abilities_rental_slot',negative=true},
                 {id='c_betm_abilities_enhancer'},
+                {id='c_betm_abilities_rental_slot'},
             },
             vouchers = {
                 -- {id = MOD_PREFIX_V.. 'trash_picker'},
@@ -5903,7 +5804,8 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'omnicard'},
+                {id = MOD_PREFIX_V.. 'echo_wall'},
+                {id = MOD_PREFIX_V.. 'echo_chamber'},
                 -- {id = 'v_retcon'},
                 
             },

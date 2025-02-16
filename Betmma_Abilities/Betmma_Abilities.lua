@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.11(20250214)
+--- VERSION: 1.0.3.12(20250216)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1826,7 +1826,7 @@ do
                 return true end }))
         end,
         calculate=function(self,card,context)
-            if context.end_of_round then
+            if context.end_of_round and context.main_eval then
                 ease_dollars(-card.ability.extra.lose)
                 card_eval_status_text(card, 'dollars', -card.ability.extra.lose)
             end
