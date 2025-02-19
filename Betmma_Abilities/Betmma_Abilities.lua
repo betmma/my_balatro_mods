@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.12(20250216)
+--- VERSION: 1.0.3.12(20250219)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -91,7 +91,7 @@ do
         local Card_set_ability_ref=Card.set_ability
         function Card:set_ability(center, initial, delay_sprites)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if center and betmma_smaller_sets[center.set] then
+            if center and betmma_smaller_sets and betmma_smaller_sets[center.set] then
                 -- self.T.w=W*34/71
                 -- self.T.h=H*34/95
                 self.T.w=G.ABILITY_W or 0.8
@@ -103,7 +103,7 @@ do
         local Card_load=Card.load
         function Card:load(cardTable,other_card)
             local X, Y, W, H = self.T.x, self.T.y, self.T.w, self.T.h
-            if betmma_smaller_sets[G.P_CENTERS[cardTable.save_fields.center].set] then
+            if betmma_smaller_sets and betmma_smaller_sets[G.P_CENTERS[cardTable.save_fields.center].set] then -- if crash here, it means G.P_CENTERS[cardTable.save_fields.center] is nil, which means can't find data of a saved card (probably deleted mod) and not my fault. without this line it still crashes in original card:load
                 G.P_CENTERS[cardTable.save_fields.center].load=function()
                     self.T.w=G.ABILITY_W or 0.8
                     self.T.h=G.ABILITY_H or 0.8

@@ -5782,7 +5782,9 @@ end
                 {id = 'c_heirophant'},
                 -- {id='c_betm_abilities_rental_slot',negative=true},
                 {id='c_betm_abilities_enhancer'},
-                {id='c_betm_abilities_rental_slot'},
+                {id='c_betm_abilities_enhancer'},
+                {id='c_betm_abilities_enhancer'},
+                {id='c_betm_abilities_endoplasm'},
             },
             vouchers = {
                 -- {id = MOD_PREFIX_V.. 'trash_picker'},
