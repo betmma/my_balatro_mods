@@ -88,7 +88,7 @@ target = "functions/common_events.lua"
 pattern = '''-- TARGET: evaluate your own general effects'''
 position = "after"
 payload = '''
-if used_voucher and used_voucher('echo_wall') and context.discard then -- Echo Wall voucher calculate end of round effect on discarded cards
+if used_voucher and used_voucher('echo_wall') and context.discard and card==context.other_card then -- Echo Wall voucher calculate end of round effect on discarded cards
     local end_of_round = card:get_end_of_round_effect(context)
     if end_of_round then
         ret.end_of_round = end_of_round
