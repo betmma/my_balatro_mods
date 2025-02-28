@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.5
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.6
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.5(20250221)
+--- VERSION: 3.0.1.6(20250228)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -1784,7 +1784,13 @@ do
     handle_register(this_v)
     function get_booster_pack_max()
         local value=2
+        if G.GAME.modifiers.cry_booster_packs then
+            value=G.GAME.modifiers.cry_booster_packs
+        end
         if used_voucher('3d_boosters') then value=value+1 end
+        if G.GAME.modifiers.cry_no_boosters then
+            value=0
+        end
         return value
     end
     local G_update_shop_ref=Game.update_shop
@@ -1795,7 +1801,7 @@ do
         end
         G_update_shop_ref(self,dt)
         if flag and used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
-            my_reroll_shop(get_booster_pack_max(),0)
+            my_reroll_shop(get_booster_pack_max()-2,0)
         end
     end
     
@@ -5766,7 +5772,7 @@ end
                 -- {id = 'j_brainstorm', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_gameplay_update', edition='phantom'},
                 -- {id = JOKER_MOD_PREFIX..'j_friends_of_jimbo', },
-                {id = 'j_bloodstone', },
+                {id = 'j_mmc_harp_seal', },
                 -- {id = 'j_madness', eternal = true},
                 {id = JOKER_MOD_PREFIX..'j_balatro_mobile'},
                 -- {id = 'j_lobc_happy_teddy_bear'}--, pinned = true},
@@ -5780,17 +5786,18 @@ end
                 -- {id = 'c_cry_Klubi'},
                 -- {id = 'c_cry_Klubi'},
                 {id = 'c_heirophant'},
+                {id = 'c_heirophant'},
                 -- {id='c_betm_abilities_rental_slot',negative=true},
-                {id='c_betm_abilities_enhancer'},
-                {id='c_betm_abilities_enhancer'},
-                {id='c_betm_abilities_enhancer'},
-                {id='c_betm_abilities_endoplasm'},
+                -- {id='c_betm_abilities_enhancer'},
+                -- {id='c_betm_abilities_enhancer'},
+                -- {id='c_betm_abilities_enhancer'},
+                -- {id='c_betm_abilities_endoplasm'},
             },
             vouchers = {
                 -- {id = MOD_PREFIX_V.. 'trash_picker'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
-                -- {id = 'v_paint_brush'},
+                {id = 'v_crystal_ball'},
                 -- -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'mirror'},
                 {id = MOD_PREFIX_V.. 'overshopping'},
