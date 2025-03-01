@@ -520,7 +520,7 @@ local function INIT()
             end,
             can_use = function(self,card)
                 if card.area==G.betmma_abilities then
-                    return (G.GAME.dollars-G.GAME.bankrupt_at)>=card.ability.extra.ability_price
+                    return TalismanCompat(G.GAME.dollars-G.GAME.bankrupt_at)>=TalismanCompat(card.ability.extra.ability_price)
                 end
                 if not(G and G.hand.highlighted and #G.hand.highlighted==4) then return false end
                 local suits = {
