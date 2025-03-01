@@ -1801,7 +1801,10 @@ do
         end
         G_update_shop_ref(self,dt)
         if flag and used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
-            my_reroll_shop(get_booster_pack_max()-2,0)
+            after_event(function()
+                my_reroll_shop(get_booster_pack_max(),0)
+            end)
+            -- my_reroll_shop(get_booster_pack_max(),0)
         end
     end
     
@@ -1917,8 +1920,8 @@ do
 
         
     local Card_redeem_ref = Card.redeem
-    function Card:redeem() -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
-        if not G.GAME.block_b1g1 and (used_voucher('b1g50') and pseudorandom('b1g1')*100 < get_voucher('b1g50').config.extra.chance  or used_voucher('b1g1')) or used_voucher('b1ginf') then
+    function Card:redeem(layer) -- use redeem instead of apply to run because redeem happens before modification of used_vouchers
+        if not G.GAME.block_b1g1 and (used_voucher('b1g50') and pseudorandom('b1g1')*100 < get_voucher('b1g50').config.extra.chance  or used_voucher('b1g1')) or used_voucher('b1ginf') and not(type(layer)=='number' and layer>250) then
             local lose_percent=50
             if used_voucher('b1g1') then 
                 lose_percent=100
@@ -1961,7 +1964,7 @@ do
                     if not used_voucher('b1ginf') then 
                         G.GAME.block_b1g1=true -- can only get 1 extra
                     end 
-                    card:redeem()
+                    card:redeem((layer or 0)+1)
                     G.GAME.block_b1g1=false
 
                     G.GAME.current_round.voucher=current_round_voucher -- keep the shop voucher unchanged since the voucher may be from voucher pack or other non-shop source
