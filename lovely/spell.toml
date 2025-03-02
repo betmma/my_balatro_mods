@@ -57,7 +57,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = "if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK*"
+pattern = "if (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK*"
 position = "after"
 payload = '''
 if card.ability.set=='Spell' and area==G.pack_cards then -- betmma_spells
@@ -66,6 +66,7 @@ if card.ability.set=='Spell' and area==G.pack_cards then -- betmma_spells
     dont_dissolve = true
     area:remove_card(card)
     G.betmma_spells:emplace(card)
+    nc=false
 else
     G.TEMP_FLAG_TO_LET_BELOW_PATCH_READ=1
 end

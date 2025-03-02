@@ -97,7 +97,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = "if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK*"
+pattern = "if (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK*"
 position = "after"
 payload = '''
 if card.ability.set=='Ability' then -- betmma_abilities
@@ -108,6 +108,7 @@ if card.ability.set=='Ability' then -- betmma_abilities
         area:remove_card(card)
         G.betmma_abilities:emplace(card)
     end
+    nc=false
 end
 '''
 match_indent = true
