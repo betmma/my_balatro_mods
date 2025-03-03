@@ -968,7 +968,7 @@ local function INIT()
     end
 
     jokers.piggy_bank.calculate = function(self, card, context)
-        if SMODS.end_calculate_context(context) and card.ability.extra.mults > 0 then
+        if SMODS.end_calculate_context(context) and TalismanCompat(card.ability.extra.mults) > TalismanCompat(0) then
             return {
                 message = localize{type='variable',key='a_mult',vars={card.ability.extra.mults}},
                 mult_mod = card.ability.extra.mults, 
