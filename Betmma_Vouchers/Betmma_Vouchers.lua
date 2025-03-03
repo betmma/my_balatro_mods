@@ -5817,7 +5817,7 @@ end
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
                 {id = MOD_PREFIX_V.. 'echo_wall'},
-                {id = MOD_PREFIX_V.. 'echo_chamber'},
+                {id = MOD_PREFIX_V.. 'gravity_assist'},
                 -- {id = 'v_retcon'},
                 
             },

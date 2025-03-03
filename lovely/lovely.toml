@@ -4,6 +4,45 @@ dump_lua = true
 priority = 0
 
 
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if chip > 0 then"
+position = "at"
+payload = "if TalismanCompat(chip) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if x_mult > 0 then"
+position = "at"
+payload = "if TalismanCompat(x_mult) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if p_dollars > 0 then"
+position = "at"
+payload = "if TalismanCompat(p_dollars) > TalismanCompat(0) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if x_chips > 0 then"
+position = "at"
+payload = "if TalismanCompat(x_chips) > TalismanCompat(0) then"
+match_indent = true
 
 [[patches]]
 [patches.pattern]
