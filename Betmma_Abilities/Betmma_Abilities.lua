@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.12(20250219)
+--- VERSION: 1.0.3.13(20250303)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -2133,7 +2133,7 @@ do
     local SMODS_get_card_areas_ref=SMODS.get_card_areas
     function SMODS.get_card_areas(_type, _context)
         local ret=SMODS_get_card_areas_ref(_type, _context)
-        if _type=='jokers' then
+        if _type=='jokers' and G.betmma_abilities and G.betmma_abilities.cards then
             table.insert(ret, G.betmma_abilities)
         end
         return ret 
