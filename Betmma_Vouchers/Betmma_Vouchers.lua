@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.6
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.7
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.6(20250228)
+--- VERSION: 3.0.1.7(20250309)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3920,7 +3920,7 @@ do
         G.GAME.interest_amount_ref=G.GAME.interest_amount
         --print("interest_ref",G.GAME.interest_amount_ref)
         G.GAME.v_money_target_triggered=false
-        if used_voucher('money_target') and TalismanCompat(G.GAME.dollars%5)==TalismanCompat(0) then
+        if used_voucher('money_target') and (type(G.GAME.dollars)=='table' and ((G.GAME.dollars+4.9999) / to_big(5)):floor() * to_big(5)==G.GAME.dollars or G.GAME.dollars%5==0) then
             G.GAME.v_money_target_triggered=true
             G.GAME.interest_amount=G.GAME.interest_amount*get_voucher('money_target').config.extra
         end
