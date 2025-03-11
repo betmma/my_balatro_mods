@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.13(20250303)
+--- VERSION: 1.0.3.14(20250311)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -2063,26 +2063,27 @@ do
             end
         end,
     }
-    local Card_shatter_ref=Card.shatter
-    function Card:shatter()
-        if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
-            for i = 1, #G.betmma_abilities.cards do
-                G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
-            end
-        end
-        Card_shatter_ref(self)
-    end
+    -- local Card_shatter_ref=Card.shatter
+    -- function Card:shatter()
+    --     if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
+    --         for i = 1, #G.betmma_abilities.cards do
+    --             G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
+    --         end
+    --     end
+    --     Card_shatter_ref(self)
+    -- end
     
-    local Card_start_dissolve_ref=Card.start_dissolve
-    function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
-        if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
-            for i = 1, #G.betmma_abilities.cards do
-                G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
-            end
-        end
-        Card_start_dissolve_ref(self,dissolve_colours, silent, dissolve_time_fac, no_juice)
-    end
+    -- local Card_start_dissolve_ref=Card.start_dissolve
+    -- function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)
+    --     if (self.ability.set == 'Default' or self.ability.set == 'Enhanced') and G and G.betmma_abilities then    
+    --         for i = 1, #G.betmma_abilities.cards do
+    --             G.betmma_abilities.cards[i]:calculate_joker({remove_playing_cards = true, removed = {self}})
+    --         end
+    --     end
+    --     Card_start_dissolve_ref(self,dissolve_colours, silent, dissolve_time_fac, no_juice)
+    -- end
     -- patching in calculating hand and using consumable doesn't work for incantation and other 2 random destroy. I gave up calling calculate_joker in ability.toml
+    -- better calc calls calculate_joker so above is redundant
 end --dead branch 
 do
     local key='decay'
