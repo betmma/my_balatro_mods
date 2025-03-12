@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.7
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.8
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.7(20250309)
+--- VERSION: 3.0.1.8(20250312)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -5056,6 +5056,7 @@ do
     end
     handle_register(this_v)
 
+    -- below 2 injections are useless in latest SMOD due to it taking ownership of vanilla packs and no longer calling create_UIBox series. A lovely patch is used in lovely.toml.
     local create_UIBox_spectral_pack_ref=create_UIBox_spectral_pack
     function create_UIBox_spectral_pack()
         local t=create_UIBox_spectral_pack_ref()
@@ -5811,13 +5812,15 @@ end
                 {id = MOD_PREFIX_V.. 'stow'},
                 {id = MOD_PREFIX_V.. 'stash'},
                 -- {id = MOD_PREFIX_V.. 'reincarnate'},
-                {id = MOD_PREFIX_V.. 'undying'},
+                {id = MOD_PREFIX_V.. 'omnicard'},
                 -- {id = MOD_PREFIX_V.. 'flipped_card'},
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'echo_wall'},
-                {id = MOD_PREFIX_V.. 'gravity_assist'},
+                {id = MOD_PREFIX_V.. 'reserve_area'},
+                {id = MOD_PREFIX_V.. 'recycle_area'},
+                {id = MOD_PREFIX_V.. 'forbidden_area'},
+                {id = MOD_PREFIX_V.. 'garbage_bag'},
                 -- {id = 'v_retcon'},
                 
             },
