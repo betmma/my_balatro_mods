@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.8
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.9
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.8(20250312)
+--- VERSION: 3.0.1.9(20250314)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -3134,7 +3134,7 @@ do
         name=name, key=id,
         config={rarity=1,extra=4},
         pos={x=0,y=0}, loc_txt=loc_txt,
-        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'bargain_aisle'}
+        cost=10, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'rich_boss'}
     }
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
