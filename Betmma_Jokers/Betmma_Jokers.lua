@@ -699,6 +699,9 @@ local function INIT()
                 if not G or G.STATE == G.STATES.DRAW_TO_HAND or G.STATE == G.STATES.HAND_PLAYED or G.STATE==G.STATES.ROUND_EVAL or G.STATE==G.STATES.MENU or card.area==G.discard or not card.states.drag.is or (card.ability.countdown and card.ability.countdown>0) or G.in_joker_overlay_menu then -- card.ability.countdown is to prevent it return to shop area after bought, but excluding shop_jokers is enough
                     return
                 end
+                if RIFTRAFT and RIFTRAFT.VoidCardArea and card.area==RIFTRAFT.VoidCardArea then --RiftRaft mod compatibility
+                    return
+                end
                 local possible_areas={G.jokers, G.consumeables, G.hand, G.betmma_abilities, G.betmma_spells, G.shop_jokers}
                 possible_areas=remove_nils(possible_areas)
                 local card_x=card.VT.x+card.VT.w/2
