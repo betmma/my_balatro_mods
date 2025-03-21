@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.9
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.10
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.9(20250314)
+--- VERSION: 3.0.1.10(20250321)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -1783,29 +1783,7 @@ do
     end
     handle_register(this_v)
     function get_booster_pack_max()
-        local value=2
-        if G.GAME.modifiers.cry_booster_packs then
-            value=G.GAME.modifiers.cry_booster_packs
-        end
-        if used_voucher('3d_boosters') then value=value+1 end
-        if G.GAME.modifiers.cry_no_boosters then
-            value=0
-        end
-        return value
-    end
-    local G_update_shop_ref=Game.update_shop
-    Game.update_shop=function (self,dt)
-        local flag
-        if not G.STATE_COMPLETE then
-            flag=true
-        end
-        G_update_shop_ref(self,dt)
-        if flag and used_voucher('3d_boosters') and not ((G.GAME.miser or G.GAME.final_trident) and not G.GAME.blind.disabled and not next(find_joker('Chicot'))) then -- prevent reroll if shop is skipped by Miser or Trident boss in Bunco mod
-            after_event(function()
-                my_reroll_shop(get_booster_pack_max(),0)
-            end)
-            -- my_reroll_shop(get_booster_pack_max(),0)
-        end
+        return G.GAME.starting_params.boosters_in_shop + (G.GAME.modifiers.extra_boosters or 0)
     end
     
     local Card_apply_to_run_ref = Card.apply_to_run
@@ -1815,9 +1793,7 @@ do
             extra = center and center.config.extra or self and self.ability.extra
         }
         if center_table.name == '3D Boosters'then
-            if G.shop_booster then
-                my_reroll_shop(get_booster_pack_max(),0)
-            end
+            SMODS.change_booster_limit(1)
         end
         Card_apply_to_run_ref(self, center)
     end
@@ -3584,9 +3560,9 @@ do
             G.GAME.current_round.free_rerolls = #chaos
             calculate_reroll_cost(true)
             
-            if used_voucher('3d_boosters') then
-                my_reroll_shop(get_booster_pack_max()-2,0)
-            end
+            -- if used_voucher('3d_boosters') then
+            --     my_reroll_shop(get_booster_pack_max()-2,0)
+            -- end
             G:update_shop(dt)
         end
     end
