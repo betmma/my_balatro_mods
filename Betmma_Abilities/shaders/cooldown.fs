@@ -4,7 +4,7 @@
 	#define MY_HIGHP_OR_MEDIUMP mediump
 #endif
 
-extern MY_HIGHP_OR_MEDIUMP vec2 cooldown;
+extern MY_HIGHP_OR_MEDIUMP vec2 cooldown_uniform;
 extern MY_HIGHP_OR_MEDIUMP number dissolve;
 extern MY_HIGHP_OR_MEDIUMP number time;
 extern MY_HIGHP_OR_MEDIUMP vec4 texture_details;
@@ -128,14 +128,18 @@ vec4 effect( vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords
 #ifdef VERTEX
 vec4 position( mat4 transform_projection, vec4 vertex_position )
 {
+    vec2 cooldownOffset = cooldown_uniform * 0.001; // Small effect to ensure it's used
+    vec4 adjusted_position = vertex_position + vec4(cooldownOffset, 0.0, 0.0);
+    
     if (hovering <= 0.){
-        return transform_projection * vertex_position;
+        return transform_projection * adjusted_position;
     }
-    float mid_dist = length(vertex_position.xy - 0.5*love_ScreenSize.xy)/length(love_ScreenSize.xy);
-    vec2 mouse_offset = (vertex_position.xy - mouse_screen_pos.xy)/screen_scale;
-    float scale = 0.2*(-0.03 - 0.3*max(0., 0.3-mid_dist))
-                *hovering*(length(mouse_offset)*length(mouse_offset))/(2. -mid_dist);
+    
+    float mid_dist = length(vertex_position.xy - 0.5 * love_ScreenSize.xy) / length(love_ScreenSize.xy);
+    vec2 mouse_offset = (vertex_position.xy - mouse_screen_pos.xy) / screen_scale;
+    float scale = 0.2 * (-0.03 - 0.3 * max(0., 0.3 - mid_dist))
+                * hovering * (length(mouse_offset) * length(mouse_offset)) / (2.0 - mid_dist);
 
-    return transform_projection * vertex_position + vec4(0,0,0,scale);
+    return transform_projection * adjusted_position + vec4(0, 0, 0, scale);
 }
 #endif
