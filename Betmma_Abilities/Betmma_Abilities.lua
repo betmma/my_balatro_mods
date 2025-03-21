@@ -463,41 +463,6 @@ do
 end -- add Ability area in shop (only appear after a boss blind)
 
 do
-    function GET_PATH_COMPAT()
-        return IN_SMOD1 and SMODS.current_mod.path or SMODS.findModByID('BetmmaAbilities').path
-    end
-
-    function betmma_load_shader(v)
-        local file = NFS.read(GET_PATH_COMPAT().."/shaders/"..v..".fs")
-        love.filesystem.write(v.."-temp.fs", file)
-        G.SHADERS[v] = love.graphics.newShader(v.."-temp.fs")
-        love.filesystem.remove(v.."-temp.fs")
-    end
-    betmma_load_shader('cooldown')
-
-    local Card_draw_ref=Card.draw
-    function Card:draw(layer)
-        if self.ability.set=='Ability' and (self.area==G.betmma_abilities or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not ability_cooled_down(self) then --if i wrote self.area~=shop_abilities then in collection menu it's still grayed
-            Card_draw_ref(self,layer)
-            local _send=self.ARGS.send_to_shader
-            _send={betmma=true,extra={{name='percentage',val=ability_cooled_down_percentage(self)}},vanilla=_send}
-            -- print(_send[1].val)
-            self.children.center:draw_shader('cooldown', nil, _send)
-            if self.children.front and self.ability.effect ~= 'Stone Card' then
-                self.children.front:draw_shader('cooldown', nil, _send)
-            end
-            return
-        else
-            if self.stash_debuff~=nil then
-                self:set_debuff(self.stash_debuff)
-                self.stash_debuff=nil
-            end
-        end
-        Card_draw_ref(self,layer)
-    end
-end -- Cooldown shader
-
-do
     function update_ability_cooldown_single_area(cardarea,type,value)
         if cardarea==nil or cardarea.cards==nil then return end
         for i=1,#cardarea.cards do

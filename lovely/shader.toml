@@ -54,3 +54,52 @@ if _shader=='tentacle' then
 end
 '''
 match_indent = true
+
+# Patch to load and apply the cooldown shader
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:draw(layer)"
+position = "after"
+payload = '''
+    local function apply_cooldown_shader(self)
+        if self.ability.set=='Ability' and (self.area==G.betmma_abilities or self.area==G.jokers or self.area==G.consumeables or self.area==G.deck or self.area==G.hand) and not ability_cooled_down(self) then
+            local _send = self.ARGS.send_to_shader or {}
+            _send = {
+                betmma = true,
+                extra = {
+                    {name = 'percentage', val = ability_cooled_down_percentage(self)},
+                    {name = 'cooldown', val = {0, 0}}
+                },
+                vanilla = _send
+            }
+            self.children.center:draw_shader('cooldown', nil, _send)
+            if self.children.front and self.ability.effect ~= 'Stone Card' then
+                self.children.front:draw_shader('cooldown', nil, _send)
+            end
+        end
+    end
+    apply_cooldown_shader(self)
+'''
+match_indent = true
+
+# Patch to load the cooldown shader
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+pattern = "G.SHADERS = {}"
+position = "after"
+payload = '''
+    function GET_PATH_COMPAT()
+        return SMODS.findModByID('BetmmaAbilities').path
+    end
+
+    local function betmma_load_shader(v)
+        local file = NFS.read(GET_PATH_COMPAT().."/shaders/"..v..".fs")
+        love.filesystem.write(v.."-temp.fs", file)
+        G.SHADERS[v] = love.graphics.newShader(v.."-temp.fs")
+        love.filesystem.remove(v.."-temp.fs")
+    end
+    betmma_load_shader('cooldown')
+'''
+match_indent = true
