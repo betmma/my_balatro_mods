@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.10
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.10(20250321)
+--- VERSION: 3.0.1.11(20250322)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -1543,7 +1543,7 @@ do
     local G_UIDEF_use_and_sell_buttons_ref=G.UIDEF.use_and_sell_buttons
     function G.UIDEF.use_and_sell_buttons(card)
         if (card.area == G.pack_cards and G.pack_cards) and card.ability.consumeable then --Add a use button
-            if G.STATE == G.STATES.TAROT_PACK and used_voucher('reserve_area') or G.STATE == G.STATES.SPECTRAL_PACK and used_voucher('reserve_area_plus') then
+            if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER and( SMODS.OPENED_BOOSTER.ability.name:find('Arcana') and used_voucher('reserve_area') or SMODS.OPENED_BOOSTER.ability.name:find('Spectral') and used_voucher('reserve_area_plus')) then
                 return {
                     n=G.UIT.ROOT, config = {padding = -0.1,  colour = G.C.CLEAR}, nodes={
                       {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.7*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
@@ -5794,6 +5794,7 @@ end
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
                 {id = MOD_PREFIX_V.. 'reserve_area'},
+                {id = MOD_PREFIX_V.. 'reserve_area_plus'},
                 {id = MOD_PREFIX_V.. 'recycle_area'},
                 {id = MOD_PREFIX_V.. 'forbidden_area'},
                 {id = MOD_PREFIX_V.. 'garbage_bag'},
