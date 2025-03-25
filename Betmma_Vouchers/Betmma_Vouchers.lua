@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11~1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11~2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.11~1(20250324)
+--- VERSION: 3.0.1.11~2(20250325)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -4724,9 +4724,10 @@ do
         return ret
     end
 
+    local BETMMA_LUCKY_CARD_FLAG_="BETMMA_LUCKY_CARD_FLAG_:)"
     local localize_ref=localize
     function localize(args, misc_cat)
-        if args and args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.type == 'descriptions' and not args.loc_vars and args~=G.P_CENTERS.m_lucky then return end
+        if args and args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.vars==BETMMA_LUCKY_CARD_FLAG_ then return end
         return localize_ref(args,misc_cat)
     end
 
@@ -4737,11 +4738,15 @@ do
             if full_UI_table and full_UI_table.name then using_info=true
             end
             local _c_effect_ref=_c.effect
+            local _c_vars_ref=_c.vars
             if _c.effect=='Lucky Card' then 
                 _c.effect='Lucky Card???' -- to make loc_vars sent to localize become empty thus removing the original lucky card description with overridden localize function above
+                _c.vars=BETMMA_LUCKY_CARD_FLAG_
             end
+
             local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
             _c.effect=_c_effect_ref
+            _c.vars=_c_vars_ref
             local main=(not using_info and full_UI_table.main) or full_UI_table.info
             if using_info then
                 --full_UI_table.info[#full_UI_table.info+1] = {} this is to replace the empty info tab so don't add a new tab
@@ -5805,7 +5810,7 @@ end
                 {id = MOD_PREFIX_V.. 'reserve_area_plus'},
                 {id = MOD_PREFIX_V.. 'recycle_area'},
                 {id = MOD_PREFIX_V.. 'forbidden_area'},
-                {id = MOD_PREFIX_V.. 'garbage_bag'},
+                {id = MOD_PREFIX_V.. 'real_random'},
                 -- {id = 'v_retcon'},
                 
             },

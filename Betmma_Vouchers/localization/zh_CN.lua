@@ -385,6 +385,75 @@ return{
                     "均为{C:attention}免费",
                 }
             },
+            v_betm_vouchers_rich_boss = {
+                name = "Rich Boss",
+                text = {
+                    "Boss Blinds give {C:money}$#1#{} more",
+                }
+            },
+            v_betm_vouchers_richer_boss = {
+                name = "Richer Boss",
+                text = {
+                    "Boss Blinds give {C:money}$#1#{} more per ante",
+                }
+            },
+            v_betm_vouchers_gravity_assist = {
+                name = "Gravity Assist",
+                text = {
+                    "When upgrading a poker hand,",
+                    "also upgrade {C:attention}adjacent{} poker hands",
+                }
+            },
+            v_betm_vouchers_gravitational_wave = {
+                name = "Gravitational Wave",
+                text = {
+                    "When upgrading a poker hand, also upgrade",
+                    "non-adjacent poker hands by {C:attention}#1#{} levels",
+                }
+            },
+            v_betm_vouchers_garbage_bag = {
+                name = "Garbage Bag",
+                text = {
+                    "You carry surplus {C:red}discards{} over rounds.",
+                    "gain {C:red}#1#{} one-time discards",
+                }
+            },
+            v_betm_vouchers_handbag = {
+                name = "Handbag",
+                text = {
+                    "You carry surplus {C:blue}hands{} over rounds.",
+                    "gain {C:blue}#1#{} one-time hands",
+                }
+            },
+            v_betm_vouchers_echo_wall = {
+                name = "Echo Wall",
+                text = {
+                    "{C:red}Discarding{} a card triggers",
+                    "its {C:attention}end of round{} effect",
+                }
+            },
+            v_betm_vouchers_echo_chamber = {
+                name = "Echo Chamber",
+                text = {
+                    "{C:attention}Holding{} a card in each hand triggers",
+                    "its {C:attention}end of round{} effect",
+                }
+            },
+            v_betm_vouchers_laminator = {
+                name = "Laminator",
+                text = {
+                    "When {C:attetntion}round ends{},",
+                    "if {C:attention}leftmost{} joker has sticker,",
+                    "{C:green}#1# in #2#{} chance to add random {C:attention}Edition",
+                }
+            },
+            v_betm_vouchers_eliminator = {
+                name = "Eliminator",
+                text = {
+                    "{C:attention}Remove{} all stickers",
+                    "on {C:attention}Laminated{} Joker",
+                }
+            },
             v_betm_vouchers_gold_round_up={
                 name = "凑个整儿 黄金版",
                 text = {
