@@ -118,18 +118,20 @@ do
     -- enable Ability area to draw abilities in it
     function CardArea:draw()
         CardArea_draw_ref(self) -- this should be called before drawing cards inside it otherwise the area will block the cards and you can't hover on them
-        if self.config.type == 'betmma_ability' then 
-            for i = 1, #self.cards do 
-                if self.cards[i] ~= G.CONTROLLER.focused.target then
-                    if not self.cards[i].highlighted then
-                        if G.CONTROLLER.dragging.target ~= self.cards[i] then self.cards[i]:draw(v) end
+        for k, v in ipairs(self.ARGS.draw_layers) do
+            if self.config.type == 'betmma_ability' then 
+                for i = 1, #self.cards do 
+                    if self.cards[i] ~= G.CONTROLLER.focused.target then
+                        if not self.cards[i].highlighted then
+                            if G.CONTROLLER.dragging.target ~= self.cards[i] then self.cards[i]:draw(v) end
+                        end
                     end
                 end
-            end
-            for i = 1, #self.cards do  
-                if self.cards[i] ~= G.CONTROLLER.focused.target then
-                    if self.cards[i].highlighted then
-                        if G.CONTROLLER.dragging.target ~= self.cards[i] then self.cards[i]:draw(v) end
+                for i = 1, #self.cards do  
+                    if self.cards[i] ~= G.CONTROLLER.focused.target then
+                        if self.cards[i].highlighted then
+                            if G.CONTROLLER.dragging.target ~= self.cards[i] then self.cards[i]:draw(v) end
+                        end
                     end
                 end
             end
