@@ -1,5 +1,104 @@
 return{
     descriptions={
+        Enhanced = {
+            ellipsis={text={'{C:inactive}(#1# abilities omitted)'}},
+            multiples={text={'{C:inactive}(X#1#)'}},
+            real_random_chip={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for {C:chips}+#2#{} Chips"
+                }
+            },
+            real_random_mult={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for {C:mult}+#2#{} Mult"
+                }
+            },
+            real_random_x_mult={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for {X:red,C:white}X#2#{} Mult"
+                }
+            },
+            real_random_dollars={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "to win {C:money}$#2#"
+                }
+            },
+            real_random_joker_slot={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for {C:attention}+#2#{} Joker slot"
+                },
+            },
+            real_random_consumable_slot={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for {C:attention}+#2#{} Consumable slot"
+                },
+            },
+            real_random_random_voucher={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for a random {C:attention}Voucher{}"
+                },
+            },
+            real_random_random_negative_joker={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for a random {C:dark_edition}negative{} {C:attention}Joker{}"
+                },
+            },
+            real_random_new_ability={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for a new ability"
+                },
+            },
+            real_random_double_probability={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "to double all probabilities"
+                },
+            },
+            real_random_random_tag={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "for a random {C:attention}tag{}"
+                },
+            },
+            real_random_retrigger_next={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "to retrigger the card",
+                    "to its right {C:attention}#2#{} times"
+                },
+            },
+            real_random_hand_size={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "to {C:attention}+#2#{} hand size"
+                },
+            },
+            real_random_transfer_ability={
+                text={
+                    "{C:green}#1# in #3#{} chance",
+                    "to transfer an ability",
+                    "to the card to its right"
+                },
+            }
+        },
+        Other = {
+            perishable_no_debuff = {
+                name = "Perishable",
+                text = {
+                    "Debuffed after",
+                    "{C:attention}#1#{} rounds"
+                }
+            }
+        },
 		Voucher = {
             v_betm_vouchers_oversupply={
                 name = "供应过量",
@@ -653,6 +752,31 @@ return{
                     "{C:inactive}（大量重掷 + 清仓处理）",
                 }
             }
+        }
+    },
+    misc = {
+        challenge_names = {
+            c_mod_testvoucher = 'TestVoucher'
+        },
+        dictionary = {
+            k_fusion_voucher = 'Fusion Voucher',
+            k_event_horizon_generate = "Event Horizon!",
+            k_engulfer_generate = "Engulfer!",
+            k_target_generate = "Target!",
+            k_bulls_eye_generate = "Bull's Eye!",
+            b_reserve = "RESERVE",
+            k_transfer_ability = "Transfer!",
+            k_overkill_edition = "Overkill!",
+            k_big_blast_edition = "Big Blast!",
+            b_flip_hand = "Flip",
+            k_bulletproof = "Bulletproof!",
+            b_vanish = "VANISH",
+            k_heat_death = "Heat Death!",
+            k_laminator = "Laminated!",
+            k_undying = "Undying!",
+            k_reincarnate = "Reincarnate!",
+            k_solar_system = "Solar System!",
+            over_retriggered = "Over-retriggered: ",
         }
     }
 }
