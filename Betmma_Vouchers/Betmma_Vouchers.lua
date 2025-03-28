@@ -2,15 +2,21 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11~2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.11(20250322)
+--- VERSION: 3.0.1.11~2(20250325)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
+
+-- acknowledgements:
+
 -- thanks to Denverplays2, RenSixx, KEKC, Zahrizi, Sameone and other discord users for their ideas
+-- thanks to ChromaPIE for zh_CN translation
+
+
 -- ideas:
 -- peek the first card in packs (impractical?) / skipped packs get 50% refund (someone's joker has done it)
 -- Global Interpreter Lock: set all jokers to eternal / not eternal, once per round (more like an ability that is used manually)
@@ -742,8 +748,10 @@ end
 
 
 do
-    local oversupply_loc_txt = {
-        name = "Oversupply",
+    local name="Oversupply"
+    local id="oversupply"
+    local loc_txt = {
+        name = name,
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
             "after defeating {C:attention}Boss Blind{}"
@@ -751,12 +759,11 @@ do
     }
     --function SMODS.Voucher{name, slug, config, pos, loc_txt, cost, unlocked, discovered, available, requires, atlas)
     local v_oversupply = SMODS.Voucher{
-        name="Oversupply", key="oversupply",
+        name=name, key=id,
         config={},
-        pos={x=0,y=0}, loc_txt=oversupply_loc_txt,
+        pos={x=0,y=0}, loc_txt=loc_txt,
         cost=10, unlocked=true,discovered=true, available=true,
     }
-    local id='oversupply'
     local this_v=v_oversupply
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
@@ -766,8 +773,10 @@ do
     -- SMODS.Sprite:new("v_oversupply", SMODS.findModByID("BetmmaVouchers").path, "v_oversupply.png", 71, 95, "asset_atli"):register();
     -- v_oversupply:register()
     
-    local oversupply_plus_loc_txt = {
-        name = "Oversupply Plus",
+    local name="Oversupply Plus"
+    local id="oversupply_plus"
+    local loc_txt = {
+        name = name,
         text = {
             "Gain {C:attention}1{} {C:attention}Voucher Tag{}",
             "after defeating each {C:attention}Blind{}"
@@ -775,12 +784,11 @@ do
         }
     }
     local v_oversupply_plus = SMODS.Voucher{
-            name="Oversupply Plus", key="oversupply_plus",
+            name=name, key=id,
             config={},
-            pos={x=0,y=0}, loc_txt=oversupply_plus_loc_txt,
+            pos={x=0,y=0}, loc_txt=loc_txt,
             cost=10, unlocked=true,discovered=true, available=true, requires={MOD_PREFIX_V..'oversupply'}
     }
-    local id='oversupply_plus'
     local this_v=v_oversupply_plus
     handle_atlas(id,this_v)
     this_v.loc_vars = function(self, info_queue, center)
@@ -803,7 +811,7 @@ end -- oversupply
 do 
     local name="Gold Coin"
     local id="gold_coin"
-    local gold_coin_loc_txt = {
+    local loc_txt = {
         name = name,
         text = {
             "Earn {C:money}$#1#{} immediately",
@@ -816,7 +824,7 @@ do
     local v_gold_coin = SMODS.Voucher{
         name=name, key=id,
         config={extra=11},
-        pos={x=0,y=0}, loc_txt=gold_coin_loc_txt,
+        pos={x=0,y=0}, loc_txt=loc_txt,
         cost=1, unlocked=true, discovered=true, available=true
     }
     local this_v=v_gold_coin
@@ -831,7 +839,7 @@ do
     
     local name="Gold Bar"
     local id="gold_bar"
-    local gold_bar_loc_txt = {
+    local loc_txt = {
         name = name,
         text = {
             "Earn {C:money}$#1#{} immediately",
@@ -843,7 +851,7 @@ do
     local v_gold_bar = SMODS.Voucher{
         name=name, key=id,
         config={extra=16},
-        pos={x=0,y=0}, loc_txt=gold_bar_loc_txt,
+        pos={x=0,y=0}, loc_txt=loc_txt,
         cost=1, unlocked=true, discovered=true, available=true, requires={MOD_PREFIX_V..'gold_coin'}
     }
     local this_v=v_gold_bar
@@ -4716,9 +4724,10 @@ do
         return ret
     end
 
+    local BETMMA_LUCKY_CARD_FLAG_="BETMMA_LUCKY_CARD_FLAG_:)"
     local localize_ref=localize
     function localize(args, misc_cat)
-        if args and args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.type == 'descriptions' and not args.loc_vars and args~=G.P_CENTERS.m_lucky then return end
+        if args and args.key=='m_lucky' and G and G.GAME and used_voucher('real_random') and args.vars==BETMMA_LUCKY_CARD_FLAG_ then return end
         return localize_ref(args,misc_cat)
     end
 
@@ -4729,11 +4738,15 @@ do
             if full_UI_table and full_UI_table.name then using_info=true
             end
             local _c_effect_ref=_c.effect
+            local _c_vars_ref=_c.vars
             if _c.effect=='Lucky Card' then 
                 _c.effect='Lucky Card???' -- to make loc_vars sent to localize become empty thus removing the original lucky card description with overridden localize function above
+                _c.vars=BETMMA_LUCKY_CARD_FLAG_
             end
+
             local full_UI_table=generate_card_ui_ref(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card)
             _c.effect=_c_effect_ref
+            _c.vars=_c_vars_ref
             local main=(not using_info and full_UI_table.main) or full_UI_table.info
             if using_info then
                 --full_UI_table.info[#full_UI_table.info+1] = {} this is to replace the empty info tab so don't add a new tab
@@ -5796,7 +5809,7 @@ end
                 {id = MOD_PREFIX_V.. 'reserve_area'},
                 {id = MOD_PREFIX_V.. 'reserve_area_plus'},
                 {id = MOD_PREFIX_V.. 'recycle_area'},
-                {id = MOD_PREFIX_V.. 'chaos'},
+                {id = MOD_PREFIX_V.. 'forbidden_area'},
                 {id = MOD_PREFIX_V.. 'real_random'},
                 -- {id = 'v_retcon'},
                 
