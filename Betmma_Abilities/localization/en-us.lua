@@ -1,7 +1,7 @@
 return {
     descriptions = {
         Ability = {
-            v_betm_vouchers_GIL={
+            c_betm_abilities_GIL={
                 name = "Global Interpreter Lock",
                 text = {
                     "If all jokers are {C:attention}Eternal{}, remove",
@@ -10,7 +10,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_glitched_seed={
+            c_betm_abilities_glitched_seed={
                 name = "Glitched Seed",
                 text = {
                     "Next #5# {C:attention}random events",
@@ -19,7 +19,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_rank_bump={
+            c_betm_abilities_rank_bump={
                 name = "Rank Bump",
                 text = {
                     "Temporarily increase ranks of",
@@ -27,7 +27,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_variable={
+            c_betm_abilities_variable={
                 name = "Variable",
                 text = {
                     "Select {C:attention}some{} cards, let {C:attention}X{}",
@@ -36,7 +36,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_cached_hand={
+            c_betm_abilities_cached_hand={
                 name = "Cached Hand",
                 text = {
                     "{C:attention}Hand type{} of next hand is",
@@ -46,7 +46,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_heal={
+            c_betm_abilities_heal={
                 name = "Heal",
                 text = {
                     "Undebuff selected cards",
@@ -54,7 +54,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_absorber={
+            c_betm_abilities_absorber={
                 name = "Absorber",
                 text = {
                     "Reduce {C:blue}Hand{} to 1, and gain",
@@ -63,7 +63,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_double_lift={
+            c_betm_abilities_double_lift={
                 name = "Double Lift",
                 text = {
                     "Choose {C:attention}#4#{} more card",
@@ -71,21 +71,21 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_recycle={
+            c_betm_abilities_recycle={
                 name = "Recycle",
                 text = {
                     "Reduce reroll price by {C:money}$#4#{}",
                     "Cooldown: {C:mult}$#1#/$#2# #3#{}",
                 }
             },
-            v_betm_vouchers_glyph={
+            c_betm_abilities_glyph={
                 name = "Glyph",
                 text = {
                     "{C:attention}-#4#{} Ante, {C:money}-$#5#",
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_colour={
+            c_betm_abilities_colour={
                 name = "Colour",
                 text = {
                     "Create a random ability",
@@ -93,7 +93,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_extract={
+            c_betm_abilities_extract={
                 name = "Extract",
                 text = {
                     "Create a {C:dark_edition}Negative {C:planet}Planet{}",
@@ -101,7 +101,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_endoplasm={
+            c_betm_abilities_endoplasm={
                 name = "Endoplasm",
                 text = {
                     "Set a random {C:attention}consumable{}",
@@ -109,7 +109,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_pay2win={
+            c_betm_abilities_pay2win={
                 name = "Pay2Win",
                 text = {
                     "Pay {C:money}$#1#{} to let blind size {X:mult,C:white}X#2#{C:attention}",
@@ -118,7 +118,7 @@ return {
                     "Cooldown: None",
                 }
             },
-            v_betm_vouchers_number={
+            c_betm_abilities_number={
                 name = "Number",
                 text = {
                     "Select a {C:attention}Numbered{} card to be",
@@ -127,7 +127,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_fog={
+            c_betm_abilities_fog={
                 name = "Fog",
                 text = {
                     "During current round, {X:mult,C:white}X#4#{} Mult",
@@ -135,7 +135,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_antinomy={
+            c_betm_abilities_antinomy={
                 name = "Antinomy",
                 text = {
                     "Create a temporary {C:dark_edition}Negative {C:attention}eternal{}",
@@ -143,14 +143,14 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_enhancer={
+            c_betm_abilities_enhancer={
                 name = "Enhancer",
                 text = {
                     "Enhance selected joker randomly",
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_zircon={
+            c_betm_abilities_zircon={
                 name = "Zircon",
                 text = {
                     "{C:green}#4#%{} chance to create a",
@@ -159,7 +159,7 @@ return {
                     "Cooldown: {C:mult}#1#/#2# #3#{}",
                 }
             },
-            v_betm_vouchers_rental_slot={
+            c_betm_abilities_rental_slot={
                 name = "Rental Slot",
                 text = {
                     "{C:dark_edition}+#1#{} Joker Slot. Lose",
@@ -167,14 +167,14 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_philosophy={
+            c_betm_abilities_philosophy={
                 name = "Philosophy",
                 text = {
                     "{C:attention}+#1#{} Ability Slot",
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_midas_touch={
+            c_betm_abilities_midas_touch={
                 name = "Midas Touch",
                 text = {
                     "Gain {C:money}$#1#{} when",
@@ -182,7 +182,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_thumb={
+            c_betm_abilities_thumb={
                 name = "Thumb",
                 text = {
                     "If played hand has less than 5 cards,",
@@ -191,7 +191,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_shield={
+            c_betm_abilities_shield={
                 name = "Shield",
                 text = {
                     "{C:attention}Hand Size{} can't",
@@ -199,7 +199,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_shuffle={
+            c_betm_abilities_shuffle={
                 name = "Shuffle",
                 text = {
                     "If no cards remain, shuffle",
@@ -207,7 +207,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_dead_branch={
+            c_betm_abilities_dead_branch={
                 name = "Dead Branch",
                 text = {
                     "When a card is {C:attention}destroyed{}, add",
@@ -216,7 +216,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_decay={
+            c_betm_abilities_decay={
                 name = "Decay",
                 text = {
                     "{X:mult,C:white}X#2#{C:attention} blind size{} if played hand",
@@ -224,7 +224,7 @@ return {
                     "{C:blue}Passive{}",
                 }
             },
-            v_betm_vouchers_echo={
+            c_betm_abilities_echo={
                 name = "Echo",
                 text = {
                     "When {C:attention}first card{} of hand scores, put",
@@ -232,10 +232,40 @@ return {
                     "{C:blue}Passive{}",
                 }
             }
+        },
+        Voucher = {
+            v_betm_abilities_able = {
+                name = "Able",
+                text = { 
+                    "{C:attention}+#1#{} Ability Slot",
+                }
+            },
+            v_betm_abilities_capable = {
+                name = 'Capable',
+                text = { 
+                    "{C:attention}+#1#{} Ability Slot",
+                }
+            },
+            v_betm_abilities_cooled_down = {
+                name = 'Cooled Down',
+                text = { 
+                    "Abilities cool down",
+                    "{C:green}#1#%{} faster"
+                }
+            },
+            v_betm_abilities_cooled_below = {
+                name = 'Cooled Below',
+                text = { 
+                    "Abilities can cool down",
+                    "into {C:attention}negative values",
+                    "{C:inactive}(e.g. -2/1 round)"
+                }
+            },
         }
     },
     misc={
         dictionary={
+            b_ability_cards = "Ability Cards",
             k_ability = "Ability",
         }
     }
