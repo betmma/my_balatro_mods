@@ -4918,7 +4918,7 @@ do
     local eval_card_ref=eval_card
     function eval_card(card, context) --other abilities
         local ret={eval_card_ref(card,context)}
-        if context.cardarea == G.play and not context.repetition_only and used_voucher('real_random') and not card.debuff and card.config.center.real_random_abilities then
+        if context.cardarea == G.play and context.main_scoring and not context.repetition_only and used_voucher('real_random') and not card.debuff and card.config.center.real_random_abilities then
             -- local abilities=card.config.center.real_random_abilities
             -- local abilities_ref=copy_table(card.config.center.real_random_abilities)
             for key,value in pairs(real_random_data) do
@@ -5796,8 +5796,8 @@ end
                 {id = MOD_PREFIX_V.. 'reserve_area'},
                 {id = MOD_PREFIX_V.. 'reserve_area_plus'},
                 {id = MOD_PREFIX_V.. 'recycle_area'},
-                {id = MOD_PREFIX_V.. 'forbidden_area'},
-                {id = MOD_PREFIX_V.. 'garbage_bag'},
+                {id = MOD_PREFIX_V.. 'chaos'},
+                {id = MOD_PREFIX_V.. 'real_random'},
                 -- {id = 'v_retcon'},
                 
             },
