@@ -232,6 +232,35 @@ return {
                     "{C:blue}Passive{}",
                 }
             }
+        },
+        Voucher = {
+            v_betm_abilities_able = {
+                name = "Able",
+                text = { 
+                    "{C:attention}+#1#{} Ability Slot",
+                }
+            },
+            v_betm_abilities_capable = {
+                name = 'Capable',
+                text = { 
+                    "{C:attention}+#1#{} Ability Slot",
+                }
+            },
+            v_betm_abilities_cooled_down = {
+                name = 'Cooled Down',
+                text = { 
+                    "Abilities cool down",
+                    "{C:green}#1#%{} faster"
+                }
+            },
+            v_betm_abilities_cooled_below = {
+                name = 'Cooled Below',
+                text = { 
+                    "Abilities can cool down",
+                    "into {C:attention}negative values",
+                    "{C:inactive}(e.g. -2/1 round)"
+                }
+            },
         }
     },
     misc={
