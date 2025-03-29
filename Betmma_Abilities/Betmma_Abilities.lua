@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.14(20250311)
+--- VERSION: 1.0.3.15(20250329)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -118,7 +118,8 @@ do
     -- enable Ability area to draw abilities in it
     function CardArea:draw()
         CardArea_draw_ref(self) -- this should be called before drawing cards inside it otherwise the area will block the cards and you can't hover on them
-        for k, v in ipairs(self.ARGS.draw_layers) do
+        local draw_layers = self.ARGS.draw_layers or self.config.draw_layers or {'shadow', 'card'}
+        for k, v in ipairs(draw_layers) do
             if self.config.type == 'betmma_ability' then 
                 for i = 1, #self.cards do 
                     if self.cards[i] ~= G.CONTROLLER.focused.target then
