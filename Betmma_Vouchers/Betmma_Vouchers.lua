@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.1.11~2
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.1.11~2(20250325)
+--- VERSION: 3.0.2(20250401)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -2191,7 +2191,7 @@ do
     function eval_card(card, context) -- debuffed card won't call this
         local ret = {eval_card_ref(card,context)}
         G.GAME.scoring_hand=context.scoring_hand
-        if context.cardarea == G.play and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and used_voucher('double_flipped_card') and card.facing_ref=='back' then
+        if context.cardarea == G.play and context.main_scoring and not context.repetition_only and (card.ability.set == 'Default' or card.ability.set == 'Enhanced') and used_voucher('double_flipped_card') and card.facing_ref=='back' then
             if (not card.shattered) and (not card.destroyed) then 
                 draw_card_immediately(G.play,G.hand, 0.1,'down', false, card)
                 card.facing_ref=card.facing
@@ -5806,8 +5806,8 @@ end
                 {id = 'v_betm_spells_magic_scroll'},
                 {id = 'v_betm_spells_magic_wheel'},
                 -- {id = MOD_PREFIX_V.. 'real_random'},
-                {id = MOD_PREFIX_V.. 'reserve_area'},
-                {id = MOD_PREFIX_V.. 'reserve_area_plus'},
+                {id = MOD_PREFIX_V.. 'flipped_card'},
+                {id = MOD_PREFIX_V.. 'double_flipped_card'},
                 {id = MOD_PREFIX_V.. 'recycle_area'},
                 {id = MOD_PREFIX_V.. 'forbidden_area'},
                 {id = MOD_PREFIX_V.. 'real_random'},
