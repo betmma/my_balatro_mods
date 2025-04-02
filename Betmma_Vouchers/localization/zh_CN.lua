@@ -1,101 +1,99 @@
 return{
     descriptions={
         Enhanced = {
-            ellipsis={text={'{C:inactive}(#1# abilities omitted)'}},
+            ellipsis={text={'{C:inactive}(省略 #1# 个能力)'}},
             multiples={text={'{C:inactive}(X#1#)'}},
             real_random_chip={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for {C:chips}+#2#{} Chips"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "{C:chips}+#2#{}筹码"
                 }
             },
             real_random_mult={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for {C:mult}+#2#{} Mult"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "{C:mult}+#2#{}倍率"
                 }
             },
             real_random_x_mult={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for {X:red,C:white}X#2#{} Mult"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "{X:red,C:white}X#2#{}倍率"
                 }
             },
             real_random_dollars={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "to win {C:money}$#2#"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "获得{C:money}$#2#"
                 }
             },
             real_random_joker_slot={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for {C:attention}+#2#{} Joker slot"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "小丑牌槽位{C:attention}+#2#{}"
                 },
             },
             real_random_consumable_slot={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for {C:attention}+#2#{} Consumable slot"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "消耗牌槽位{C:attention}+#2#{}"
                 },
             },
             real_random_random_voucher={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for a random {C:attention}Voucher{}"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "获得一张{C:attention}优惠券{}"
                 },
             },
             real_random_random_negative_joker={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for a random {C:dark_edition}negative{} {C:attention}Joker{}"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "获得一张{C:dark_edition}负片{C:attention}小丑牌{}"
                 },
             },
             real_random_new_ability={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for a new ability"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "获得一个新能力"
                 },
             },
             real_random_double_probability={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "to double all probabilities"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "将所有几率翻倍"
                 },
             },
             real_random_random_tag={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "for a random {C:attention}tag{}"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "获得一个{C:attention}标签"
                 },
             },
             real_random_retrigger_next={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "to retrigger the card",
-                    "to its right {C:attention}#2#{} times"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "额外触发右侧牌{C:attention}#2#{}次"
                 },
             },
             real_random_hand_size={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "to {C:attention}+#2#{} hand size"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "手牌上限{C:attention}+#2#"
                 },
             },
             real_random_transfer_ability={
                 text={
-                    "{C:green}#1# in #3#{} chance",
-                    "to transfer an ability",
-                    "to the card to its right"
+                    "有{C:green}#1#/#3#{}的几率",
+                    "转移一个能力至右侧牌"
                 },
             }
         },
         Other = {
             perishable_no_debuff = {
-                name = "Perishable",
+                name = "易腐",
                 text = {
-                    "Debuffed after",
-                    "{C:attention}#1#{} rounds"
+                    "经过{C:attention}#1#{}回合后",
+                    "会被削弱"
                 }
             }
         },
@@ -147,7 +145,7 @@ return{
                 text = {
                     "出牌计分时",
                     "每次计入的{C:blue}筹码",
-                    "均向上取整至十位数",
+                    "均向上取整至十位",
                 }
             },
             v_betm_vouchers_round_up_plus={
@@ -155,7 +153,7 @@ return{
                 text = {
                     "出牌计分时",
                     "每次计入的{C:red}倍率",
-                    "均向上取整至十位数",
+                    "均向上取整至十位",
                 }
             },
             v_betm_vouchers_event_horizon={
@@ -248,8 +246,7 @@ return{
                 text = {
                     "在{C:spectral}幻灵包{}中选取的{C:spectral}幻灵牌",
                     "可存入消耗牌槽位",
-                    "且开启{C:spectral}幻灵包{}时",
-                    "额外获得一个{C:attention}空灵标签",
+                    "现在获得一个{C:attention}空灵标签",
                 }
             },
             v_betm_vouchers_overkill={
@@ -267,7 +264,7 @@ return{
                     "若回合结束时的得分",
                     "为最低要求的{C:attention}#1#倍{}或更高",
                     "为随机一张{C:attention}小丑牌添加{C:dark_edition}负片",
-                    "并使上述倍数要求{C:attention}翻倍",
+                    "并使上述倍数要求{C:attention}X#2#{}",
                     "{C:inactive,s:0.8}本奖券提供的负片",
                     "{C:inactive,s:0.8}可覆盖小丑牌的原有版本",
                 }
@@ -387,8 +384,8 @@ return{
                 name = "防爆玻璃",
                 text = {
                     "{C:attention}玻璃牌{}触发破碎时",
-                    "只会损失{X:mult,C:white}X#1#{}倍率而非摧毁",
-                    "仅在倍率低至{X:mult,C:white}X#2#{}时摧毁",
+                    "改为损失{X:mult,C:white}X#1#{}倍率",
+                    "倍率低至{X:mult,C:white}X#2#{}时摧毁",
                 }
             },
             v_betm_vouchers_cash_clutch={
@@ -485,72 +482,80 @@ return{
                 }
             },
             v_betm_vouchers_rich_boss = {
-                name = "Rich Boss",
+                name = "富有Boss",
                 text = {
-                    "Boss Blinds give {C:money}$#1#{} more",
+                    "{C:attention}Boss盲注{}奖励金",
+                    "提高{C:money}$#1#{}",
                 }
             },
             v_betm_vouchers_richer_boss = {
-                name = "Richer Boss",
+                name = "极富Boss",
                 text = {
-                    "Boss Blinds give {C:money}$#1#{} more per ante",
+                    "{C:attention}Boss盲注{}奖励金",
+                    "每底注提高{C:money}$#1#{}",
                 }
             },
             v_betm_vouchers_gravity_assist = {
-                name = "Gravity Assist",
+                name = "引力助推",
                 text = {
-                    "When upgrading a poker hand,",
-                    "also upgrade {C:attention}adjacent{} poker hands",
+                    "升级{C:attention}牌型{}时",
+                    "将同时升级",
+                    "{C:attention}相邻{}牌型",
                 }
             },
             v_betm_vouchers_gravitational_wave = {
-                name = "Gravitational Wave",
+                name = "引力波",
                 text = {
-                    "When upgrading a poker hand, also upgrade",
-                    "non-adjacent poker hands by {C:attention}#1#{} levels",
+                    "升级{C:attention}牌型{}时",
+                    "将同时升级{C:attention}非相邻{}牌型",
+                    "{C:attention}#1#{}个等级",
                 }
             },
             v_betm_vouchers_garbage_bag = {
-                name = "Garbage Bag",
+                name = "垃圾袋",
                 text = {
-                    "You carry surplus {C:red}discards{} over rounds.",
-                    "gain {C:red}#1#{} one-time discards",
+                    "回合结束时",
+                    "剩余的{C:red}弃牌{}将被保留",
+                    "临时弃牌次数{C:red}+#1#{}",
                 }
             },
             v_betm_vouchers_handbag = {
-                name = "Handbag",
+                name = "手提包",
                 text = {
-                    "You carry surplus {C:blue}hands{} over rounds.",
-                    "gain {C:blue}#1#{} one-time hands",
+                    "回合结束时",
+                    "剩余的{C:blue}出牌{}将被保留",
+                    "临时出牌次数{C:blue}+#1#{}",
                 }
             },
             v_betm_vouchers_echo_wall = {
-                name = "Echo Wall",
+                name = "回音壁",
                 text = {
-                    "{C:red}Discarding{} a card triggers",
-                    "its {C:attention}end of round{} effect",
+                    "被{C:red}弃掉{}的牌会触发",
+                    "其{C:attention}回合结束时{}的效果",
                 }
             },
             v_betm_vouchers_echo_chamber = {
-                name = "Echo Chamber",
+                name = "回音室",
                 text = {
-                    "{C:attention}Holding{} a card in each hand triggers",
-                    "its {C:attention}end of round{} effect",
+                    "出牌时",
+                    "{C:attention}留在手中的牌{}会触发",
+                    "其{C:attention}回合结束时{}的效果",
                 }
             },
             v_betm_vouchers_laminator = {
-                name = "Laminator",
+                name = "贴膜机",
                 text = {
-                    "When {C:attetntion}round ends{},",
-                    "if {C:attention}leftmost{} joker has sticker,",
-                    "{C:green}#1# in #2#{} chance to add random {C:attention}Edition",
+                    "回合结束时",
+                    "若{C:attention}最左边{}的小丑拥有贴纸",
+                    "有{C:green}#1#/#2#{}的几率",
+                    "为其添加随机{C:attention}版本",
                 }
             },
             v_betm_vouchers_eliminator = {
-                name = "Eliminator",
+                name = "净化机",
                 text = {
-                    "{C:attention}Remove{} all stickers",
-                    "on {C:attention}Laminated{} Joker",
+                    "将被{C:attention}贴膜{}的小丑",
+                    "拥有的所有贴纸{C:attention}移除",
                 }
             },
             v_betm_vouchers_gold_round_up={
@@ -616,7 +621,7 @@ return{
                 name = "百發百中",
                 text = {
                     "若资金为5的倍数",
-                    "则回合结束时{C:money}奖励{}翻倍",
+                    "则回合结束时{C:money}利息{}翻倍",
                     "{C:inactive}（种子基金 + 射箭标靶）",
                 }
             },
@@ -624,7 +629,7 @@ return{
                 name = "艺作画廊",
                 text = {
                     "赢下游戏需通关底注数{C:attention}+#1#",
-                    "击败{C:attention}Boss盲注{}时，随机获得：",
+                    "击败{C:attention}Boss盲注{}时，随机获得以下之一：",
                     "出牌次数{C:blue}+#1#{}、弃牌次数{C:red}+#1#{}或底注{C:attention}-#1#",
                     "{C:inactive}（象形文字 + 抽象艺术）",
                 }
@@ -756,27 +761,27 @@ return{
     },
     misc = {
         challenge_names = {
-            c_mod_testvoucher = 'TestVoucher'
+            c_mod_testvoucher = '优惠券测试'
         },
         dictionary = {
-            k_fusion_voucher = 'Fusion Voucher',
-            k_event_horizon_generate = "Event Horizon!",
-            k_engulfer_generate = "Engulfer!",
-            k_target_generate = "Target!",
-            k_bulls_eye_generate = "Bull's Eye!",
-            b_reserve = "RESERVE",
-            k_transfer_ability = "Transfer!",
-            k_overkill_edition = "Overkill!",
-            k_big_blast_edition = "Big Blast!",
-            b_flip_hand = "Flip",
-            k_bulletproof = "Bulletproof!",
-            b_vanish = "VANISH",
-            k_heat_death = "Heat Death!",
-            k_laminator = "Laminated!",
-            k_undying = "Undying!",
-            k_reincarnate = "Reincarnate!",
-            k_solar_system = "Solar System!",
-            over_retriggered = "Over-retriggered: ",
+            k_fusion_voucher = '融合优惠券',
+            k_event_horizon_generate = "视界线！",
+            k_engulfer_generate = "吞噬！",
+            k_target_generate = "瞄准！",
+            k_bulls_eye_generate = "正中靶心！",
+            b_reserve = "存储",
+            k_transfer_ability = "转移！",
+            k_overkill_edition = "超量！",
+            k_big_blast_edition = "大爆炸！",
+            b_flip_hand = "翻转",
+            k_bulletproof = "防弹！",
+            b_vanish = "消失",
+            k_heat_death = "热寂！",
+            k_laminator = "贴膜！",
+            k_undying = "不灭！",
+            k_reincarnate = "再生！",
+            k_solar_system = "太阳系！",
+            over_retriggered = "重复触发压缩：",
         }
     }
 }
