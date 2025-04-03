@@ -14,7 +14,7 @@
 -- acknowledgements:
 
 -- thanks to Denverplays2, RenSixx, KEKC, Zahrizi, Sameone and other discord users for their ideas
--- thanks to ChromaPIE for zh_CN translation
+-- thanks to ChromaPIE and BaiMao for zh_CN translation
 
 
 -- ideas:
