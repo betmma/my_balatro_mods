@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.15(20250329)
+--- VERSION: 1.0.3.16(20250411)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1389,6 +1389,15 @@ do
                 G.GAME.blind:wiggle()
                 G.GAME.blind.chips=TalismanCompat(G.GAME.blind.chips)*value/100 -- if current hand ends the round the displayed blind chips won't change and I don't know why
                 -- pprint(G.GAME.blind.chips)
+                after_event(function()
+                    after_event(function() -- two layers is a must to wait for vanilla functions execution and prevent drawing cards back after round ends
+                        if TalismanCompat(G.GAME.chips) >= TalismanCompat(G.GAME.blind.chips) then -- i don't know why it won't trigger winning. i remember it does that before
+                            G.STATE = G.STATES.HAND_PLAYED
+                            G.STATE_COMPLETE = true
+                            end_round()
+                        end
+                    end)
+                end)
             end)
         end,
         calculate=function(self,card,context)
