@@ -4,7 +4,7 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.16(20250411)
+--- VERSION: 1.0.3.17(20250411)
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -94,8 +94,9 @@ do
             if center and betmma_smaller_sets and betmma_smaller_sets[center.set] then
                 -- self.T.w=W*34/71
                 -- self.T.h=H*34/95
-                self.T.w=G.ABILITY_W or 0.8
-                self.T.h=G.ABILITY_H or 0.8
+                -- self.T.w=G.ABILITY_W or 0.8
+                -- self.T.h=G.ABILITY_H or 0.8 -- latest (around 20250411) makes this method not work
+                center.display_size={h=34*0.8,w=34*0.8}
             end
             Card_set_ability_ref(self,center,initial,delay_sprites)
         end
