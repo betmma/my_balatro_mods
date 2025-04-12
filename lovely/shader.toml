@@ -6,7 +6,7 @@ priority = 0
 # Shader testing by injecting into Card.draw. This patch is to remove shadow of phantom (transparent) edition. around applying edition shaders
 [[patches]]
 [patches.pattern]
-target = "card.lua"
+target = '=[SMODS _ "src/card_draw.lua"]'
 pattern = "if not self.no_shadow and G.SETTINGS.GRAPHICS.shadows == 'On' and((layer == 'shadow' or layer == 'both') and (self.ability.effect ~= 'Glass Card' and not self.greyed) and ((self.area and self.area ~= G.discard and self.area.config.type ~= 'deck') or not self.area or self.states.drag.is)) then"
 position = "at"
 payload = '''
@@ -18,7 +18,7 @@ match_indent = true
 # Shader testing by injecting into Card.draw. This patch is to remove "main part of the card" that is not transparent (but i doubt if it's really the "main part") 
 [[patches]]
 [patches.pattern]
-target = "card.lua"
+target = '=[SMODS _ "src/card_draw.lua"]'
 pattern = "elseif not self.greyed then"
 position = "before"
 payload = '''
@@ -31,7 +31,7 @@ match_indent = true
 # Shader testing by injecting into Card.draw. This patch is to apply my phantom shader before voucher, booster, edition, seal shaders
 [[patches]]
 [patches.pattern]
-target = "card.lua"
+target = '=[SMODS _ "src/card_draw.lua"]'
 pattern = "if not self.config.center.discovered and (self.ability.consumeable or self.config.center.unlocked) and not self.config.center.demo and not self.bypass_discovery_center then"
 position = "before"
 payload = '''
