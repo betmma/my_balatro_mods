@@ -5780,7 +5780,7 @@ end
                 -- {id = 'c_cry_Klubi'},
                 {id = 'c_incantation'},
                 {id = 'c_hanged_man'},
-                {id='c_betm_abilities_pay2win',negative=true},
+                {id='c_betm_abilities_enhancer',negative=true},
                 -- {id='c_betm_abilities_enhancer'},
                 -- {id='c_betm_abilities_enhancer'},
                 -- {id='c_betm_abilities_enhancer'},

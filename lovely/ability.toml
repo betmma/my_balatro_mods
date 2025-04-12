@@ -156,26 +156,10 @@ elseif #G.hand.cards < 1 and #G.deck.cards < 1 then
 '''
 match_indent = true
 
-
-# draw joker's enhancement
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = '''if (v.type == 'Base' or v.type == 'Enhanced') and G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.8 then nope'''
-position = "before"
-payload = '''
-if (v.type == 'Joker') then
-    local seal=SMODS.poll_seal({mod=30})
-    card:set_seal(seal)
-end
-'''
-match_indent = true
-
-
 # draw extra enhancement layer on jokers
 [[patches]]
 [patches.pattern]
-target = "card.lua"
+target = '=[SMODS _ "src/card_draw.lua"]'
 pattern = '''if center.set == 'Default' or center.set == 'Enhanced' and not center.replace_base_card then'''
 position = "before"
 payload = '''

@@ -4,7 +4,8 @@
 --- MOD_AUTHOR: [Betmma]
 --- MOD_DESCRIPTION: New type of card: Abilities
 --- PREFIX: betm_abilities
---- VERSION: 1.0.3.17(20250411)
+--- VERSION: 1.0.3.18(20250412)
+--- DEPENDENCIES: [Steamodded>=1.0.0~BETA-0410b]
 --- BADGE_COLOUR: 8D90BF
 
 ----------------------------------------------
@@ -1574,6 +1575,7 @@ do
     local function create_fake_card(center,real_card)
         local fake_card = setmetatable({
             T={x=0,y=0,w=71,h=95},
+            original_T={x=0,y=0,w=71,h=95},
             config={center=center},
             params={},
             set_sprites=function()end,
