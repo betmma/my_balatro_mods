@@ -1,7 +1,7 @@
 return {
     descriptions = {
         Joker = {
-            j_betm_jokers_jjookkeerr = {
+            betm_jokers_j_jjookkeerr = {
                 name = "JJookkeerr",
                 text = {
                     "Jokers with \"Joker\"",
@@ -9,7 +9,7 @@ return {
                     "each give {X:mult,C:white} X#1# {} Mult",
                 }
             },
-            j_betm_jokers_ascension = {
+            betm_jokers_j_ascension = {
                 name = "Ascension",
                 text = {
                     "Played poker hand counts",
@@ -17,14 +17,14 @@ return {
                     "(ex. High Card counts as One Pair)",
                 }
             },
-            j_betm_jokers_hasty = {
+            betm_jokers_j_hasty = {
                 name = "Hasty Joker",
                 text = {
                     "Earn {C:money}$#1#{} if round",
                     "ends after first hand",
                 }
             },
-            j_betm_jokers_errorr = {
+            betm_jokers_j_errorr = {
                 name = "ERRORR",
                 text = {
                     "Discarded cards have a",
@@ -32,7 +32,7 @@ return {
                     "become random rank"
                 }
             },
-            j_betm_jokers_piggy_bank = {
+            betm_jokers_j_piggy_bank = {
                 name = " Piggy Bank ", -- space is intentional to prevent same name with other mod jokers
                 text = {
                     "Put half of earned money",
@@ -42,7 +42,7 @@ return {
                     "{C:inactive}(Currently {C:red}+#1#{C:inactive} Mult)"
                 }
             },
-            j_betm_jokers_housing_choice = {
+            betm_jokers_j_housing_choice = {
                 name = "Housing Choice",
                 text = {
                     "Once per Ante, get a random",
@@ -51,7 +51,7 @@ return {
                     "{C:inactive}(#1#)"
                 }
             },
-            j_betm_jokers_jimbow = {
+            betm_jokers_j_jimbow = {
                 name = "Jimbow",
                 text = {
                     "This Joker gains {C:chips}+#2#{}",
@@ -61,7 +61,7 @@ return {
                     
                 }
             },
-            j_betm_jokers_gameplay_update = {
+            betm_jokers_j_gameplay_update = {
                 name = "Gameplay Update",
                 text = {
                     "If played hand has exactly",
@@ -71,7 +71,7 @@ return {
                     "by {C:attention}#1#% for each condition satisfied",
                 }
             },
-            j_betm_jokers_flying_cards = {
+            betm_jokers_j_flying_cards = {
                 name = "Flying Cards",
                 text = {
                     "This Joker gains {X:mult,C:white} X(n+#2#)^-#1# {} Mult",
@@ -80,7 +80,7 @@ return {
                     "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
                 }
             },
-            j_betm_jokers_friends_of_jimbo = {
+            betm_jokers_j_friends_of_jimbo = {
                 name = "Friends of Jimbo",
                 text = {
                     "For each {C:spades}King of Spades{}, {C:diamonds}Queen of Diamonds{},",
@@ -89,7 +89,7 @@ return {
                     "{C:inactive}(No need to have room)",
                 }
             },
-            j_betm_jokers_balatro_mobile = {
+            betm_jokers_j_balatro_mobile = {
                 name = "Balatro Mobile",
                 text = {
                     "This Joker is {C:attention}mobile{} and can be put anywhere.",
