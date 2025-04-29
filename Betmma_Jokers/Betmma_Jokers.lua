@@ -485,7 +485,7 @@ local function INIT()
         },
         balatro_mobile = SMODS.Joker{
             name="Balatro Mobile", key="balatro_mobile",
-            config={extra={value=26,win_value=26*10^24,ability_price=6,cooldown_reduce=2,shop_joker_min=2,shop_joker_max=6},h_x_mult=2,h_mult=6,mobile=true},
+            config={extra={value=26,win_value=26*10^24,ability_price=6,cooldown_reduce=2,shop_joker_min=2,shop_joker_max=6},h_x_mult=2,h_mult=6,mobile=true,no_rank=true},
             spritePos={x=0,y=0}, 
             loc_txt="",
             rarity=2, 
