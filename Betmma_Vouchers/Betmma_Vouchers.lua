@@ -2,9 +2,9 @@
 --- MOD_NAME: Betmma Vouchers
 --- MOD_ID: BetmmaVouchers
 --- MOD_AUTHOR: [Betmma]
---- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.2.1
+--- MOD_DESCRIPTION: 58 Vouchers and 24 Fusion Vouchers! v3.0.2.2
 --- PREFIX: betm_vouchers
---- VERSION: 3.0.2.1(20250402)
+--- VERSION: 3.0.2.2(20250504)
 --- BADGE_COLOUR: ED40BF
 --- PRIORITY: -1
 
@@ -4999,11 +4999,11 @@ do
                 play_sound('coin2')
                 play_sound('other1')
                 
-                for i = 1, num - #G.shop_vouchers.cards do
-                    G.GAME.current_round.voucher=get_next_voucher_key()
-                    if G.GAME.current_round.voucher and G.P_CENTERS[G.GAME.current_round.voucher] then
+                G.GAME.current_round.voucher = SMODS.get_next_vouchers()
+                for i = 1, #G.GAME.current_round.voucher do
+                    if G.GAME.current_round.voucher[i] and G.P_CENTERS[G.GAME.current_round.voucher[i]] then
                         local card = Card(G.shop_vouchers.T.x + G.shop_vouchers.T.w/2,
-                        G.shop_vouchers.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.voucher],{bypass_discovery_center = true, bypass_discovery_ui = true})
+                        G.shop_vouchers.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.voucher[i]],{bypass_discovery_center = true, bypass_discovery_ui = true})
                         card.shop_voucher = true
                         card.cost=card.cost+price_mod
                         create_shop_card_ui(card, 'Voucher', G.shop_vouchers)
@@ -5790,6 +5790,7 @@ end
                 -- {id = MOD_PREFIX_V.. 'trash_picker'},
                 {id = MOD_PREFIX_V.. '3d_boosters'},
                 {id = MOD_PREFIX_V.. '4d_boosters'},
+                {id = MOD_PREFIX_V.. '4d_vouchers'},
                 {id = 'v_crystal_ball'},
                 -- -- {id = 'v_liquidation'},
                 {id = MOD_PREFIX_V.. 'mirror'},
